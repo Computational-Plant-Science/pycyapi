@@ -1,7 +1,7 @@
 """
     Bridge between the DIRT2 web platform and the cluster.
 """
-
+import os
 import subprocess
 import argparse
 import json
@@ -35,7 +35,7 @@ class ClusterSide:
                             help="Sever url")
         args, unknownargs = parser.parse_known_args(args)
 
-        with open(args.config, 'r') as fin:
+        with open(os.path.expanduser(args.config), 'r') as fin:
             self.config = json.load(fin)
 
         self.server = Comms(url=args.url,
@@ -64,7 +64,7 @@ class ClusterSide:
 
         script_name = "./submit_%d"%(self.config['job_pk'],)
 
-        with open(opts.script, 'r') as fin, open(script_name, 'w') as fout:
+        with open(os.path.expanduser(opts.script), 'r') as fin, open(script_name, 'w') as fout:
             for line in fin:
                 fout.write(line.format(**self.config))
 
