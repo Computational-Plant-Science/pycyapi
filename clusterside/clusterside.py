@@ -1,6 +1,7 @@
 """
     Bridge between the DIRT2 web platform and the cluster.
 """
+import stat
 import os
 import subprocess
 import argparse
@@ -37,6 +38,7 @@ class ClusterSide:
 
         with open(os.path.expanduser(args.config), 'r') as fin:
             self.config = json.load(fin)
+        self.config['server_url'] = args.url
 
         self.server = Comms(url=args.url,
                             headers={
@@ -62,11 +64,13 @@ class ClusterSide:
                             help='Script template location')
         opts = parser.parse_args(args)
 
-        script_name = "./submit_%d"%(self.config['job_pk'],)
+        script_name = "./submit_%d.sh"%(self.config['job_pk'],)
 
         with open(os.path.expanduser(opts.script), 'r') as fin, open(script_name, 'w') as fout:
             for line in fin:
                 fout.write(line.format(**self.config))
+        os.chmod(script_name,
+                 stat.S_IRUSR | stat.S_IXUSR)
 
         try:
             ret = subprocess.run(["qsub", script_name])
@@ -93,8 +97,8 @@ class ClusterSide:
         ret = subprocess.run(["singularity",
                               "run",
                               "--containall",
-                              "--home `pwd`",
-                              self.config['singulairty_url'],
+                              "--home","`pwd`",
+                              self.config['singularity_url'],
                               *self.config['parameters']
                              ])
 
