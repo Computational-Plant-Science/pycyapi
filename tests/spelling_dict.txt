@@ -1,0 +1,8 @@
+# Allowed words during pylint spell check
+config
+json
+Args
+args
+str
+url
+Comms
