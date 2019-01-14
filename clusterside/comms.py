@@ -32,8 +32,13 @@ class Comms:
             Args:
                 status (Comms.STATES): Job state after this update
                 url (str): url for server REST API
-                description (str): Status description string
+                description (str): Status description string. Descriptions
+                    greater than 150 characters are truncated to
+                    last 150 characters
         """
+        if len(description) > 150:
+            description = description[-150:] + "..."
+
         patch = json.dumps({
             "status_set": [
                 {

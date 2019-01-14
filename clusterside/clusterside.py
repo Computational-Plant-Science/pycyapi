@@ -73,7 +73,9 @@ class ClusterSide:
                  stat.S_IRUSR | stat.S_IXUSR)
 
         try:
-            ret = subprocess.run(["qsub", script_name])
+            ret = subprocess.run(["qsub", script_name],
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
         except FileNotFoundError as error:
             self.server.update_status(self.server.FAILED, str(error))
             print(error)
@@ -97,22 +99,30 @@ class ClusterSide:
         ret = subprocess.run(["singularity",
                               "run",
                               "--containall",
-                              "--home","`pwd`",
+                              "--home", os.getcwd(),
                               self.config['singularity_url'],
                               *self.config['parameters']
-                             ])
+                             ],
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
 
         if ret.returncode == 0:
             self.server.task_complete(self.config['task_pk'])
-        elif ret.stderr:
-            self.server.update_status(self.server.FAILED, ret.stderr)
+        else:
+            if ret.stderr:
+                self.server.update_status(self.server.FAILED, ret.stderr.decode("utf-8"))
+            elif ret.stdout:
+                self.server.update_status(self.server.FAILED, ret.stdout.decode("utf-8"))
+            else:
+                self.server.update_status(self.server.FAILED,
+                                          "Unknown error occurred while running singularity")
 
-        if ret.stderr:
-            with open(self.config['job_pk'] + ".stderr", 'w') as fout:
-                fout.write(ret.stderr)
         if ret.stdout:
-            with open(self.config['job_pk'] + ".stdout", 'w') as fout:
-                fout.write(ret.stdout)
+            with open("run_%d.out"%(self.config['job_pk'],), 'w') as fout:
+                fout.write(ret.stdout.decode("utf-8"))
+        if ret.stderr:
+            with open("run_%d.err"%(self.config['job_pk'],), 'w') as fout:
+                fout.write(ret.stderr.decode("utf-8"))
 
 def cli():
     '''Entry point used by setup.'''
