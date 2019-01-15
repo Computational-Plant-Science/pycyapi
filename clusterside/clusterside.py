@@ -39,7 +39,8 @@ class ClusterSide:
         with open(os.path.expanduser(args.config), 'r') as fin:
             self.config = json.load(fin)
         self.config['server_url'] = args.url
-
+        self.config['pwd'] = os.getcwd()
+        
         self.server = Comms(url=args.url,
                             headers={
                                 "Authorization": "Token "  + self.config['auth_token']
@@ -96,15 +97,20 @@ class ClusterSide:
         """
         self.server.update_status(self.server.OK, "Running")
 
-        ret = subprocess.run(["singularity",
-                              "run",
-                              "--containall",
-                              "--home", os.getcwd(),
-                              self.config['singularity_url'],
-                              *self.config['parameters']
-                             ],
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
+        params = [s.format(**self.config) for s in self.config['parameters']]
+
+        try:
+            ret = subprocess.run(["singularity",
+                                  "run",
+                                  "--containall",
+                                  "--home", os.getcwd(),
+                                  self.config['singularity_url'],
+                                  *params,
+                                 ],
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
+        except Exception as error:
+            self.server.update_status(self.server.FAILED, str(error))
 
         if ret.returncode == 0:
             self.server.task_complete(self.config['task_pk'])
