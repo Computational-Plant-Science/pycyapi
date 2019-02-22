@@ -84,6 +84,7 @@ class ClusterSide:
         self.server.update_status(self.server.OK, "Running")
         executor.process()
         executor.reduce(SAMPLE_OUTPUT_TYPE)
+        self.server.task_complete(self.config['task_pk'])
 
 def cli():
     parser = argparse.ArgumentParser(

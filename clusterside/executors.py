@@ -65,10 +65,10 @@ def execute(sample, workflow, server, results_folder_path):
                                      "Unknown error occurred while running singularity")
 
     if ret.stdout:
-        with open("run_%d_%s.out"%(self.config['job_pk'],sample), 'w') as fout:
+        with open("run_%s.out"%(sample), 'w') as fout:
             fout.write(ret.stdout.decode("utf-8"))
     if ret.stderr:
-        with open("run_%d_%s.err"%(self.config['job_pk'],sample), 'w') as fout:
+        with open("run_%s.err"%(sample), 'w') as fout:
             fout.write(ret.stderr.decode("utf-8"))
 
 
