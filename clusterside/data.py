@@ -7,9 +7,12 @@ class Workflow():
             params = json.load(fin)
 
         self.singularity_url = params['singularity_url']
-
-        self.args = {}
+        self.auth_token = params['auth_token']
+        self.job_pk = params['job_pk']
+        self.server_url = params['server_url']
         
+        self.args = {}
+
 class Collection():
 
     def __init__(self, json_file):

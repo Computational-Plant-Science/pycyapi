@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     if SAMPLE_OUTPUT_TYPE == 'file':
         shutil.move(result,os.path.join(result_path,sample_name + "_" + result))
-    elif SAMPLE_OUTPUT_TYPE == 'data':
+    elif SAMPLE_OUTPUT_TYPE == 'csv':
         file_path = os.path.join(result_path,
                                  sample_name + "_" + os.path.basename(sample_name) + ".json")
         with open(file_path,"w") as fout:
