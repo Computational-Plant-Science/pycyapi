@@ -14,7 +14,7 @@ def execute(sample, workflow, server, results_folder_path):
     start_dir = os.getcwd()
     workdir = sample.name
 
-    self.server.update_status(self.server.OK, "Analyzing %s"%(sample))
+    server.update_status(server.OK, "Analyzing %s"%(sample))
 
     #make dir
     if not os.path.exists(workdir):
@@ -48,20 +48,20 @@ def execute(sample, workflow, server, results_folder_path):
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
     except Exception as error:
-        server.update_status(self.server.FAILED, str(error))
+        server.update_status(server.FAILED, str(error))
         return
 
     if ret.returncode == 0:
         #Finished without error
-        self.server.update_status(self.server.OK, "%s done."%(sample))
+        server.update_status(server.OK, "%s done."%(sample))
         pass
     else:
         if ret.stderr:
-            server.update_status(self.server.FAILED, ret.stderr.decode("utf-8"))
+            server.update_status(server.FAILED, ret.stderr.decode("utf-8"))
         elif ret.stdout:
-            server.update_status(self.server.FAILED, ret.stdout.decode("utf-8"))
+            server.update_status(server.FAILED, ret.stdout.decode("utf-8"))
         else:
-            server.update_status(self.server.FAILED,
+            server.update_status(server.FAILED,
                                      "Unknown error occurred while running singularity")
 
     if ret.stdout:

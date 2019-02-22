@@ -10,7 +10,6 @@ import sys
 
 from clusterside.comms import Comms
 from clusterside.executors import SingleJobExecutor
-from process import SAMPLE_OUTPUT_TYPE
 
 class ClusterSide:
     """
@@ -48,7 +47,6 @@ class ClusterSide:
                 args: command line input arguments to parse
         """
         script_name = "./submit_%d.sh"%(self.config['job_pk'],)
-        print(script_name)
         with open(os.path.expanduser(script_template), 'r') as fin, open(script_name, 'w') as fout:
             for line in fin:
                 fout.write(line.format(**self.config))
@@ -67,9 +65,6 @@ class ClusterSide:
         if ret.returncode == 0:
             self.server.update_status(self.server.OK, "Queued")
 
-            if ret.stdout:
-                print(ret.stdout)
-
         if ret.stderr:
             self.server.update_status(self.server.FAILED, ret.stderr)
 
@@ -77,9 +72,16 @@ class ClusterSide:
         """
             Run the job task
         """
-        self.server.update_status(self.server.OK, "Running")
+
+        try:
+            sys.path.append(os.getcwd())
+            from process import SAMPLE_OUTPUT_TYPE
+        except Exception as error:
+            self.server.update_status(self.server.FAILED, str(error))
+            exit()
 
         executor = SingleJobExecutor()
+        self.server.update_status(self.server.OK, "Running")
         executor.process()
         executor.reduce(SAMPLE_OUTPUT_TYPE)
 
