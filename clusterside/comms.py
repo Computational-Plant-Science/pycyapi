@@ -5,16 +5,38 @@ import time
 import json
 import requests
 
-
 class Comms:
-    """
-        Handles communication with the web server via calls to the REST API
-    """
-
     #Possible Status States
     OK = 3
     WARN = 4
     FAILED = 2
+
+    def update_status(self,status,description):
+        pass
+
+    def task_complete(self, task_pk):
+        pass
+
+class STDOUTComms(Comms):
+
+    def status_str(self,status):
+        if status == self.OK:
+            return "OK"
+        elif status == self.WARN:
+            return "WARNING"
+        elif status == self.FAILED:
+            return "FAILED"
+
+    def update_status(self,status,description):
+        print("Status (%s): %s"%(self.status_str(status),description))
+
+    def task_complete(self, task_pk):
+        print("Task %s complete"%(task_pk))
+
+class RESTComms(Comms):
+    """
+        Handles communication with the web server via calls to the REST API
+    """
 
     def __init__(self, url, job_pk, headers=None):
         self.url = url + "jobs/%d/"%(job_pk,)
