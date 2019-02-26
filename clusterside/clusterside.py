@@ -75,15 +75,23 @@ class ClusterSide:
 
         try:
             sys.path.append(os.getcwd())
-            from process import SAMPLE_OUTPUT_TYPE
+            from process import WORKFLOW_CONFIG
         except Exception as error:
             self.server.update_status(self.server.FAILED, str(error))
             exit()
 
-        executor = SingleJobExecutor()
+        collection = Collection("samples.json")
+        workflow = Workflow(WORKFLOW_CONFIG,"workflow.json")
+        server = Comms(url=self.workflow.server_url,
+                            headers={
+                                "Authorization": "Token "  + self.workflow.auth_token
+                            },
+                            job_pk=self.workflow.job_pk)
+
+        executor = SingleJobExecutor(collection,workflow,server)
         self.server.update_status(self.server.OK, "Running")
         executor.process()
-        executor.reduce(SAMPLE_OUTPUT_TYPE)
+        executor.reduce()
         self.server.task_complete(self.config['task_pk'])
 
 def cli():

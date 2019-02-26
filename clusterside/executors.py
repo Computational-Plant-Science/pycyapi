@@ -74,14 +74,10 @@ def execute(sample, workflow, server, results_folder_path):
 
 class SingleJobExecutor():
 
-    def __init__(self):
-        self.collection = Collection("samples.json")
-        self.workflow = Workflow("workflow.json")
-        self.server = Comms(url=self.workflow.server_url,
-                            headers={
-                                "Authorization": "Token "  + self.workflow.auth_token
-                            },
-                            job_pk=self.workflow.job_pk)
+    def __init__(self,collection,workflow,server):
+        self.collection = collection
+        self.workflow = workflow
+        self.server = server
 
         results_folder_path = "./results"
         if not os.path.exists(results_folder_path):
@@ -97,7 +93,8 @@ class SingleJobExecutor():
                          results_folder_path=self.results_folder_path),
                  self.collection.samples())
 
-    def reduce(self,output_type):
+    def reduce(self):
+
         if output_type == 'csv':
             self.reduce_csv()
 

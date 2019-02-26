@@ -4,7 +4,7 @@ sys.path.append('/user_code')
 import os.path
 import shutil
 import json
-from process import process_sample, SAMPLE_OUTPUT_TYPE
+from process import process_sample, WORKFLOW_CONFIG
 
 '''
     Wrapper for the workflow code. Run within the workflow's singularity container.
@@ -33,9 +33,9 @@ if __name__ == "__main__":
                             sample_path,
                             args)
 
-    if SAMPLE_OUTPUT_TYPE == 'file':
+    if WORKFLOW_CONFIG['output_type'] == 'file':
         shutil.move(result,os.path.join(result_path,sample_name + "_" + result))
-    elif SAMPLE_OUTPUT_TYPE == 'csv':
+    elif WORKFLOW_CONFIG['output_type'] == 'csv':
         file_path = os.path.join(result_path,
                                  sample_name + "_" + os.path.basename(sample_name) + ".json")
         with open(file_path,"w") as fout:
