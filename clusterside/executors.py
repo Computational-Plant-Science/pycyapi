@@ -94,8 +94,7 @@ class SingleJobExecutor():
                  self.collection.samples())
 
     def reduce(self):
-
-        if output_type == 'csv':
+        if self.workflow.output_type == 'csv':
             self.reduce_csv()
 
     def reduce_csv(self):

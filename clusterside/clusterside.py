@@ -8,6 +8,7 @@ import argparse
 import json
 import sys
 
+from clusterside.data import Collection, Workflow
 from clusterside.comms import Comms
 from clusterside.executors import SingleJobExecutor
 
@@ -82,11 +83,11 @@ class ClusterSide:
 
         collection = Collection("samples.json")
         workflow = Workflow(WORKFLOW_CONFIG,"workflow.json")
-        server = Comms(url=self.workflow.server_url,
+        server = Comms(url=workflow.server_url,
                             headers={
-                                "Authorization": "Token "  + self.workflow.auth_token
+                                "Authorization": "Token "  + workflow.auth_token
                             },
-                            job_pk=self.workflow.job_pk)
+                            job_pk=workflow.job_pk)
 
         executor = SingleJobExecutor(collection,workflow,server)
         self.server.update_status(self.server.OK, "Running")
