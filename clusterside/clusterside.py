@@ -48,11 +48,8 @@ class ClusterSide:
                 args: command line input arguments to parse
         """
         script_name = "./submit_%d.sh"%(self.config['job_pk'],)
-        with open(os.path.expanduser(script_template), 'r') as fin, open(script_name, 'w') as fout:
-            for line in fin:
-                fout.write(line.format(**self.config))
-        os.chmod(script_name,
-                 stat.S_IRUSR | stat.S_IXUSR)
+        with open(script_name, 'w') as fout:
+            fout.write("clusterside run")
 
         try:
             ret = subprocess.run(["qsub", script_name],
@@ -96,6 +93,9 @@ class ClusterSide:
         self.server.task_complete(self.config['task_pk'])
 
 def cli():
+    '''
+        Clusterside Command line interface
+    '''
     parser = argparse.ArgumentParser(
         description='The Cluster Side Component of the DIRT2 Webplatform'
     )
