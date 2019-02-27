@@ -14,5 +14,5 @@ setup(name='clusterside',
             'clusterside = clusterside.clusterside:cli'
         ]
       },
-      requires=['requests']
+      requires=['requests','python-irodsclient']
      )
