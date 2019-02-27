@@ -9,7 +9,7 @@ import json
 import sys
 
 from clusterside.data import Collection, Workflow
-from clusterside.comms import Comms
+from clusterside.comms import RESTComms
 from clusterside.executors import SingleJobExecutor
 
 class ClusterSide:
@@ -34,7 +34,7 @@ class ClusterSide:
         with open("workflow.json", 'r') as fin:
             self.config = json.load(fin)
 
-        self.server = Comms(url=self.config['server_url'],
+        self.server = RESTComms(url=self.config['server_url'],
                             headers={
                                 "Authorization": "Token "  + self.config['auth_token']
                             },
@@ -50,6 +50,8 @@ class ClusterSide:
         script_name = "./submit_%d.sh"%(self.config['job_pk'],)
         with open(script_name, 'w') as fout:
             fout.write("clusterside run")
+        os.chmod(script_name,
+                 stat.S_IRUSR | stat.S_IXUSR)
 
         try:
             ret = subprocess.run(["qsub", script_name],
@@ -80,7 +82,7 @@ class ClusterSide:
 
         collection = Collection("samples.json")
         workflow = Workflow(WORKFLOW_CONFIG,"workflow.json")
-        server = Comms(url=workflow.server_url,
+        server = RESTComms(url=workflow.server_url,
                             headers={
                                 "Authorization": "Token "  + workflow.auth_token
                             },
