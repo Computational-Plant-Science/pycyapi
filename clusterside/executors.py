@@ -46,7 +46,7 @@ def reduce_csv(c,result_path):
         writer = csv.DictWriter(outfile,fieldnames = column_headers, restval='NULL')
         writer.writeheader()
 
-        for s in c.execute("SELECT name FROM samples"):
+        for s in  c.execute("SELECT name FROM samples").fetchall():
             sample = s[0]
 
             res = c.execute(
@@ -60,6 +60,7 @@ def reduce_csv(c,result_path):
             for key_val in res:
                 row[key_val[0]] = key_val[1]
             writer.writerow(row)
+
     return True
 
 class Executor():
