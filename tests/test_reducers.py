@@ -87,3 +87,66 @@ def test_reduce_file(tmp_path):
 
     for file in os.listdir(join(tmp_path,'files')):
         assert file in ["%s_%s"%('sample1',r) for r in result]
+
+def test_no_files(tmp_path):
+    sqlite = sqlite3.connect(join(tmp_path,'results.sqlite'))
+    c = sqlite.cursor()
+    c.execute('''
+              CREATE TABLE samples(
+                id INTEGER PRIMARY KEY,
+                name TEXT
+              );
+    ''')
+    c.execute('''
+              CREATE TABLE files(
+                file_path TEXT,
+                sample INTEGER,
+                FOREIGN KEY(sample) REFERENCES samples(id)
+              );
+    ''')
+    c.execute('''
+              CREATE TABLE key_val(
+                key TEXT,
+                data TEXT,
+                sample INTEGER,
+                FOREIGN KEY(sample) REFERENCES samples(id)
+              );
+    ''')
+    sqlite.commit()
+
+
+    c.execute("INSERT INTO samples (name) VALUES (?)",('sample1',))
+
+
+    assert not reduce_files(c,tmp_path,tmp_path)
+
+def test_no_key_val(tmp_path):
+    sqlite = sqlite3.connect(join(tmp_path,'results.sqlite'))
+    c = sqlite.cursor()
+    c.execute('''
+              CREATE TABLE samples(
+                id INTEGER PRIMARY KEY,
+                name TEXT
+              );
+    ''')
+    c.execute('''
+              CREATE TABLE files(
+                file_path TEXT,
+                sample INTEGER,
+                FOREIGN KEY(sample) REFERENCES samples(id)
+              );
+    ''')
+    c.execute('''
+              CREATE TABLE key_val(
+                key TEXT,
+                data TEXT,
+                sample INTEGER,
+                FOREIGN KEY(sample) REFERENCES samples(id)
+              );
+    ''')
+    sqlite.commit()
+
+
+    c.execute("INSERT INTO samples (name) VALUES (?)",('sample1',))
+
+    assert not reduce_csv(c,join(tmp_path,'results.csv'))

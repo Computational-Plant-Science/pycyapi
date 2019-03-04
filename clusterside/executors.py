@@ -14,7 +14,7 @@ from .data import Workflow, Collection
 from .comms import Comms
 
 def reduce_files(c,sample_path,result_path):
-    if not c.execute("SELECT * FROM files limit 1"):
+    if not c.execute("SELECT * FROM files limit 1").fetchone():
         return False
 
     res = c.execute(
@@ -36,7 +36,7 @@ def reduce_files(c,sample_path,result_path):
     return True
 
 def reduce_csv(c,result_path):
-    if not c.execute("SELECT * FROM key_val limit 1"):
+    if not c.execute("SELECT * FROM key_val limit 1").fetchone():
         return False
 
     res = c.execute("SELECT DISTINCT key from key_val")
@@ -189,8 +189,7 @@ class Executor():
             shutil.make_archive('results', 'zip', folder_path)
             return abspath('./results.zip')
         else:
-            reduce_csv(c,join(self.results_folder_path,'results.csv'))
-            return join(self.results_folder_path,'results.csv')
+            return join(folder_path,'results.csv')
 
 class SingleJobExecutor(Executor):
     '''

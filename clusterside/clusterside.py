@@ -92,7 +92,7 @@ class ClusterSide:
         self.server.update_status(self.server.OK, "Running")
         executor.process()
         result_path = executor.reduce()
-        self.server.update_job({'remote_results_path': results_path})
+        self.server.update_job({'remote_results_path': result_path})
         self.server.task_complete(self.config['task_pk'])
 
 def cli():

@@ -17,3 +17,5 @@ TODO
 - [ ] Write tests for clusterside.py
 - [ ] Write tests for executors.py
   - [x] Write tests for results reducers
+  - [ ] Move sqlite db creation into fixtures (or in setup?)
+  - [ ] Create process.py file in a fixture (or in setup?)

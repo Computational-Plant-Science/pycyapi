@@ -5,7 +5,7 @@ import os.path
 import shutil
 import json
 import sqlite3
-from process import process_sample, WORKFLOW_CONFIG
+from process import process_sample
 
 '''
     Wrapper for the workflow code. Run within the workflow's singularity container.
