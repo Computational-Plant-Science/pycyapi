@@ -89,7 +89,7 @@ class Workflow():
         with open(json_file,"r") as fin:
             params = json.load(fin)
 
-        self.output_type = config['output_type']
+        self.api_version = config['api_version']
         self.singularity_url = config['singularity_url']
         self.auth_token = params['auth_token']
         self.job_pk = params['job_pk']

@@ -4,6 +4,7 @@ sys.path.append('/user_code')
 import os.path
 import shutil
 import json
+import sqlite3
 from process import process_sample, WORKFLOW_CONFIG
 
 '''
@@ -19,6 +20,23 @@ from process import process_sample, WORKFLOW_CONFIG
         args (object): params to be passed to process_sample as a dictionary
 '''
 
+def parse_results(result,result_path,sample_name):
+    conn = sqlite3.connect(os.path.join(result_path,'results.sqlite'))
+    c = conn.cursor()
+
+    c.execute('INSERT INTO samples (name) VALUES (?)',(sample_name,))
+    sample_id = c.execute('SELECT last_insert_rowid()').fetchone()[0]
+
+    if "files" in result:
+        for file in result['files']:
+            c.execute('INSERT INTO files (file_path,sample) VALUES (?,?)',(file,sample_id))
+    if "key-val" in result:
+        for key,val in result['key-val'].items():
+            c.execute('INSERT INTO key_val (key,data,sample) VALUES (?,?,?)',(key,val,sample_id))
+    conn.commit()
+    c.close()
+    conn.close()
+
 if __name__ == "__main__":
 
     with open("params.json",'r') as fin:
@@ -33,10 +51,4 @@ if __name__ == "__main__":
                             sample_path,
                             args)
 
-    if WORKFLOW_CONFIG['output_type'] == 'file':
-        shutil.move(result,os.path.join(result_path,sample_name + "_" + result))
-    elif WORKFLOW_CONFIG['output_type'] == 'csv':
-        file_path = os.path.join(result_path,
-                                 sample_name + "_" + os.path.basename(sample_name) + ".json")
-        with open(file_path,"w") as fout:
-            json.dump(result, fout)
+    parse_results(result,result_path,sample_name)

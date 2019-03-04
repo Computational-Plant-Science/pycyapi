@@ -91,7 +91,8 @@ class ClusterSide:
         executor = SingleJobExecutor(collection,workflow,server)
         self.server.update_status(self.server.OK, "Running")
         executor.process()
-        executor.reduce()
+        result_path = executor.reduce()
+        self.server.update_job({'remote_results_path': results_path})
         self.server.task_complete(self.config['task_pk'])
 
 def cli():
