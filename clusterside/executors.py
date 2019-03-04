@@ -1,12 +1,67 @@
 import os
+from os.path import join, basename, abspath
 import json
 import subprocess
 import csv
+import sqlite3
+import zipfile
+import shutil
+
 from multiprocessing import Pool, TimeoutError
 from functools import partial
 
 from .data import Workflow, Collection
 from .comms import Comms
+
+def reduce_files(c,sample_path,result_path):
+    if not c.execute("SELECT * FROM files limit 1").fetchone():
+        return False
+
+    res = c.execute(
+           '''SELECT name,file_path FROM samples
+              INNER JOIN files ON samples.id = files.sample'''
+           )
+
+    os.mkdir(join(result_path,'files'))
+
+    for file in res:
+        sample_name = file[0]
+        file_path = file[1]
+
+        shutil.move(join(sample_path,sample_name,file_path),
+                    join(result_path,
+                         'files',
+                         '%s_%s'%(sample_name,basename(file_path))))
+
+    return True
+
+def reduce_csv(c,result_path):
+    if not c.execute("SELECT * FROM key_val limit 1").fetchone():
+        return False
+
+    res = c.execute("SELECT DISTINCT key from key_val")
+    column_headers = ['sample'] + [key[0] for key in res]
+
+    with open(result_path,'w') as outfile:
+        writer = csv.DictWriter(outfile,fieldnames = column_headers, restval='NULL')
+        writer.writeheader()
+
+        for s in  c.execute("SELECT name FROM samples").fetchall():
+            sample = s[0]
+
+            res = c.execute(
+                   '''SELECT key,data FROM samples
+                      INNER JOIN key_val ON samples.id = key_val.sample
+                      WHERE samples.name = ?''',(sample,)
+                   )
+
+            row = {}
+            row['sample'] = sample
+            for key_val in res:
+                row[key_val[0]] = key_val[1]
+            writer.writerow(row)
+
+    return True
 
 class Executor():
 
@@ -19,6 +74,35 @@ class Executor():
         if not os.path.exists(results_folder_path):
             os.mkdir(results_folder_path)
         self.results_folder_path = os.path.abspath(results_folder_path)
+
+        self.sqlite = sqlite3.connect(join(results_folder_path,'results.sqlite'))
+        c = self.sqlite.cursor()
+        c.execute('''
+                  CREATE TABLE samples(
+                    id INTEGER PRIMARY KEY,
+                    name TEXT
+                  );
+        ''')
+        c.execute('''
+                  CREATE TABLE files(
+                    file_path TEXT,
+                    sample INTEGER,
+                    FOREIGN KEY(sample) REFERENCES samples(id)
+                  );
+        ''')
+        c.execute('''
+                  CREATE TABLE key_val(
+                    key TEXT,
+                    data TEXT,
+                    sample INTEGER,
+                    FOREIGN KEY(sample) REFERENCES samples(id)
+                  );
+        ''')
+        self.sqlite.commit()
+        c.close()
+
+    def __del__(self):
+        self.sqlite.close()
 
     def process(self):
         raise NotImplementedError
@@ -88,23 +172,25 @@ class Executor():
                 fout.write(ret.stderr.decode("utf-8"))
 
     def reduce(self):
-        if self.workflow.output_type == 'csv':
-            self.reduce_csv()
+        '''
+            Collects the data in the sqllite database into a single file.
 
-    def reduce_csv(self):
-        dir_files = [os.path.join(self.results_folder_path,file) for file in os.listdir(self.results_folder_path)]
+            Returns (str): absolute path to the collated results.
+        '''
+        c = self.sqlite.cursor()
 
-        with open(dir_files[0],'r') as fin:
-            data = json.load(fin)
-            fieldnames = data.keys()
+        #Check for files
+        folder_path = join(self.results_folder_path,'results')
+        os.mkdir(folder_path)
 
-        with open('results.csv','w', newline='') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writeheader()
-            for file in dir_files:
-                with open(file,'r') as fin:
-                    writer.writerow(json.load(fin))
+        includes_files = reduce_files(c,os.getcwd(),folder_path)
+        reduce_csv(c,join(folder_path,'results.csv'))
 
+        if includes_files:
+            shutil.make_archive('results', 'zip', folder_path)
+            return abspath('./results.zip')
+        else:
+            return join(folder_path,'results.csv')
 
 class SingleJobExecutor(Executor):
     '''
