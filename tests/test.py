@@ -3,11 +3,6 @@ from clusterside.data import Collection, Workflow
 from clusterside.comms import STDOUTComms
 
 process_file = '''
-WORKFLOW_CONFIG = {
-    'singularity_url': "shub://frederic-michaud/python3",
-    'api_version': 0.1,
-}
-
 def process_sample(name,path,args):
     from pathlib import Path
     Path('a_really_awecsome_file.txt').touch()
@@ -36,6 +31,8 @@ sample_file = '''
 workflow_file = '''
 {
 	"server_url": "http://localhost/jobs/api/",
+    "singularity_url": "shub://frederic-michaud/python3",
+    "api_version": 0.1,
 	"auth_token": "asdf",
 	"job_pk": 2,
 	"parameters": {}
@@ -51,9 +48,8 @@ with open("workflow.json", "w") as fout:
 with open("process.py", "w") as fout:
     fout.write(process_file)
 
-from process import WORKFLOW_CONFIG
 collection = Collection("samples.json")
-workflow = Workflow(WORKFLOW_CONFIG,"workflow.json")
+workflow = Workflow("workflow.json")
 server = STDOUTComms()
 
 executor = SingleJobExecutor(collection, workflow, server)

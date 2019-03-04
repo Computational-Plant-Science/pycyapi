@@ -85,12 +85,12 @@ class Workflow():
             server_url (str): The url to the webserver REST api
             args (dict): the arguments that are passed to process_sample
     '''
-    def __init__(self, config, json_file):
+    def __init__(self, json_file):
         with open(json_file,"r") as fin:
             params = json.load(fin)
 
-        self.api_version = config['api_version']
-        self.singularity_url = config['singularity_url']
+        self.api_version = params['api_version']
+        self.singularity_url = params['singularity_url']
         self.auth_token = params['auth_token']
         self.job_pk = params['job_pk']
         self.server_url = params['server_url']

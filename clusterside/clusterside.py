@@ -73,15 +73,8 @@ class ClusterSide:
             Run the job task
         """
 
-        try:
-            sys.path.append(os.getcwd())
-            from process import WORKFLOW_CONFIG
-        except Exception as error:
-            self.server.update_status(self.server.FAILED, str(error))
-            exit()
-
         collection = Collection("samples.json")
-        workflow = Workflow(WORKFLOW_CONFIG,"workflow.json")
+        workflow = Workflow("workflow.json")
         server = RESTComms(url=workflow.server_url,
                             headers={
                                 "Authorization": "Token "  + workflow.auth_token
