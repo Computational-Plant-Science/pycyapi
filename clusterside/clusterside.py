@@ -72,21 +72,23 @@ class ClusterSide:
         """
             Run the job task
         """
+        try:
+            collection = Collection("samples.json")
+            workflow = Workflow("workflow.json")
+            server = RESTComms(url=workflow.server_url,
+                                headers={
+                                    "Authorization": "Token "  + workflow.auth_token
+                                },
+                                job_pk=workflow.job_pk)
 
-        collection = Collection("samples.json")
-        workflow = Workflow("workflow.json")
-        server = RESTComms(url=workflow.server_url,
-                            headers={
-                                "Authorization": "Token "  + workflow.auth_token
-                            },
-                            job_pk=workflow.job_pk)
-
-        executor = SingleJobExecutor(collection,workflow,server)
-        self.server.update_status(self.server.OK, "Running")
-        executor.process()
-        result_path = executor.reduce()
-        self.server.update_job({'remote_results_path': result_path})
-        self.server.task_complete(self.config['task_pk'])
+            executor = SingleJobExecutor(collection,workflow,server)
+            self.server.update_status(self.server.OK, "Running")
+            executor.process()
+            result_path = executor.reduce()
+            self.server.update_job({'remote_results_path': result_path})
+            self.server.task_complete(self.config['task_pk'])
+        except Exception as error:
+            self.server.update_status(self.server.FAILED, str(error))
 
 def cli():
     '''
