@@ -13,6 +13,7 @@ def sample_factory(name,props):
     if props['storage'] == 'irods':
         return iRODSSample(name,props['path'])
 
+
 class Sample():
     '''
         A sample to be processed by process_sample
@@ -116,3 +117,20 @@ class Collection():
         """
         for name,sample in self.__samples__.items():
             yield sample_factory(name,sample)
+
+
+def upload_file(local_path,irods_path):
+    '''
+        Test method for uploading results right back to irods
+    '''
+    try:
+        env_file = os.environ['IRODS_ENVIRONMENT_FILE']
+    except KeyError:
+        env_file = os.path.expanduser('~/.irods/irods_environment.json')
+
+    session  = iRODSSession(irods_env_file=env_file)
+
+    if os.path.isfile(local_path):
+        session.data_objects.put(local_path, irods_path)
+    else:
+        raise FileNotFoundError(local_path + " Does not exist")

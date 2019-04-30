@@ -8,7 +8,7 @@ import argparse
 import json
 import sys
 
-from clusterside.data import Collection, Workflow
+from clusterside.data import Collection, Workflow, upload_file
 from clusterside.comms import RESTComms
 from clusterside.executors import SingleJobExecutor
 
@@ -85,7 +85,15 @@ class ClusterSide:
             self.server.update_status(self.server.OK, "Running")
             executor.process()
             result_path = executor.reduce()
-            self.server.update_job({'remote_results_path': result_path})
+
+            # TODO: This is to test the upload system, a more robust system,
+            # supporting multiple file servers will need to be added later
+            remote_results_path = os.path.join("/tempZone/home/rods/",
+                                               os.path.basename(results_path))
+            upload_file(results_path,remote_results_path)
+            server.update_job({'remote_results_path':
+                                 "irods://"+remote_results_path})
+
             self.server.task_complete(self.config['task_pk'])
         except Exception as error:
             self.server.update_status(self.server.FAILED, str(error))

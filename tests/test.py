@@ -15,15 +15,15 @@ sample_file = '''
 {
 	"Sample1": {
 		"storage": "irods",
-		"path": "/tempZone/home/rods/DSC_0002.JPG"
+		"path": "/tempZone/home/rods/DSC_0006.JPG"
 	},
 	"Sample2": {
 		"storage": "irods",
-		"path": "/tempZone/home/rods/DSC_0003.JPG"
+		"path": "/tempZone/home/rods/DSC_0007.JPG"
 	},
 	"Sample3": {
 		"storage": "irods",
-		"path": "/tempZone/home/rods/DSC_0004.JPG"
+		"path": "/tempZone/home/rods/DSC_0009.JPG"
 	}
 }
 '''
@@ -55,5 +55,15 @@ server = STDOUTComms()
 executor = SingleJobExecutor(collection, workflow, server)
 executor.process()
 results_path = executor.reduce()
-server.update_job({'remote_results_path': results_path})
+
+import os
+from clusterside.data import upload_file
+remote_results_path = os.path.join("/tempZone/home/rods/",
+                                  os.path.basename(results_path))
+upload_file(results_path,remote_results_path)
+
+server.update_job({'remote_results_path':
+                     "irods://"+remote_results_path})
+
+
 server.task_complete(1)
