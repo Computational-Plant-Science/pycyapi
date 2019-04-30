@@ -84,7 +84,7 @@ class ClusterSide:
             executor = SingleJobExecutor(collection,workflow,server)
             self.server.update_status(self.server.OK, "Running")
             executor.process()
-            result_path = executor.reduce()
+            results_path = executor.reduce()
 
             # TODO: This is to test the upload system, a more robust system,
             # supporting multiple file servers will need to be added later
