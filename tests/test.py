@@ -13,18 +13,23 @@ def process_sample(name,path,args):
 
 sample_file = '''
 {
-	"Sample1": {
-		"storage": "irods",
-		"path": "/tempZone/home/rods/DSC_0006.JPG"
-	},
-	"Sample2": {
-		"storage": "irods",
-		"path": "/tempZone/home/rods/DSC_0007.JPG"
-	},
-	"Sample3": {
-		"storage": "irods",
-		"path": "/tempZone/home/rods/DSC_0009.JPG"
-	}
+    "name": "TestCollection",
+    "storage_type": "irods",
+    "base_file_path": "/tempZone/home/rods/",
+    "sample_set":{
+    	"Sample1": {
+    		"storage": "irods",
+    		"path": "/tempZone/home/rods/DSC_0006.JPG"
+    	},
+    	"Sample2": {
+    		"storage": "irods",
+    		"path": "/tempZone/home/rods/DSC_0007.JPG"
+    	},
+    	"Sample3": {
+    		"storage": "irods",
+    		"path": "/tempZone/home/rods/DSC_0009.JPG"
+    	}
+    }
 }
 '''
 
@@ -58,12 +63,12 @@ results_path = executor.reduce()
 
 import os
 from clusterside.data import upload_file
-remote_results_path = os.path.join("/tempZone/home/rods/",
-                                  os.path.basename(results_path))
+
+_, file_extension = os.path.splitext(results_path)
+remote_results_path = os.path.join(collection.base_file_path,
+                                   "results_job%d%s"%(workflow.job_pk,file_extension))
 upload_file(results_path,remote_results_path)
 
-server.update_job({'remote_results_path':
-                     "irods://"+remote_results_path})
-
+server.update_job({'remote_results_path': remote_results_path})
 
 server.task_complete(1)

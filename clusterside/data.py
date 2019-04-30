@@ -109,7 +109,11 @@ class Collection():
                     about the samples
         '''
         with open(json_file,"r") as fin:
-            self.__samples__ = json.load(fin)
+            data = json.load(fin)
+            self.name = data['name']
+            self.storage_type = data['storage_type']
+            self.base_file_path = data['base_file_path']
+            self.__samples__ = data['sample_set']
 
     def samples(self):
         """
