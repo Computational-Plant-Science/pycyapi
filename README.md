@@ -8,7 +8,7 @@ Code is currently in testing, not ready for production use.
 Installation (For testing)
 --------
 ```
-pip3 install https://github.com/Computational-Plant-Science/DIRT2_ClusterSide
+pip3 install --user git+https://github.com/Computational-Plant-Science/DIRT2_ClusterSide
 ```
 
 TODO
