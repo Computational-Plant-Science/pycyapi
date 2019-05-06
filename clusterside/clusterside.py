@@ -3,6 +3,7 @@
 """
 import stat
 import os
+import shutil
 import subprocess
 import argparse
 import json
@@ -29,8 +30,6 @@ class ClusterSide:
         """
             Main Program Function
         """
-
-
         with open("workflow.json", 'r') as fin:
             self.config = json.load(fin)
 
@@ -48,8 +47,15 @@ class ClusterSide:
                 args: command line input arguments to parse
         """
         script_name = "./submit_%d.sh"%(self.config['job_pk'],)
-        with open(script_name, 'w') as fout:
+
+        template_path = os.path.expanduser('~/.clusterside/submit_template.sh')
+        if os.path.isfile(template_path):
+            shutil.copy(template_path, script_name)
+
+        with open(script_name, 'a+') as fout:
+            fout.write("\n")
             fout.write("clusterside run")
+
         os.chmod(script_name,
                  stat.S_IRUSR | stat.S_IXUSR)
 
