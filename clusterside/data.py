@@ -4,19 +4,29 @@ from irods.session import iRODSSession
 
 def sample_factory(name,props):
     '''
-        name: name of sample
-        props: {
-            'storage': "irods" | "local"
-            'path': 'path_to_sample'
-        }
-    '''
-    if props['storage'] == 'irods':
-        return iRODSSample(name,props['path'])
+        Create a sample python object for a dictionary of sample
+        properties.
 
+        Currently, "irods" is the only valid storage type.
+
+        Args:
+            name (str): name of sample
+            props (dict): {
+                'storage': "irods"
+                'path': 'path_to_sample'
+            }
+    '''
+    storage_type = props['storage']
+    if storage_type == 'irods':
+        return iRODSSample(name,props['path'])
+    else:
+        raise ValueError("'irods' is the only supported storage type, got %s" % storage_type)
 
 class Sample():
     '''
-        A sample to be processed by process_sample
+        A base sample object.
+
+        Samples are to be processed by process_sample
 
         Attributes:
             name (str): sample name
@@ -36,7 +46,12 @@ class Sample():
         return "%s @ %s" % (self.name, self.path)
 
 class iRODSSample(Sample):
+    '''
+        An irods sample object.
 
+        The sample is downloaded from irods before being processed by
+        process_sample.
+    '''
     def __init__(self, name, path, env_file = None):
         super().__init__(name,path)
 

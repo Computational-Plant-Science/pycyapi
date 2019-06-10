@@ -53,7 +53,12 @@ class Comms:
         pass
 
 class STDOUTComms(Comms):
+    '''
+        Prints all server communication to the command line.
 
+        Does not actually connect to a server for communication, used for 
+        testing, see tests/test.py for an example.
+    '''
     def status_str(self,status):
         if status == self.OK:
             return "OK"
