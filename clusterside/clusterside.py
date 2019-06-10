@@ -39,12 +39,9 @@ class ClusterSide:
                             },
                             job_pk=self.config['job_pk'])
 
-    def submit(self, script_template):
+    def submit(self):
         """
             Submit a job to the cluster
-
-            Args:
-                args: command line input arguments to parse
         """
         script_name = "./submit_%d.sh"%(self.config['job_pk'],)
 
@@ -78,6 +75,7 @@ class ClusterSide:
         """
             Run the job task
         """
+
         try:
             collection = Collection("samples.json")
             workflow = Workflow("workflow.json")

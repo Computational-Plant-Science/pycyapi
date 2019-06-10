@@ -14,6 +14,16 @@ from .data import Workflow, Collection
 from .comms import Comms
 
 def reduce_files(c,sample_path,result_path):
+    '''
+        Copy files from the processed samples into result_path/files
+        to be returned to the user.
+
+        Args:
+            c (sql cursor): The sql connection cursor
+            sample_path (str): path to the individual sample folders
+            result_path (str): path to where to create the "files" directory
+            to save the results.
+    '''
     if not c.execute("SELECT * FROM files limit 1").fetchone():
         return False
 
@@ -35,14 +45,23 @@ def reduce_files(c,sample_path,result_path):
 
     return True
 
-def reduce_csv(c,result_path):
+def reduce_csv(c,result_file):
+    '''
+        Convert the key-pair values returned by the process_sample function
+        calls for each sample into a csv file to be returned to the user.
+
+
+        Args:
+            c (sql cursor): The sql connection cursor
+            result_file (str): filename/path of the file to to save the results in.
+    '''
     if not c.execute("SELECT * FROM key_val limit 1").fetchone():
         return False
 
     res = c.execute("SELECT DISTINCT key from key_val")
     column_headers = ['sample'] + [key[0] for key in res]
 
-    with open(result_path,'w') as outfile:
+    with open(result_file,'w') as outfile:
         writer = csv.DictWriter(outfile,fieldnames = column_headers, restval='NULL')
         writer.writeheader()
 
@@ -64,7 +83,11 @@ def reduce_csv(c,result_path):
     return True
 
 class Executor():
-
+    '''
+        The executor is responsible for running the process_sample function
+        on each of the sample, reducing the results down, and uploading the
+        results back to the irods server.
+    '''
     def __init__(self,collection,workflow,server):
         self.collection = collection
         self.workflow = workflow
@@ -109,6 +132,11 @@ class Executor():
 
     @staticmethod
     def execute(sample, workflow, server, results_folder_path):
+        '''
+            Runs the process_sample function in its given singularity container
+            for each sample. 
+        '''
+
         # TODO: Fix issue where next sample workdir is placed in last sample workdir
         # if last sample failed.
         start_dir = os.getcwd()

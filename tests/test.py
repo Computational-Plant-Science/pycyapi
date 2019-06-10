@@ -1,3 +1,11 @@
+'''
+    This script runs clusterside locally printing all output to the command
+    line (instead of to the PlantIT server).
+
+    It assumes irods is setup using iinit and the sample paths in the
+    sample_file dictionary exist on the irods server.
+'''
+
 from clusterside.executors import SingleJobExecutor
 from clusterside.data import Collection, Workflow
 from clusterside.comms import STDOUTComms
@@ -19,15 +27,15 @@ sample_file = '''
     "sample_set":{
     	"Sample1": {
     		"storage": "irods",
-    		"path": "/tempZone/home/rods/DSC_0006.JPG"
+    		"path": "/tempZone/home/rods/WC2-82.JPG"
     	},
     	"Sample2": {
     		"storage": "irods",
-    		"path": "/tempZone/home/rods/DSC_0007.JPG"
+    		"path": "/tempZone/home/rods/WC2-83.JPG"
     	},
     	"Sample3": {
     		"storage": "irods",
-    		"path": "/tempZone/home/rods/DSC_0009.JPG"
+    		"path": "/tempZone/home/rods/WC2-84.JPG"
     	}
     }
 }
