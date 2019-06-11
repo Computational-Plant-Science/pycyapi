@@ -38,7 +38,11 @@ class Sample():
 
     def get(self, path):
         '''
-            Copy the sample file from
+            Copy the sample file from its source file system.
+
+            Args:
+                path (str): where to place the sample on the local
+                    filesystem.
         '''
         pass
 
@@ -63,28 +67,44 @@ class iRODSSample(Sample):
 
 
     def get(self, to_path = "./"):
+        return self._copy(self.path,to_path)
+
+    def _copy(self,from_path,to_path):
+        '''
+            Copy a file/folder from the irods server
+
+            If a folder path is given for the from_path, it is copied
+            recursively.
+
+            Args:
+                from_path (str): folder path to which to copy the filer/folder
+                to_path (str): folder path on local file system
+                    to put the file/folder
+        '''
         session  = iRODSSession(irods_env_file=self.env_file)
 
-        if session.data_objects.exists(self.path):
-            local_path = os.path.join(to_path, os.path.basename(self.path))
-            session.data_objects.get(self.path, file=local_path)
-        elif session.collections.exists(self.path):
-            if recursive:
-                coll = session.collections.get(self.path)
-                local_path = os.path.join(local_path, os.path.basename(self.path))
-                os.mkdir(local_path)
+        #Collections can not end in a /
+        from_path = from_path.rstrip("/")
 
-                for file_object in coll.data_objects:
-                    get(session, os.path.join(self.path, file_object.path), local_path, True)
-                for collection in coll.subcollections:
-                    get(session, collection.path, local_path, True)
-            else:
-                raise FileNotFoundError("Skipping directory " + self.path)
+        if session.data_objects.exists(from_path):
+            local_path = os.path.join(to_path, os.path.basename(from_path))
+            session.data_objects.get(from_path, file=local_path)
+        elif session.collections.exists(from_path):
+            coll = session.collections.get(from_path)
+            base = from_path.split("/")[-1]
+            local_path = os.path.join(to_path, base)
+            os.mkdir(local_path)
+
+            for file_object in coll.data_objects:
+                self._copy(os.path.join(from_path, file_object.path),
+                           local_path)
+            for collection in coll.subcollections:
+                self._copy(os.path.join(from_path, collection.path),
+                           local_path)
         else:
             raise FileNotFoundError(self.path + " Does not exist")
 
         return local_path
-
 
 class Workflow():
     '''
