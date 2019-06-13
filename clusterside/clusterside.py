@@ -39,13 +39,17 @@ class ClusterSide:
                             },
                             job_pk=self.config['job_pk'])
 
-    def submit(self):
+    def submit(self,script_template):
         """
             Submit a job to the cluster
+
+            Args:
+                script_template (str): Path to the file to use as a template for
+                    creating a the submission script
         """
         script_name = "./submit_%d.sh"%(self.config['job_pk'],)
 
-        template_path = os.path.expanduser('~/.clusterside/submit_template.sh')
+        template_path = os.path.expanduser(script_template)
         if os.path.isfile(template_path):
             shutil.copy(template_path, script_name)
 
