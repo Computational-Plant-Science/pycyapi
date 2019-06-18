@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(name='clusterside',
-      version='0.0.2',
+      version='0.0.3',
       description='Bridge between the DIRT2 web platform and the cluster.',
       author='Chris Cotter',
       author_email='cotter@uga.edu',
