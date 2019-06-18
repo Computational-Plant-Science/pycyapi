@@ -169,7 +169,17 @@ class Executor():
                     stderr=subprocess.PIPE)
             except Exception as error:
                 server.update_status(server.FAILED,
-                    "Failed during running workflow.PRE_COMMANDS" + str(error))
+                    "Failed during running workflow.PRE_COMMANDS: " + str(error))
+                return
+
+            if ret.returncode != 0:
+                if ret.stderr:
+                    server.update_status(server.FAILED, ret.stderr.decode("utf-8"))
+                elif ret.stdout:
+                    server.update_status(server.FAILED, ret.stdout.decode("utf-8"))
+                else:
+                    server.update_status(server.FAILED,
+                                             "Unknown error occurred while running pre commands")
                 return
 
         try:
@@ -194,7 +204,6 @@ class Executor():
         if ret.returncode == 0:
             #Finished without error
             server.update_status(server.OK, "%s done."%(sample))
-            pass
         else:
             if ret.stderr:
                 server.update_status(server.FAILED, ret.stderr.decode("utf-8"))
@@ -203,6 +212,7 @@ class Executor():
             else:
                 server.update_status(server.FAILED,
                                          "Unknown error occurred while running singularity")
+            return
 
         if ret.stdout:
             with open("log.out", 'w') as fout:
