@@ -119,6 +119,12 @@ class Workflow():
                 to the web server via the REST API
             job_pk (int): the job pk
             server_url (str): The url to the webserver REST api
+            pre_commands (list): command line parameters to be run before
+                the singularity container starts. Should be a list in the
+                format used by subprocess.run.
+            singularity_flags (list): flags added to the `singularity exec`
+                command that runs the workflow's container. Should be a list
+                in the format used by subprocess.run.
             args (dict): the arguments that are passed to process_sample
     '''
     def __init__(self, json_file):
@@ -130,7 +136,8 @@ class Workflow():
         self.auth_token = params['auth_token']
         self.job_pk = params['job_pk']
         self.server_url = params['server_url']
-
+        self.pre_commands = params.get('pre_commands',None)
+        self.singularity_flags = params.get('singularity_flags', [])
         self.args = params['parameters']
 
 class Collection():

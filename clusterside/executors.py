@@ -134,7 +134,7 @@ class Executor():
     def execute(sample, workflow, server, results_folder_path):
         '''
             Runs the process_sample function in its given singularity container
-            for each sample. 
+            for each sample.
         '''
 
         # TODO: Fix issue where next sample workdir is placed in last sample workdir
@@ -161,10 +161,22 @@ class Executor():
         with open(os.path.join(workdir,'params.json'),'w') as fout:
             json.dump(params, fout)
 
-        #TODO: deal with self.server calls
+        if(workflow.pre_commands):
+            try:
+                cmd = [s.format(workdir=workdir) for s in workflow.pre_commands]
+                ret = subprocess.run(cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE)
+            except Exception as error:
+                server.update_status(server.FAILED,
+                    "Failed during running workflow.PRE_COMMANDS" + str(error))
+                return
+
         try:
+            extra_flags = [s.format(workdir=workdir) for s in workflow.singularity_flags]
             ret = subprocess.run(["singularity",
-                                  "exec",
+                                  "exec"
+                                  ] + extra_flags + [
                                   "--containall",
                                   "--home", workdir,
                                   "--bind", "%s:/user_code/"%(os.getcwd()),

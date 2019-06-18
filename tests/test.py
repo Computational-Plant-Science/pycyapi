@@ -27,15 +27,15 @@ sample_file = '''
     "sample_set":{
     	"Sample1": {
     		"storage": "irods",
-    		"path": "/tempZone/home/rods/WC2-82.JPG"
+    		"path": "/tempZone/home/rods/24-74-2.png"
     	},
     	"Sample2": {
     		"storage": "irods",
-    		"path": "/tempZone/home/rods/WC2-83.JPG"
+    		"path": "/tempZone/home/rods/24-77-1.png"
     	},
     	"Sample3": {
     		"storage": "irods",
-    		"path": "/tempZone/home/rods/WC2-84.JPG"
+    		"path": "/tempZone/home/rods/24-9-2.png"
     	}
     }
 }
@@ -48,7 +48,9 @@ workflow_file = '''
     "api_version": 0.1,
 	"auth_token": "asdf",
 	"job_pk": 2,
-	"parameters": {}
+	"parameters": {},
+    "pre_commands": ["singularity", "image.create", "{workdir}/file.img"],
+    "singularity_flags": ["--overlay", "{workdir}/file.img"]
 }
 '''
 
