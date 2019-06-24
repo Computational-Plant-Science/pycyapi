@@ -11,7 +11,8 @@ from process import process_sample
     Wrapper for the workflow code. Run within the workflow's singularity container.
 
     Loads in the data about the sample to be processed by the workflow, calls
-    the workflows's process_sample function, then deals with the workflow results.
+    the workflows's process_sample function, then saves the results to
+    the sqlite database.
 
     The sample data json file (params.json) should contain:
         sample_name (str): the name of the sample
@@ -21,6 +22,18 @@ from process import process_sample
 '''
 
 def parse_results(result,result_path,sample_name):
+    '''
+        Parses the dictionary returned by the workflow's process function.
+
+        Saves key-val pairs and results files to the sqlite results database
+
+        Args:
+            result (dict): The dictionary returned by the workflow's
+                process function.
+            result_path (str): the base result path for all samples being
+                analyzed.
+            sample_name (str): the name of the sample.
+    '''
     conn = sqlite3.connect(os.path.join(result_path,'results.sqlite'))
     c = conn.cursor()
 
@@ -38,7 +51,6 @@ def parse_results(result,result_path,sample_name):
     conn.close()
 
 if __name__ == "__main__":
-
     with open("params.json",'r') as fin:
         data = json.load(fin)
 

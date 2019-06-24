@@ -6,6 +6,12 @@ import json
 import requests
 
 class Comms:
+    '''
+        Base class for communications.
+
+        Comms classes handle passing information about the job progress back
+        to the web server.
+    '''
     #Possible Status States
     OK = 3
     WARN = 4
@@ -16,7 +22,8 @@ class Comms:
             Update job status.
 
             Args:
-                status (Comms.STATES): Job state after this update
+                status (int): Status State. Must be one of (Comms.OK,
+                Comms.WARN, or COMMS.FAIL)
                 url (str): url for server REST API
                 description (str): Status description string. Descriptions
                     greater than 150 characters are truncated to
@@ -56,7 +63,7 @@ class STDOUTComms(Comms):
     '''
         Prints all server communication to the command line.
 
-        Does not actually connect to a server for communication, used for 
+        Does not actually connect to a server for communication, used for
         testing, see tests/test.py for an example.
     '''
     def status_str(self,status):
@@ -85,6 +92,15 @@ class RESTComms(Comms):
     """
 
     def __init__(self, url, job_pk, headers=None):
+        '''
+            Args:
+                url (str): The base url for the plant it REST API
+                    (<hostname>/apis/v1/ in the default Plant IT configuration)
+                job_pk (int): pk of the Plant IT job that started clusterside.
+                headers (dict): Headers to include in communction with REST API.
+                    see `[headers]<https://2.python-requests.org/en/master/user/quickstart/#custom-headers>`_
+                    for details.
+        '''
         self.url = url + "jobs/%d/"%(job_pk,)
 
         if headers is None:

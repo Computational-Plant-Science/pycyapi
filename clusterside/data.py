@@ -1,3 +1,8 @@
+'''
+    Handling of communication with file servers.
+
+    Currently only iRODS is supported. 
+'''
 import json
 import os
 from irods.session import iRODSSession
