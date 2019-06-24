@@ -1,5 +1,5 @@
 """
-    Bridge between the DIRT2 web platform and the cluster.
+    Command line interface and logic.
 """
 import stat
 import os
@@ -15,7 +15,7 @@ from clusterside.executors import SingleJobExecutor
 
 class ClusterSide:
     """
-        Bridge between the DIRT2 web platform and the cluster.
+        Command line interface and logic.
     """
 
     # Configuration loaded form the Job config json file. Populated by main()
@@ -77,7 +77,7 @@ class ClusterSide:
 
     def run(self):
         """
-            Run the job task
+            Run the workflow analysis
         """
 
         try:
@@ -109,6 +109,8 @@ class ClusterSide:
 def cli():
     '''
         Clusterside Command line interface
+
+        Called by default if clusterside is run from the command line. 
     '''
     parser = argparse.ArgumentParser(
         description='The Cluster Side Component of the DIRT2 Webplatform'

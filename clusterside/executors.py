@@ -1,3 +1,18 @@
+'''
+    Executes the workflow code.
+
+    Executors are responsible for applying the workflow process function
+    to each sample. Parallelizing that process, and combining the results
+    from the analysis of each sample into a single results file (or zip).
+
+    Currently, the only supported executor is :class:`SingleJobExecutor`
+    which parallelizes sample processing over multiple CPU processes.
+
+    To parallize sample processing over multiple cluster jobs,
+    :class:`Executor` could be extended to submit these jobs, wait until
+    they are complete, then combine the results as  :class:`SingleJobExecutor`
+    does between processes.
+'''
 import os
 from os.path import join, basename, abspath
 import json
@@ -84,11 +99,32 @@ def reduce_csv(c,result_file):
 
 class Executor():
     '''
-        The executor is responsible for running the process_sample function
+        The executor is responsible for running the `process_sample` function
         on each of the sample, reducing the results down, and uploading the
         results back to the irods server.
+
+        Results from each `process_sample` call are saved in a separate
+        folder and logged in the the results.sqlite database. The information
+        in the sqlite database is then used to collate the results from
+        all process calls to create the final zip file returned to the user.
+
+        Attributes:
+            collection (:class:`data.collection`): Collection data.
+            workflow (:class:`data.workflow`): workflow data.
+            server (:class:`comms.Comms`): The communcation object to use
+                to communicate with the cluster.
+            results_folder_path (str): The folder results files will be placed.
+                (results_folder_path = abspath("./results"))
+            sqlite (sqlite connection): Connection to sqlite results database
     '''
     def __init__(self,collection,workflow,server):
+        '''
+            Args:
+                collection (:class:`data.collection`): Collection data.
+                workflow (:class:`data.workflow`): workflow data.
+                server (:class:`comms.Comms`): The communication object to use
+                    to communicate with the cluster.
+        '''
         self.collection = collection
         self.workflow = workflow
         self.server = server
@@ -128,13 +164,31 @@ class Executor():
         self.sqlite.close()
 
     def process(self):
+        '''
+            Called to begin the execution of the workflow.
+
+            This should be overridden by extending classes.
+
+            The extending class must execute :meth:`execute` for each
+            sample in :attr:`collection`. How `execute` is called is up to the
+            extending class.  For example :class:`SingleJobExecutor` uses a
+            parallel pool to run execute. 
+        '''
         raise NotImplementedError
 
     @staticmethod
     def execute(sample, workflow, server, results_folder_path):
         '''
-            Runs the process_sample function in its given singularity container
-            for each sample.
+            Runs the `process_sample` function in its given singularity container
+            for for the given sample.
+
+            Args:
+                sample (:class:`data.Sample`): The sample to process.
+                workflow (:class:`data.workflow`): workflow data.
+                server (:class:`comms.Comms`): The communcation object to use
+                    to communicate with the cluster.
+                results_folder_path (str): The folder where results files
+                    will be placed.
         '''
 
         # TODO: Fix issue where next sample workdir is placed in last sample workdir
