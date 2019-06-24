@@ -1,5 +1,13 @@
 """
     Command line interface and logic.
+
+    Provides the command line commands of:
+
+    **clusterside submit:** Creates a submit file containing the
+    `clusterside run` command and submits the file using qsub.
+
+    **clusterside run:** Runs the analysis. This should be called inside a
+    cluster job, as done by `clusterside submit`.
 """
 import stat
 import os
@@ -45,7 +53,8 @@ class ClusterSide:
 
             Args:
                 script_template (str): Path to the file to use as a template for
-                    creating a the submission script
+                    creating a the submission script.
+                    (See :ref:`configuration-submit-template`)
         """
         script_name = "./submit_%d.sh"%(self.config['job_pk'],)
 
@@ -110,7 +119,7 @@ def cli():
     '''
         Clusterside Command line interface
 
-        Called by default if clusterside is run from the command line. 
+        Called by default if clusterside is run from the command line.
     '''
     parser = argparse.ArgumentParser(
         description='The Cluster Side Component of the DIRT2 Webplatform'

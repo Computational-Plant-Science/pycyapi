@@ -23,15 +23,18 @@ Clusterside currently only supports one file system. The one configured to work 
 
 Documentation
 ---------
+
+Full Documentation: [Link](https://plant-it-clusterside.readthedocs.io/en/latest/)
+
 Clusterside provides two commands:
 
 ## `clusterside submit`
 Creates a submit file containing the `clusterside run` command
 and submits the file using qsub.
 
-If the file `$HOME/.clusterside/submit_template.sh` exists, the `clusterside run`
+If the file `$HOME/.clusterside/submit.sh` exists, the `clusterside run`
 command is appended to the bottom of that file, then submitted. This is
-useful for setting cluster settings. An example `$HOME/.clusterside/submit_template.sh`
+useful for setting cluster settings. An example `$HOME/.clusterside/submit.sh`
 may look like:
 
 ```
