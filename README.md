@@ -4,32 +4,44 @@ This repository contains the code that submits and runs jobs on compute
 clusters using qsub and collects the results to return them back to the
 PlantIT web server.
 
-Installation
---------
+Cluster Installation
+---------------------
 To install clusterside on a cluster, run:
 
 ```
 pip3 install --user git+https://github.com/Computational-Plant-Science/DIRT2_ClusterSide
 ```
 
-on the cluster.
+on the cluster under the the user that Plant IT will use to login and submit jobs.
 
-Clusterside expects an irods icommands to be installed and irods already
+Clusterside expects [irods icommands](https://wiki.cyverse.org/wiki/display/DS/Setting+Up+iCommands) to be installed and irods already
 configured to connect to the file server using the `iinit` command. Clusterside
-reads in the configuration created by `iinit` to connect to the irods server.
+reads in the configuration created by `iinit` to connect to the iRODS server. Configuration information for CyVerse iRODS is available [here](https://wiki.cyverse.org/wiki/display/DS/Setting+Up+iCommands).
 
+#### Note:
+Clusterside currently only supports one file system. The one configured to work with icommands.
 
 Documentation
 ---------
+
+Full Documentation: [Link](https://plant-it-clusterside.readthedocs.io/en/latest/)
+
+Documentation can be built using
+
+```
+cd docs
+make html
+```
+
 Clusterside provides two commands:
 
 ## `clusterside submit`
 Creates a submit file containing the `clusterside run` command
 and submits the file using qsub.
 
-If the file ~/.clusterside/submit_template.sh` exists, the `clusterside run`
+If the file `$HOME/.clusterside/submit.sh` exists, the `clusterside run`
 command is appended to the bottom of that file, then submitted. This is
-useful for setting cluster settings. An example `~/.clusterside/submit_template.sh`
+useful for setting cluster settings. An example `$HOME/.clusterside/submit.sh`
 may look like:
 
 ```
@@ -65,4 +77,4 @@ See `tests/test.py` for an example of the files required for `clusterside run`.
 Tests are written in pytest and can be run usng: `python3 -m pytest`
 
 The `python3 test/test.py` script can also be run to test clusterside, but requires
-irods to be setup on the system.
+irods to be setup on the system, and the sample file paths to exist on the irods server
