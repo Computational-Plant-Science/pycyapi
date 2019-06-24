@@ -182,6 +182,10 @@ class Executor():
             Runs the `process_sample` function in its given singularity container
             for for the given sample.
 
+            Errors caused by running the process_sample function or
+            while trying to run the singularity container are caught
+            by execute and passed to the server as a WARN status message.
+
             Args:
                 sample (:class:`data.Sample`): The sample to process.
                 workflow (:class:`data.workflow`): workflow data.
@@ -191,8 +195,6 @@ class Executor():
                     will be placed.
         '''
 
-        # TODO: Fix issue where next sample workdir is placed in last sample workdir
-        # if last sample failed.
         start_dir = os.getcwd()
         workdir = sample.name
 

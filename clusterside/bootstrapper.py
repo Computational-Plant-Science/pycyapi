@@ -59,12 +59,9 @@ if __name__ == "__main__":
     result_path = "/results/"
     args = data['args']
 
-    try:
-        result = process_sample(sample_name,
-                                sample_path,
-                                args)
-    except:
-        #Tell the executor that there was an error in processing the sample.
-        exit(1)
+
+    result = process_sample(sample_name,
+                            sample_path,
+                            args)
 
     parse_results(result,result_path,sample_name)
