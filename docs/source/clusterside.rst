@@ -1,6 +1,10 @@
 clusterside
 ============
 
+.. automodule:: clusterside
+    :members:
+    :show-inheritance:
+
 Submodules
 ----------
 
@@ -29,13 +33,5 @@ clusterside\.executors module
 -----------------------------
 
 .. automodule:: clusterside.executors
-    :members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: clusterside
     :members:
     :show-inheritance:

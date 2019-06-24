@@ -8,12 +8,20 @@ operations.
   Python 3.6 or greater is required to run clusterside commands.
 
 .. Attention::
-  Clusterside only supports job submitting via the PBS `qsub` command.
+  Clusterside currently only supports job submitting via the PBS `qsub` command.
 
 .. Attention::
-  Clusterside only 1 remote file system, the one configured via
-  the irods icommand `iinit` for the user under which clusterside is run. 
+  Clusterside currently only supports 1 remote file system, the one configured via
+  the irods icommand `iinit` for the user under which clusterside is run.
 
+.. Note::
+  clusterside supports two undocumented `WORKFLOW_CONFIG` params:
+
+  * `pre_commands`: run command line programs before starting the singularity
+    container
+  * `singularity_flags`: pass extra flags to `singularity exec`
+
+  see :mod:`clusterside` for more details.
 
 .. toctree::
    :maxdepth: 2

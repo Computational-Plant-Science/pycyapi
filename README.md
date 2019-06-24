@@ -26,6 +26,13 @@ Documentation
 
 Full Documentation: [Link](https://plant-it-clusterside.readthedocs.io/en/latest/)
 
+Documentation can be built using
+
+```
+cd docs
+make html
+```
+
 Clusterside provides two commands:
 
 ## `clusterside submit`
