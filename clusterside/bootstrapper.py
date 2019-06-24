@@ -59,6 +59,7 @@ if __name__ == "__main__":
     result_path = "/results/"
     args = data['args']
 
+
     result = process_sample(sample_name,
                             sample_path,
                             args)

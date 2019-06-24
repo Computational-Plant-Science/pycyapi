@@ -172,7 +172,7 @@ class Executor():
             The extending class must execute :meth:`execute` for each
             sample in :attr:`collection`. How `execute` is called is up to the
             extending class.  For example :class:`SingleJobExecutor` uses a
-            parallel pool to run execute. 
+            parallel pool to run execute.
         '''
         raise NotImplementedError
 
@@ -181,6 +181,10 @@ class Executor():
         '''
             Runs the `process_sample` function in its given singularity container
             for for the given sample.
+
+            Errors caused by running the process_sample function or
+            while trying to run the singularity container are caught
+            by execute and passed to the server as a WARN status message.
 
             Args:
                 sample (:class:`data.Sample`): The sample to process.
@@ -191,8 +195,6 @@ class Executor():
                     will be placed.
         '''
 
-        # TODO: Fix issue where next sample workdir is placed in last sample workdir
-        # if last sample failed.
         start_dir = os.getcwd()
         workdir = sample.name
 
@@ -204,7 +206,12 @@ class Executor():
         workdir = os.path.abspath(workdir)
 
         #Copy the sample to the dir
-        sample_path = sample.get(workdir)
+        try:
+            sample_path = sample.get(workdir)
+        except Exception as err:
+            server.update_status(server.WARN,
+                "Could not get sample %s: %s"%(sample.name,err))
+            return
 
         #Create the params.json file
         params = {
@@ -222,17 +229,17 @@ class Executor():
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE)
             except Exception as error:
-                server.update_status(server.FAILED,
+                server.update_status(server.WARN,
                     "Failed during running workflow.PRE_COMMANDS: " + str(error))
                 return
 
             if ret.returncode != 0:
                 if ret.stderr:
-                    server.update_status(server.FAILED, ret.stderr.decode("utf-8"))
+                    server.update_status(server.WARN, ret.stderr.decode("utf-8"))
                 elif ret.stdout:
-                    server.update_status(server.FAILED, ret.stdout.decode("utf-8"))
+                    server.update_status(server.WARN, ret.stdout.decode("utf-8"))
                 else:
-                    server.update_status(server.FAILED,
+                    server.update_status(server.WARN,
                                              "Unknown error occurred while running pre commands")
                 return
 
@@ -252,7 +259,9 @@ class Executor():
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
         except Exception as error:
-            server.update_status(server.FAILED, str(error))
+            server.update_status(server.WARN,
+                ("Could not start singularity (sample %s): "(sample.name,) +
+                 str(error)))
             return
 
         if ret.returncode == 0:
@@ -260,20 +269,29 @@ class Executor():
             server.update_status(server.OK, "%s done."%(sample))
         else:
             if ret.stderr:
-                server.update_status(server.FAILED, ret.stderr.decode("utf-8"))
+                server.update_status(server.WARN,
+                    ("Exited with code != 0 (sample %s), "%(sample.name,) +
+                     "stderr:" +
+                     ret.stderr.decode("utf-8")))
             elif ret.stdout:
-                server.update_status(server.FAILED, ret.stdout.decode("utf-8"))
+                server.update_status(server.WARN,
+                    ("Exited with code != 0 (sample %s),"%(sample.name,) +
+                     " no stderr, showing stdout" +
+                     ret.stdout.decode("utf-8")))
             else:
-                server.update_status(server.FAILED,
-                                         "Unknown error occurred while running singularity")
+                server.update_status(server.WARN,
+                    ("Unknown error occurred while running process_sample," +
+                     " (sample %s)"%(sample.name)))
             return
 
         if ret.stdout:
             with open("log.out", 'w') as fout:
-                fout.write(ret.stdout.decode("utf-8"))
+                fout.write((" (sample %s)"%(sample.name) +
+                            ret.stdout.decode("utf-8")))
         if ret.stderr:
             with open("log.err", 'w') as fout:
-                fout.write(ret.stderr.decode("utf-8"))
+                fout.write((" (sample %s)"%(sample.name) +
+                            ret.stderr.decode("utf-8")))
 
     def reduce(self):
         '''

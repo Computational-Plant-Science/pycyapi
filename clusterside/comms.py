@@ -89,6 +89,9 @@ class STDOUTComms(Comms):
 class RESTComms(Comms):
     """
         Handles communication with the web server via calls to the REST API
+
+        Note:
+            Descriptions greater than 900 characters are truncated to 900.
     """
 
     def __init__(self, url, job_pk, headers=None):
@@ -119,8 +122,8 @@ class RESTComms(Comms):
         response.raise_for_status()
 
     def update_status(self, status, description):
-        if len(description) > 150:
-            description = description[-150:] + "..."
+        if len(description) > 900:
+            description = description[-900:] + "..."
 
         msg ={
                 "status_set": [
