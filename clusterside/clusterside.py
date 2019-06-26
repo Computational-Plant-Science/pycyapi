@@ -12,11 +12,11 @@
 import stat
 import os
 import shutil
-import subprocess
 import argparse
 import json
 import sys
 
+from clusterside import submitters
 from clusterside.data import Collection, Workflow, upload_file
 from clusterside.comms import RESTComms
 from clusterside.executors import SingleJobExecutor
@@ -34,11 +34,11 @@ class ClusterSide:
 
     #
 
-    def __init__(self):
+    def __init__(self,workflow_file = "workflow.json",):
         """
             Main Program Function
         """
-        with open("workflow.json", 'r') as fin:
+        with open(workflow_file, 'r') as fin:
             self.config = json.load(fin)
 
         self.server = RESTComms(url=self.config['server_url'],
@@ -47,7 +47,7 @@ class ClusterSide:
                             },
                             job_pk=self.config['job_pk'])
 
-    def submit(self,script_template):
+    def submit(self,script_template,cluster_type):
         """
             Submit a job to the cluster
 
@@ -55,6 +55,10 @@ class ClusterSide:
                 script_template (str): Path to the file to use as a template for
                     creating a the submission script.
                     (See :ref:`configuration-submit-template`)
+                cluster_type (str): Type of cluster submitting to.
+                    Must be one of:
+                    - 'pbs': for PBS based clusters
+                    - 'slurm': Slurm based clusters
         """
         script_name = "./submit_%d.sh"%(self.config['job_pk'],)
 
@@ -70,9 +74,14 @@ class ClusterSide:
                  stat.S_IRUSR | stat.S_IXUSR)
 
         try:
-            ret = subprocess.run(["qsub", script_name],
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE)
+            if cluster_type == 'pbs':
+                ret = submitters.pbs(script_name)
+            elif cluster_type == 'slurm':
+                ret = submitters.slurm(script_name)
+            else:
+                self.server.update_status(self.server.FAILED,
+                 "Job submission failed, unknown cluster_type \"%s\""%(cluster_type))
+                return
         except FileNotFoundError as error:
             self.server.update_status(self.server.FAILED, str(error))
             print(error)
@@ -135,9 +144,12 @@ def cli():
         parser.add_argument('--script', type=str,
                             default="~/.clusterside/submit.sh",
                             help='Script template location')
+        parser.add_argument('--cluster_type', type=str,
+                            default="pbs",
+                            help='Type of cluster to submit to: pbs or slurm (default: pbs)')
         opts = parser.parse_args(unknownargs)
 
-        main.submit(opts.script)
+        main.submit(opts.script,opts.cluster_type)
     elif args.cmd == "run":
         main.run()
 
