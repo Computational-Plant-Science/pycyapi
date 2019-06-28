@@ -91,7 +91,7 @@ def reduce_csv(c,result_file,key_order = None):
         column_headers.sort(key=sort_key)
 
     column_headers.insert(0,'sample') #Add sample name column to beginning
-    
+
     with open(result_file,'w') as outfile:
         writer = csv.DictWriter(outfile,fieldnames = column_headers, restval='NULL')
         writer.writeheader()
@@ -324,7 +324,7 @@ class Executor():
         includes_files = reduce_files(c,os.getcwd(),folder_path)
         reduce_csv(c,
                    join(folder_path,'results.csv'),
-                   self.workflow.get('key_order',None))
+                   self.workflow.key_order)
 
         if includes_files:
             shutil.make_archive('results', 'zip', folder_path)

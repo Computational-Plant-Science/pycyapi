@@ -1,7 +1,7 @@
 '''
     Handling of communication with file servers.
 
-    Currently only iRODS is supported. 
+    Currently only iRODS is supported.
 '''
 import json
 import os
@@ -143,6 +143,7 @@ class Workflow():
         self.server_url = params['server_url']
         self.pre_commands = params.get('pre_commands',None)
         self.singularity_flags = params.get('singularity_flags', [])
+        self.key_order = params.get('key_order', None)
         self.args = params['parameters']
 
 class Collection():
