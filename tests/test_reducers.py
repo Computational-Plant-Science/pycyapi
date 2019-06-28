@@ -71,6 +71,26 @@ def test_reduce_csv_missing_keys(tmp_path):
         print(res)
         assert res == 'sample,key1,key2\nsample1,val1,val2\nsample2,val3,NULL\n'
 
+def test_reduce_csv_key_ordered(tmp_path):
+    c = create_db(join(tmp_path,'results.sqlite'))
+
+    def add_results(sample_name,data):
+        sample_id = add_sample(c,sample_name)
+        for key,val in data.items():
+            c.execute('INSERT INTO key_val (key,data,sample) VALUES (?,?,?)',(key,val,sample_id))
+
+    add_results('sample1',{'key1': 'val1', 'key2':'val2'})
+    add_results('sample2',{'key1': 'val3', 'key2':'val4'})
+
+    key_order = ['key2','key1']
+
+    reduce_csv(c,join(tmp_path,'results.csv'),key_order=key_order)
+
+    with open(join(tmp_path,'results.csv'),'r') as infile:
+        res = infile.read()
+        print(res)
+        assert res == 'sample,key2,key1\nsample1,val2,val1\nsample2,val4,val3\n'
+
 def test_reduce_file(tmp_path):
     c = create_db(join(tmp_path,'results.sqlite'))
 

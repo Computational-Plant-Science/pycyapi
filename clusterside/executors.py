@@ -60,7 +60,7 @@ def reduce_files(c,sample_path,result_path):
 
     return True
 
-def reduce_csv(c,result_file):
+def reduce_csv(c,result_file,key_order = None):
     '''
         Convert the key-pair values returned by the process_sample function
         calls for each sample into a csv file to be returned to the user.
@@ -69,13 +69,29 @@ def reduce_csv(c,result_file):
         Args:
             c (sql cursor): The sql connection cursor
             result_file (str): filename/path of the file to to save the results in.
+            key_order (list): Ordered list of keys. Columns in the csv will
+                be ordered according the the order of the keys in `key_order`.
+                If a key is not in `key_order`, it is placed at the end of the
+                ordered columns.
     '''
     if not c.execute("SELECT * FROM key_val limit 1").fetchone():
         return False
 
     res = c.execute("SELECT DISTINCT key from key_val")
-    column_headers = ['sample'] + [key[0] for key in res]
+    column_headers = [key[0] for key in res]
 
+    if(key_order):
+        #Sort column order
+        def sort_key(value):
+            try:
+                return key_order.index(value)
+            except ValueError:
+                return len(key_order)
+
+        column_headers.sort(key=sort_key)
+
+    column_headers.insert(0,'sample') #Add sample name column to beginning
+    
     with open(result_file,'w') as outfile:
         writer = csv.DictWriter(outfile,fieldnames = column_headers, restval='NULL')
         writer.writeheader()
@@ -306,7 +322,9 @@ class Executor():
         os.mkdir(folder_path)
 
         includes_files = reduce_files(c,os.getcwd(),folder_path)
-        reduce_csv(c,join(folder_path,'results.csv'))
+        reduce_csv(c,
+                   join(folder_path,'results.csv'),
+                   self.workflow.get('key_order',None))
 
         if includes_files:
             shutil.make_archive('results', 'zip', folder_path)
