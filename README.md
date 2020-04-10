@@ -1,4 +1,6 @@
-# Plant IT Clusterside software
+# Plant IT Clusterside
+
+[![Build Status](https://travis-ci.com/Computational-Plant-Science/DIRT2_ClusterSide.svg?branch=master)](https://travis-ci.com/Computational-Plant-Science/DIRT2_ClusterSide)
 
 This repository contains the code that submits and runs jobs on compute
 clusters using qsub and collects the results to return them back to the
