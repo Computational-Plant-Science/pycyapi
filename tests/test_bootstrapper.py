@@ -3,8 +3,8 @@ from os.path import join
 from clusterside.bootstrapper import parse_results
 
 
-def test_parse_results(tmp_path):
-    sqlite = sqlite3.connect(join(tmp_path, 'results.sqlite'))
+def test_parse_results(tmpdir):
+    sqlite = sqlite3.connect(join(tmpdir, 'results.sqlite'))
     c = sqlite.cursor()
     c.execute('''
               CREATE TABLE samples(
@@ -33,7 +33,7 @@ def test_parse_results(tmp_path):
         'key-val': {'key1': 'val1', 'key2': 'val2'}
     }
 
-    parse_results(result, tmp_path, 'fake_sample')
+    parse_results(result, tmpdir, 'fake_sample')
 
     c.execute("SELECT * FROM samples")
     assert c.fetchall() == [(1, 'fake_sample')]
