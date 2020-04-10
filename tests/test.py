@@ -1,10 +1,10 @@
-'''
+"""
     This script runs clusterside locally printing all output to the command
     line (instead of to the PlantIT server).
 
     It assumes irods is setup using iinit and the sample paths in the
     sample_file dictionary exist on the irods server.
-'''
+"""
 
 from clusterside.executors import SingleJobExecutor
 from clusterside.data import Collection, Workflow
@@ -76,8 +76,8 @@ from clusterside.data import upload_file
 
 _, file_extension = os.path.splitext(results_path)
 remote_results_path = os.path.join(collection.base_file_path,
-                                   "results_job%d%s"%(workflow.job_pk,file_extension))
-upload_file(results_path,remote_results_path)
+                                   "results_job%d%s" % (workflow.job_pk, file_extension))
+upload_file(results_path, remote_results_path)
 
 server.update_job({'remote_results_path': remote_results_path})
 

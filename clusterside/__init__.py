@@ -1,4 +1,4 @@
-'''
+"""
     Cluster side code for Plant IT. This code is in charge of submitting jobs
     to the cluster queue as well as running the jobs.
 
@@ -45,4 +45,4 @@
 
             These should only be used in special circumstances, and
             as such not documented in Plant IT cookiecutter for the average user.
-'''
+"""

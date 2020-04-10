@@ -2,8 +2,9 @@ import sqlite3
 from os.path import join
 from clusterside.bootstrapper import parse_results
 
+
 def test_parse_results(tmp_path):
-    sqlite = sqlite3.connect(join(tmp_path,'results.sqlite'))
+    sqlite = sqlite3.connect(join(tmp_path, 'results.sqlite'))
     c = sqlite.cursor()
     c.execute('''
               CREATE TABLE samples(
@@ -29,7 +30,7 @@ def test_parse_results(tmp_path):
     sqlite.commit()
 
     result = {
-        'key-val': {'key1': 'val1', 'key2':'val2'}
+        'key-val': {'key1': 'val1', 'key2': 'val2'}
     }
 
     parse_results(result, tmp_path, 'fake_sample')

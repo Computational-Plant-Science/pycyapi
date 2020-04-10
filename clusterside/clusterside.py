@@ -21,6 +21,7 @@ from clusterside.data import Collection, Workflow, upload_file
 from clusterside.comms import RESTComms
 from clusterside.executors import SingleJobExecutor
 
+
 class ClusterSide:
     """
         Command line interface and logic.
@@ -34,20 +35,22 @@ class ClusterSide:
 
     #
 
-    def __init__(self,workflow_file = "workflow.json",):
+    def __init__(self, workflow_file="workflow.json", ):
         """
             Main Program Function
         """
         with open(workflow_file, 'r') as fin:
             self.config = json.load(fin)
 
-        self.server = RESTComms(url=self.config['server_url'],
-                            headers={
-                                "Authorization": "Token "  + self.config['auth_token']
-                            },
-                            job_pk=self.config['job_pk'])
+        print(f"Creating client for job '{self.config['job_pk']}' at endpoint '{self.config['server_url']}' with token '{self.config['auth_token']}'")
 
-    def submit(self,script_template,cluster_type):
+        self.server = RESTComms(url=self.config['server_url'],
+                                headers={
+                                    "Authorization": "Token " + self.config['auth_token']
+                                },
+                                job_pk=self.config['job_pk'])
+
+    def submit(self, script_template, cluster_type):
         """
             Submit a job to the cluster
 
@@ -60,11 +63,13 @@ class ClusterSide:
                     - 'pbs': for PBS based clusters
                     - 'slurm': Slurm based clusters
         """
-        script_name = "./submit_%d.sh"%(self.config['job_pk'],)
+        script_name = "./submit_%d.sh" % (self.config['job_pk'],)
 
         template_path = os.path.expanduser(script_template)
         if os.path.isfile(template_path):
             shutil.copy(template_path, script_name)
+
+        print(f"Submitting job '{self.config['job_pk']}'")
 
         with open(script_name, 'a+') as fout:
             fout.write("\n")
@@ -79,12 +84,13 @@ class ClusterSide:
             elif cluster_type == 'slurm':
                 ret = submitters.slurm(script_name)
             else:
+                print(f"Job '{self.config['job_pk']}' submission failed: unknown cluster type {cluster_type}")
                 self.server.update_status(self.server.FAILED,
-                 "Job submission failed, unknown cluster_type \"%s\""%(cluster_type))
+                                          f"Job '{self.config['job_pk']}' submission failed: unknown cluster type {cluster_type}")
                 return
         except FileNotFoundError as error:
+            print(f"Job '{self.config['job_pk']}' submission failed: {error}")
             self.server.update_status(self.server.FAILED, str(error))
-            print(error)
             exit()
 
         if ret.returncode == 0:
@@ -102,12 +108,12 @@ class ClusterSide:
             collection = Collection("samples.json")
             workflow = Workflow("workflow.json")
             server = RESTComms(url=workflow.server_url,
-                                headers={
-                                    "Authorization": "Token "  + workflow.auth_token
-                                },
-                                job_pk=workflow.job_pk)
+                               headers={
+                                   "Authorization": "Token " + workflow.auth_token
+                               },
+                               job_pk=workflow.job_pk)
 
-            executor = SingleJobExecutor(collection,workflow,server)
+            executor = SingleJobExecutor(collection, workflow, server)
             self.server.update_status(self.server.OK, "Running")
             executor.process()
             results_path = executor.reduce()
@@ -116,13 +122,14 @@ class ClusterSide:
             # supporting multiple file servers will need to be added later
             _, file_extension = os.path.splitext(results_path)
             remote_results_path = os.path.join(collection.base_file_path,
-                                               "results_job%d%s"%(workflow.job_pk,file_extension))
-            upload_file(results_path,remote_results_path)
+                                               "results_job%d%s" % (workflow.job_pk, file_extension))
+            upload_file(results_path, remote_results_path)
             server.update_job({'remote_results_path': remote_results_path})
 
             self.server.task_complete(self.config['task_pk'])
         except Exception as error:
             self.server.update_status(self.server.FAILED, str(error))
+
 
 def cli():
     '''
@@ -134,7 +141,7 @@ def cli():
         description='The Cluster Side Component of the DIRT2 Webplatform'
     )
     parser.add_argument('cmd', type=str,
-                         help='what to do.')
+                        help='what to do.')
     args, unknownargs = parser.parse_known_args(sys.argv[1:])
 
     main = ClusterSide()
@@ -149,9 +156,10 @@ def cli():
                             help='Type of cluster to submit to: pbs or slurm (default: pbs)')
         opts = parser.parse_args(unknownargs)
 
-        main.submit(opts.script,opts.cluster_type)
+        main.submit(opts.script, opts.cluster_type)
     elif args.cmd == "run":
         main.run()
+
 
 if __name__ == "__main__":
     cli()

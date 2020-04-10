@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append('/bootstrap_code')
 sys.path.append('/user_code')
 import os.path
@@ -21,8 +22,9 @@ from process import process_sample
         args (object): params to be passed to process_sample as a dictionary
 '''
 
-def parse_results(result,result_path,sample_name):
-    '''
+
+def parse_results(result, result_path, sample_name):
+    """
         Parses the dictionary returned by the workflow's process function.
 
         Saves key-val pairs and results files to the sqlite results database
@@ -33,25 +35,26 @@ def parse_results(result,result_path,sample_name):
             result_path (str): the base result path for all samples being
                 analyzed.
             sample_name (str): the name of the sample.
-    '''
-    conn = sqlite3.connect(os.path.join(result_path,'results.sqlite'))
+    """
+    conn = sqlite3.connect(os.path.join(result_path, 'results.sqlite'))
     c = conn.cursor()
 
-    c.execute('INSERT INTO samples (name) VALUES (?)',(sample_name,))
+    c.execute('INSERT INTO samples (name) VALUES (?)', (sample_name,))
     sample_id = c.execute('SELECT last_insert_rowid()').fetchone()[0]
 
     if "files" in result:
         for file in result['files']:
-            c.execute('INSERT INTO files (file_path,sample) VALUES (?,?)',(file,sample_id))
+            c.execute('INSERT INTO files (file_path,sample) VALUES (?,?)', (file, sample_id))
     if "key-val" in result:
-        for key,val in result['key-val'].items():
-            c.execute('INSERT INTO key_val (key,data,sample) VALUES (?,?,?)',(key,val,sample_id))
+        for key, val in result['key-val'].items():
+            c.execute('INSERT INTO key_val (key,data,sample) VALUES (?,?,?)', (key, val, sample_id))
     conn.commit()
     c.close()
     conn.close()
 
+
 if __name__ == "__main__":
-    with open("params.json",'r') as fin:
+    with open("params.json", 'r') as fin:
         data = json.load(fin)
 
     sample_name = data['sample_name']
@@ -59,9 +62,8 @@ if __name__ == "__main__":
     result_path = "/results/"
     args = data['args']
 
-
     result = process_sample(sample_name,
                             sample_path,
                             args)
 
-    parse_results(result,result_path,sample_name)
+    parse_results(result, result_path, sample_name)
