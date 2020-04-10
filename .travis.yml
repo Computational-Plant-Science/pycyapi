@@ -17,6 +17,7 @@ before_install:
   - sudo rm irods-icommands-4.1.12-ubuntu14-x86_64.deb
   - sudo chmod +x wait-for-postgres.sh
   - ./wait-for-postgres.sh 127.0.0.1
+  - sleep 2
   - printf '127.0.0.1\n1247\nrods\ntempZone\nrods\n' | iinit
 
 install:
