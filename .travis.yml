@@ -1,0 +1,24 @@
+dist: trusty
+
+services:
+  - docker
+
+language: python
+python:
+  - "3.6"
+
+before_install:
+  - docker pull mjstealey/irods-provider-postgres:4.2.3
+  - docker run -d -p 1247:1247 mjstealey/irods-provider-postgres:4.2.3
+  - apt-get install libfuse2
+  - apt-get install libfuse2
+  - wget https://files.renci.org/pub/irods/releases/4.1.12/ubuntu14/irods-icommands-4.1.12-ubuntu14-x86_64.deb
+  - dpkg -i irods-icommands-4.1.12-ubuntu14-x86_64.deb
+  - rm irods-icommands-4.1.12-ubuntu14-x86_64.deb
+  - printf 'irods\n1247\nrods\ntempZone\nrods\n' | iinit
+
+install:
+  - pip3 install -e .
+
+script:
+  - python -m pytest
