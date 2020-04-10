@@ -23,4 +23,4 @@ install:
   - pip3 install -e .
 
 script:
-  - python -m pytest
+  - python3 -m pytest
