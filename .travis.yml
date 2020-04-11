@@ -23,16 +23,16 @@ before_install:
   - iput tests/sample2.jpg
   - iput tests/sample3.jpg
   - >
-    sudo apt-get update && sudo apt-get install -y \
-    build-essential \
-    libssl-dev \
-    uuid-dev \
-    libgpgme11-dev \
-    squashfs-tools \
-    libseccomp-dev \
-    wget \
-    pkg-config \
-    git \
+    sudo apt-get update && sudo apt-get install -y
+    build-essential
+    libssl-dev
+    uuid-dev
+    libgpgme11-dev
+    squashfs-tools
+    libseccomp-dev
+    wget
+    pkg-config
+    git
     cryptsetup
   - >
     export VERSION=1.14.2 OS=linux ARCH=amd64 && \
