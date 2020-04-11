@@ -19,6 +19,9 @@ before_install:
   - ./wait-for-postgres.sh 127.0.0.1
   - sleep 2
   - printf '127.0.0.1\n1247\nrods\ntempZone\nrods\n' | iinit
+  - iput tests/sample1.jpg
+  - iput tests/sample2.jpg
+  - iput tests/sample3.jpg
 
 install:
   - pip3 install -e .

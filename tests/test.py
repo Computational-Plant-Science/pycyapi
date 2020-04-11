@@ -27,15 +27,15 @@ sample_file = '''
     "sample_set":{
     	"Sample1": {
     		"storage": "irods",
-    		"path": "/tempZone/home/rods/24-74-2.png"
+    		"path": "/tempZone/home/rods/sample1.jpg"
     	},
     	"Sample2": {
     		"storage": "irods",
-    		"path": "/tempZone/home/rods/24-77-1.png"
+    		"path": "/tempZone/home/rods/sample2.jpg"
     	},
     	"Sample3": {
     		"storage": "irods",
-    		"path": "/tempZone/home/rods/24-9-2.png"
+    		"path": "/tempZone/home/rods/sample3.jpg"
     	}
     }
 }
