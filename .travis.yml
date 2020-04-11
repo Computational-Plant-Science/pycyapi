@@ -41,16 +41,17 @@ before_install:
     rm go$VERSION.$OS-$ARCH.tar.gz
   - >
     echo 'export PATH=/usr/local/go/bin:$PATH' >> $HOME/.profile &&
-    source $HOME/.profile &&
+    source $HOME/.profile;
+    ls /usr/local/go/ &&
     echo $PATH
   - >
-    export VERSION=3.5.2 && \
-    wget https://github.com/sylabs/singularity/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz && \
-    tar -xzf singularity-${VERSION}.tar.gz && \
+    export VERSION=3.5.2 &&
+    wget https://github.com/sylabs/singularity/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz &&
+    tar -xzf singularity-${VERSION}.tar.gz &&
     cd singularity
   - >
-    ./mconfig && \
-    make -C builddir && \
+    ./mconfig &&
+    make -C builddir &&
     sudo make -C builddir install
 
 install:
