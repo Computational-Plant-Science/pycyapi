@@ -3,7 +3,3 @@ From: frederic-michaud/python3
 
 %setup
   mkdir -p ${SINGULARITY_ROOTFS}/code/
-
-%post
-  touch ${SINGULARITY_ROOTFS}/results/results.csv
-
