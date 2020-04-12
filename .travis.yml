@@ -9,9 +9,6 @@ language: go
 go:
   - "1.13"
 
-python:
-  - "3.6"
-
 addons:
   apt:
     packages:
@@ -32,10 +29,6 @@ addons:
     update: true
 
 sudo: required
-
-matrix:
-  include:
-    - python: "3.6"
 
 before_install:
   - docker pull mjstealey/irods-provider-postgres:4.2.3
@@ -63,11 +56,14 @@ before_install:
     sudo make -C builddir install &&
     cd ..
 
-install:
-  - sudo pip3 install -e .
-  - sudo pip3 install -U pytest
-
-script:
-  - python3 --version
-  - pytest
-  - python3 tests/test.py
+matrix:
+  include:
+    - language: python
+      python: "3.6"
+      install:
+        - sudo pip3 install -e .
+        - sudo pip3 install -U pytest
+      script:
+        - python3 --version
+        - pytest
+        - python3 tests/test.py
