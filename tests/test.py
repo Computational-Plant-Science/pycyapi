@@ -49,7 +49,7 @@ workflow_file = '''
 	"auth_token": "asdf",
 	"job_pk": 2,
 	"parameters": {},
-    "pre_commands": ["singularity", "build", "test_container.sif", "test_container.def"],
+    "pre_commands": ["sudo", "singularity", "build", "test_container.sif", "test_container.def"],
     "singularity_flags": ["--overlay", "test_container.def"]
 }
 '''
