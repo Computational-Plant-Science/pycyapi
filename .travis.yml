@@ -35,16 +35,16 @@ sudo: required
 
 before_install:
   - docker pull mjstealey/irods-provider-postgres:4.2.3
-  - docker run -d -p 127.0.0.1:1247:1247 mjstealey/irods-provider-postgres:4.2.3
+  - docker run -d -p localhost:1247:1247 mjstealey/irods-provider-postgres:4.2.3
   - sudo apt-get install libfuse2
   - sudo apt-get install libfuse2
   - sudo wget https://files.renci.org/pub/irods/releases/4.1.12/ubuntu14/irods-icommands-4.1.12-ubuntu14-x86_64.deb
   - sudo dpkg -i irods-icommands-4.1.12-ubuntu14-x86_64.deb
   - sudo rm irods-icommands-4.1.12-ubuntu14-x86_64.deb
   - sudo chmod +x wait-for-postgres.sh
-  - ./wait-for-postgres.sh 127.0.0.1
+  - ./wait-for-postgres.sh localhost
   - sleep 2
-  - printf '127.0.0.1\n1247\nrods\ntempZone\nrods\n' | iinit
+  - printf 'localhost\n1247\nrods\ntempZone\nrods\n' | iinit
   - iput tests/sample1.jpg
   - iput tests/sample2.jpg
   - iput tests/sample3.jpg
