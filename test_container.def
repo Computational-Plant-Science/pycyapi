@@ -3,14 +3,7 @@ From: frederic-michaud/python3
 
 %setup
   mkdir -p ${SINGULARITY_ROOTFS}/code/
-  cp -r code/ ${SINGULARITY_ROOTFS}/code/
-
-%files
-  #Copy the nextflow file into the container
-  # some_file /code/
 
 %post
- #Install your workflow code here
+  touch ${SINGULARITY_ROOTFS}/results/results.csv
 
-# No run script is necessary. "sinqularity exec" is used to run process_sample
-#%runscript
