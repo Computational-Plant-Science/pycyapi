@@ -25,6 +25,7 @@ addons:
       - libarchive-dev
       - libgpgme11-dev
       - libseccomp-dev
+      - python3-pip
   homebrew:
     packages:
       - squashfs
@@ -63,9 +64,9 @@ before_install:
     cd ..
 
 install:
-  - sudo pip install -e .
-  - sudo pip install pytest
+  - pip3 install -e .
+  - pip3 install pytest
 
 script:
-  - sudo python3 -m pytest
-  - sudo python3 tests/test.py
+  - python3 -m pytest
+  - python3 tests/test.py
