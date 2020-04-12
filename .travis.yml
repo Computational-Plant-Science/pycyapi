@@ -63,9 +63,9 @@ before_install:
     cd ..
 
 install:
-  - pip3 install -e .
-  - pip3 install pytest
+  - sudo pip install -e .
+  - sudo pip install pytest
 
 script:
-  - python3 -m pytest
-  - python3 tests/test.py
+  - sudo python -m pytest
+  - sudo python tests/test.py
