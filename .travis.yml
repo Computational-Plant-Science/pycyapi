@@ -35,7 +35,7 @@ sudo: required
 
 before_install:
   - docker pull mjstealey/irods-provider-postgres:4.2.3
-  - docker run -d -p localhost:1247:1247 mjstealey/irods-provider-postgres:4.2.3
+  - docker run -d -p 1247:1247 mjstealey/irods-provider-postgres:4.2.3
   - sudo apt-get install libfuse2
   - sudo apt-get install libfuse2
   - sudo wget https://files.renci.org/pub/irods/releases/4.1.12/ubuntu14/irods-icommands-4.1.12-ubuntu14-x86_64.deb
