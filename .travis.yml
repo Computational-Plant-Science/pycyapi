@@ -63,9 +63,9 @@ before_install:
     cd ..
 
 install:
-  - pip install -e .
-  - pip install pytest
+  - pip3 install -e .
+  - pip3 install pytest
 
 script:
-  - python -m pytest
-  - python tests/test.py
+  - python3 -m pytest
+  - python3 tests/test.py
