@@ -3,7 +3,7 @@ dist: trusty
 services:
   - docker
 
-language: python
+language: go
 go:
   - "1.13"
 python:
@@ -31,7 +31,7 @@ sudo: required
 
 matrix:
   include:
-    - go: "1.13"
+    - python: "3.6"
 
 before_install:
   - docker pull mjstealey/irods-provider-postgres:4.2.3
