@@ -1,10 +1,15 @@
 os: linux
-dist: trusty
 
 services:
   - docker
 
-language: generic
+language: go
+
+go:
+  - "1.13"
+
+python:
+  - "3.6"
 
 addons:
   apt:
@@ -54,6 +59,8 @@ before_install:
     cd ..
 
 install:
+  - pip3 --version
+  - python3 --version
   - sudo pip3 install -e .
   - sudo pip3 install -U pytest
 
