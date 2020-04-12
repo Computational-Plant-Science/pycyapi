@@ -67,5 +67,5 @@ install:
   - sudo pip install pytest
 
 script:
-  - sudo python -m pytest
-  - sudo python tests/test.py
+  - sudo python3 -m pytest
+  - sudo python3 tests/test.py
