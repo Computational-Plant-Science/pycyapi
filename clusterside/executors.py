@@ -319,19 +319,19 @@ class Executor:
         c = self.sqlite.cursor()
 
         # Check for files
-        folder_path = join(self.results_folder_path, 'results')
-        os.mkdir(folder_path)
+        # folder_path = join(self.results_folder_path, 'results')
+        os.mkdir(self.results_folder_path)
 
-        includes_files = reduce_files(c, os.getcwd(), folder_path)
+        includes_files = reduce_files(c, os.getcwd(), self.results_folder_path)
         reduce_csv(c,
-                   join(folder_path, 'results.csv'),
+                   join(self.results_folder_path, 'results.csv'),
                    self.workflow.key_order)
 
         if includes_files:
-            shutil.make_archive('results', 'zip', folder_path)
+            shutil.make_archive('results', 'zip', self.results_folder_path)
             return abspath('./results.zip')
         else:
-            return join(folder_path, 'results.csv')
+            return join(self.results_folder_path, 'results.csv')
 
 
 class SingleJobExecutor(Executor):

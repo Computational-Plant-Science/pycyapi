@@ -132,11 +132,11 @@ class ClusterSide:
 
 
 def cli():
-    '''
+    """
         Clusterside Command line interface
 
         Called by default if clusterside is run from the command line.
-    '''
+    """
     parser = argparse.ArgumentParser(
         description='The Cluster Side Component of the DIRT2 Webplatform'
     )
