@@ -59,7 +59,8 @@ before_install:
   - >
     ./mconfig &&
     make -C builddir &&
-    sudo make -C builddir install
+    sudo make -C builddir install &&
+    cd ..
 
 install:
   - pip install -e .
