@@ -60,9 +60,10 @@ matrix:
   include:
     - language: python
       python: "3.6"
-      install:
-        - sudo pip3 install -e .
-        - sudo pip3 install -U pytest
-      script:
-        - python3 -m pytest
-        - python3 tests/test.py
+
+install:
+  - sudo pip3 install -e .
+  - sudo pip3 install -U pytest
+script:
+  - python3 -m pytest
+  - python3 tests/test.py
