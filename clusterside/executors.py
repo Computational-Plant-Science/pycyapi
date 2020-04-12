@@ -320,7 +320,7 @@ class Executor:
 
         # Check for files
         # folder_path = join(self.results_folder_path, 'results')
-        os.mkdir(self.results_folder_path)
+        # os.mkdir(self.results_folder_path)
 
         includes_files = reduce_files(c, os.getcwd(), self.results_folder_path)
         reduce_csv(c,
