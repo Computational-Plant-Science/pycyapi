@@ -9,6 +9,9 @@ language: go
 go:
   - "1.13"
 
+python:
+  - "3.6"
+
 addons:
   apt:
     packages:
@@ -31,6 +34,11 @@ addons:
 sudo: required
 
 before_install:
+  - sudo apt-get -y install python3-pip python-dev
+  - sudo pip3 install -U setuptools
+  - sudo pip3 install -U virtualenvwrapper
+  - python3 -V
+  - pip3 -V
   - docker pull mjstealey/irods-provider-postgres:4.2.3
   - docker run -d -p 127.0.0.1:1247:1247 mjstealey/irods-provider-postgres:4.2.3
   - sudo apt-get install libfuse2
@@ -56,14 +64,10 @@ before_install:
     sudo make -C builddir install &&
     cd ..
 
-matrix:
-  include:
-    - language: python
-      python: "3.6"
-
 install:
   - sudo pip3 install -e .
   - sudo pip3 install -U pytest
+
 script:
   - python3 -m pytest
   - python3 tests/test.py
