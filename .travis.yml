@@ -1,11 +1,14 @@
+os: linux
 dist: trusty
 
 services:
   - docker
 
 language: go
+
 go:
   - "1.13"
+
 python:
   - "3.6"
 
@@ -59,9 +62,9 @@ before_install:
     sudo make -C builddir install
 
 install:
-  - pip3 install -e .
-  - pip3 install pytest
+  - pip install -e .
+  - pip install pytest
 
 script:
-  - python3 -m pytest
-  - python3 tests/test.py
+  - python -m pytest
+  - python tests/test.py
