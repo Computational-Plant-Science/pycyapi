@@ -49,8 +49,8 @@ workflow_file = '''
 	"auth_token": "asdf",
 	"job_pk": 2,
 	"parameters": {},
-    "pre_commands": ["singularity", "image.create", "{workdir}/file.img"],
-    "singularity_flags": ["--overlay", "{workdir}/file.img"]
+    "pre_commands": ["singularity", "build", "test_container.def"],
+    "singularity_flags": ["--overlay", "test_container.def"]
 }
 '''
 
@@ -72,6 +72,7 @@ executor.process()
 results_path = executor.reduce()
 
 import os
+import shutil
 from clusterside.data import upload_file
 
 _, file_extension = os.path.splitext(results_path)
@@ -82,3 +83,9 @@ upload_file(results_path, remote_results_path)
 server.update_job({'remote_results_path': remote_results_path})
 
 server.task_complete(1)
+
+os.remove("samples.json")
+os.remove("workflow.json")
+os.remove("process.py")
+shutil.rmtree(results_path)
+
