@@ -50,9 +50,10 @@ workflow_file = '''
 	"job_pk": 2,
 	"parameters": {},
     "pre_commands": ["sudo", "singularity", "build", "test_container.sif", "test_container.def"],
-    "singularity_flags": ["--overlay", "test_container.def"]
 }
 '''
+
+# "singularity_flags": ["--overlay", "test_container.def"]
 
 with open("samples.json", "w") as fout:
     fout.write(sample_file)
