@@ -44,7 +44,7 @@ sample_file = '''
 workflow_file = '''
 {
 	"server_url": "http://localhost/jobs/api/",
-    "singularity_url": "python3_latest.sif",
+    "singularity_url": "shub://frederic-michaud/python3",
     "api_version": 0.1,
 	"auth_token": "asdf",
 	"job_pk": 2,
