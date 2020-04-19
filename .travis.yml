@@ -42,7 +42,6 @@ before_install:
   - sudo chmod +x wait-for-postgres.sh
   - sudo chmod +x wait-for-it.sh
   - sudo chmod +x configure-irods.sh
-  - sudo chmod +x integration_tests.sh
   - >
     export VERSION=3.5.2 &&
     wget https://github.com/sylabs/singularity/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz &&
