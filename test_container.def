@@ -1,5 +1,0 @@
-Bootstrap: docker
-From: python:3.6-stretch
-
-%setup
-  mkdir -p ${SINGULARITY_ROOTFS}/code/

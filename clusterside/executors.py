@@ -220,7 +220,6 @@ class Executor:
 
         server.update_status(server.OK, "Analyzing %s" % (sample))
 
-        print(f"Creating directory {start_directory}/{working_directory}")
         if not os.path.exists(working_directory):
             os.mkdir(working_directory)
 
@@ -240,7 +239,6 @@ class Executor:
             'sample_path': sample_path,
             'args': workflow.args
         }
-        print(f"Creating file {params_file_path}")
         with open(params_file_path, 'w') as params_file:
             json.dump(params, params_file)
 
@@ -279,7 +277,6 @@ class Executor:
                          workflow.singularity_url,
                          "python3", "/bootstrap_code/bootstrapper.py"
                      ]
-            print(f"Executing workflow '{params_file_path}' on sample '{sample.name}' with commands '{' '.join(args)}'")
             ret = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         except Exception as error:
             server.update_status(server.WARN,
@@ -288,7 +285,6 @@ class Executor:
             return
 
         if ret.returncode == 0:
-            print(f"Successfully executed workflow '{params_file_path}' on sample '{sample.name}'")
             server.update_status(server.OK, "%s done." % sample)
         else:
             if ret.stderr:

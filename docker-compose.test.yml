@@ -1,0 +1,7 @@
+version: '3.7'
+services:
+  irods:
+    image: mjstealey/irods-provider-postgres:4.2.3
+    ports:
+      - "5432:5432"
+      - "1247:1247"

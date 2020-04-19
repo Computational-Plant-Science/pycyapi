@@ -123,3 +123,4 @@ process.py
 samples.json
 workflow.json
 results/
+singularity/

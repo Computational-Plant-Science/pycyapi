@@ -44,13 +44,13 @@ sample_file = '''
 workflow_file = '''
 {
 	"server_url": "http://localhost/jobs/api/",
-    "singularity_url": "docker://python:3.6-stretch",
+    "singularity_url": "python3_latest.sif",
     "api_version": 0.1,
 	"auth_token": "asdf",
 	"job_pk": 2,
 	"parameters": {},
-    "pre_commands": ["sudo", "singularity", "build", "test_container.sif", "test_container.def"],
-    "singularity_flags": ["--overlay", "test_container.def"]
+    "pre_commands": [],
+    "singularity_flags": []
 }
 '''
 
@@ -87,5 +87,4 @@ server.task_complete(1)
 os.remove("samples.json")
 os.remove("workflow.json")
 os.remove("process.py")
-shutil.rmtree(results_path)
 
