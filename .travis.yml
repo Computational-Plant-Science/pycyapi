@@ -42,6 +42,9 @@ before_install:
   - sudo dpkg -i irods-icommands-4.1.12-ubuntu14-x86_64.deb
   - sudo rm irods-icommands-4.1.12-ubuntu14-x86_64.deb
   - sudo chmod +x wait-for-postgres.sh
+  - sudo chmod +x wait-for-it.sh
+  - sudo chmod +x configure-irods.sh
+  - sudo chmod +x integration_tests.sh
   - ./wait-for-postgres.sh localhost
   - sleep 2
   - printf 'localhost\n1247\nrods\ntempZone\nrods\n' | iinit
@@ -67,4 +70,4 @@ install:
 
 script:
   - python3 -m pytest
-  - python3 tests/test.py
+  - ./integration_tests.sh
