@@ -124,3 +124,6 @@ samples.json
 workflow.json
 results/
 singularity/
+integration_tests.sh
+Sample*
+*.sif

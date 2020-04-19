@@ -55,8 +55,7 @@ before_install:
     cd ..
 
 install:
-  - pip3 --version
-  - python3 --version
+  - singularity pull docker://python:3.6-stretch
   - sudo pip3 install -e .
   - sudo pip3 install -U pytest
 
