@@ -42,8 +42,6 @@ class ClusterSide:
         with open(workflow_file, 'r') as fin:
             self.config = json.load(fin)
 
-        print(f"Creating client for job '{self.config['job_pk']}' at endpoint '{self.config['server_url']}' with token '{self.config['auth_token']}'")
-
         self.server = RESTComms(url=self.config['server_url'],
                                 headers={
                                     "Authorization": "Token " + self.config['auth_token']
