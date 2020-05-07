@@ -1,6 +1,6 @@
-# Plant IT Clusterside
+# PlantIT Clusterside
 
-[![Build Status](https://travis-ci.com/Computational-Plant-Science/DIRT2_ClusterSide.svg?branch=master)](https://travis-ci.com/Computational-Plant-Science/DIRT2_ClusterSide)
+[![Build Status](https://travis-ci.com/Computational-Plant-Science/plantit-clusterside.svg?branch=master)](https://travis-ci.com/Computational-Plant-Science/plantit-clusterside)
 
 This repository contains the code that submits and runs jobs on compute
 clusters using qsub and collects the results to return them back to the
@@ -8,13 +8,13 @@ PlantIT web server.
 
 Cluster Installation
 ---------------------
-To install clusterside on a cluster, run:
+To install `plantit-clusterside` on a cluster, run:
 
 ```
-pip3 install --user git+https://github.com/Computational-Plant-Science/DIRT2_ClusterSide
+pip3 install --user git+https://github.com/Computational-Plant-Science/plantit-clusterside
 ```
 
-on the cluster under the the user that Plant IT will use to login and submit jobs.
+on the cluster under the the user that PlantIT will use to login and submit jobs.
 
 Clusterside expects [irods icommands](https://wiki.cyverse.org/wiki/display/DS/Setting+Up+iCommands) to be installed and irods already
 configured to connect to the file server using the `iinit` command. Clusterside
