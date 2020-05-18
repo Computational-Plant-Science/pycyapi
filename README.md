@@ -1,43 +1,45 @@
-# PlantIT Clusterside
+# PlantIT Clusterside [![Build Status](https://travis-ci.com/Computational-Plant-Science/plantit-clusterside.svg?branch=master)](https://travis-ci.com/Computational-Plant-Science/plantit-clusterside)
 
-[![Build Status](https://travis-ci.com/Computational-Plant-Science/plantit-clusterside.svg?branch=master)](https://travis-ci.com/Computational-Plant-Science/plantit-clusterside)
+Workflow manager for PlantIT. Allows the PlantIT web platform to deploy jobs to compute resources.
 
-This repository contains the code that submits and runs jobs on compute
-clusters using qsub and collects the results to return them back to the
-PlantIT web server.
+**This project is under active development and is not yet stable.**
 
-Cluster Installation
----------------------
-To install `plantit-clusterside` on a cluster, run:
+## Requirements
 
-```
-pip3 install --user git+https://github.com/Computational-Plant-Science/plantit-clusterside
-```
+The following are required to run PlantIT Clusterside:
 
-on the cluster under the the user that PlantIT will use to login and submit jobs.
+- A Unix shell
+- Python 3
+- [Singularity](https://sylabs.io/docs/)
+- [iRODS iCommands](https://wiki.cyverse.org/wiki/display/DS/Setting+Up+iCommands)
 
-Clusterside expects [irods icommands](https://wiki.cyverse.org/wiki/display/DS/Setting+Up+iCommands) to be installed and irods already
-configured to connect to the file server using the `iinit` command. Clusterside
-reads in the configuration created by `iinit` to connect to the iRODS server. Configuration information for CyVerse iRODS is available [here](https://wiki.cyverse.org/wiki/display/DS/Setting+Up+iCommands).
+## Documentation
 
-#### Note:
-Clusterside currently only supports one file system. The one configured to work with icommands.
+Full documentation can be found [here](https://plant-it-clusterside.readthedocs.io/en/latest/).
 
-Documentation
----------
-
-Full Documentation: [Link](https://plant-it-clusterside.readthedocs.io/en/latest/)
-
-Documentation can be built using
+Documentation can be built using:
 
 ```
 cd docs
 make html
 ```
 
-Clusterside provides two commands:
+## Installation
 
-## `clusterside submit`
+To install `plantit-clusterside` on a compute cluster, run:
+
+```
+pip3 install --user git+https://github.com/Computational-Plant-Science/plantit-clusterside
+```
+
+Clusterside expects [iRODS iCommands](https://wiki.cyverse.org/wiki/display/DS/Setting+Up+iCommands) to be installed and configured with the `iinit` command. Clusterside reads in the configuration created by `iinit` to connect to the iRODS server. Configuration information for CyVerse iRODS is available [here](https://wiki.cyverse.org/wiki/display/DS/Setting+Up+iCommands).
+
+## Usage
+
+PlantIT Clusterside provides two commands:
+
+### `clusterside submit`
+
 Creates a submit file containing the `clusterside run` command
 and submits the file using qsub.
 
@@ -63,20 +65,24 @@ moving into the jobs work directory. These will most likely be required running
 on any cluster.
 
 #### Note:
+
 On some types of ssh connections, installation does not put clusterside in the
 path. If the cluster throwing a "clusterside not found" error when submitting
 jobs. Try using the whole path of clusterside for submitting. This can be
 found by logging in to the cluster as the user PlantIT uses to submit the jobs
 and executing `which clusterside`
 
-## `clusterside run`
+### `clusterside run`
+
 Runs the analysis. This should be called inside a cluster job, as done by
 `clusterside submit`.
 
 See `tests/test.py` for an example of the files required for `clusterside run`.
 
-# tests
-Tests are written in pytest and can be run usng: `python3 -m pytest`
+## Tests
 
-The `python3 test/test.py` script can also be run to test clusterside, but requires
-irods to be setup on the system, and the sample file paths to exist on the irods server
+Before running tests, run `bootstrap.sh`, then bring test containers up with `docker-compose -f docker-compose.test.yml up`.
+
+Unit tests can then be run using: `docker-compose -f docker-compose.test.yml exec cluster /opt/plantit-clusterside/unit-tests.sh`
+
+Integration tests can be run with `docker-compose -f docker-compose.test.yml exec cluster /opt/plantit-clusterside/integration-tests.sh`.

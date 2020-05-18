@@ -14,5 +14,5 @@ setup(name='clusterside',
             'clusterside = clusterside.clusterside:cli'
         ]
       },
-      install_requires=['requests','python-irodsclient']
+      install_requires=['requests','python-irodsclient', 'dagster', 'dagster-dask', 'pytest']
      )

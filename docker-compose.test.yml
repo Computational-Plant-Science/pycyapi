@@ -1,5 +1,13 @@
 version: '3.7'
+
 services:
+
+  cluster:
+    build:
+      context: .
+      dockerfile: dockerfiles/cluster/Dockerfile
+    privileged: true
+
   irods:
     image: mjstealey/irods-provider-postgres:4.2.3
     ports:

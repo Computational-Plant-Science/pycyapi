@@ -59,14 +59,8 @@ install:
   - sudo pip3 install -U pytest
 
 script:
-  - python3 -m pytest
-  - docker-compose -f docker-compose.test.yml up -d --build
-  - ./wait-for-postgres.sh localhost
-  - ./wait-for-it.sh localhost:1247 --
-  - sleep 5
-  - ./configure-irods.sh
-  - iput tests/sample1.jpg
-  - iput tests/sample2.jpg
-  - iput tests/sample3.jpg
-  - python3 tests/test.py
+  - ./bootstrap.sh
+  - docker-compose -f docker-compose.test.yml up -d
+  - ./unit-tests.sh
+  - ./integration-tests.sh
   - docker-compose -f docker-compose.test.yml down
