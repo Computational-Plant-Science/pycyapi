@@ -46,7 +46,7 @@ workflow_file = '''
 	"server_url": "http://localhost/jobs/api/",
         "singularity_url": "docker://python:3.6-stretch",
     "api_version": 0.1,
-	"auth_token": "asdf",
+	"token": "asdf",
 	"job_pk": 2,
 	"parameters": {},
     "pre_commands": [],

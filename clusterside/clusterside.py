@@ -44,7 +44,7 @@ class ClusterSide:
 
         self.server = RESTComms(url=self.config['server_url'],
                                 headers={
-                                    "Authorization": "Token " + self.config['auth_token']
+                                    "Authorization": "Token " + self.config['token']
                                 },
                                 job_pk=self.config['job_pk'])
 
@@ -107,7 +107,7 @@ class ClusterSide:
             workflow = Workflow("workflow.json")
             server = RESTComms(url=workflow.server_url,
                                headers={
-                                   "Authorization": "Token " + workflow.auth_token
+                                   "Authorization": "Token " + workflow.token
                                },
                                job_pk=workflow.job_pk)
 

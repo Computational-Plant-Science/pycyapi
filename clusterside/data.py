@@ -125,7 +125,7 @@ class Workflow:
                 WORKFLOW_CONFIG docs for more info.
             singularity_url (str): the url to the singularity container that
                 process sample is run in.
-            auth_token (str): The authorization token required to communicate
+            token (str): The authorization token required to communicate
                 to the web server via the REST API
             job_pk (int): the job pk
             server_url (str): The url to the webserver REST api
@@ -144,7 +144,7 @@ class Workflow:
 
         self.api_version = params['api_version']
         self.singularity_url = params['singularity_url']
-        self.auth_token = params['auth_token']
+        self.token = params['token']
         self.job_pk = params['job_pk']
         self.server_url = params['server_url']
         self.pre_commands = params.get('pre_commands', None)
