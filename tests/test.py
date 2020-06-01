@@ -7,7 +7,7 @@
 """
 
 from clusterside.executors import SingleJobExecutor
-from clusterside.data import Collection, Workflow
+from clusterside.workflow import Collection, Workflow
 from clusterside.comms import STDOUTComms
 
 process_file = '''
@@ -44,13 +44,13 @@ sample_file = '''
 workflow_file = '''
 {
 	"server_url": "http://localhost/jobs/api/",
-        "singularity_url": "docker://python:3.6-stretch",
+        "container_url": "docker://python:3.6-stretch",
     "api_version": 0.1,
 	"token": "asdf",
 	"job_pk": 2,
 	"parameters": {},
     "pre_commands": [],
-    "singularity_flags": []
+    "flags": []
 }
 '''
 
@@ -73,7 +73,7 @@ results_path = executor.reduce()
 
 import os
 import shutil
-from clusterside.data import upload_file
+from clusterside.workflow import upload_file
 
 _, file_extension = os.path.splitext(results_path)
 remote_results_path = os.path.join(collection.base_file_path,

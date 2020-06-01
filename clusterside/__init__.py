@@ -40,7 +40,7 @@
                 # In the example below, the empty singularity container
                 # created using the above "pre-commands" is overlayed
                 # onto the workflow singularity container.
-                "singularity_flags": ["--overlay", "{workdir}/file.img"]
+                "flags": ["--overlay", "{workdir}/file.img"]
             }
 
             These should only be used in special circumstances, and

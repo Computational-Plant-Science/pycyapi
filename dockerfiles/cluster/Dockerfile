@@ -1,6 +1,53 @@
 FROM ubuntu:18.04
 
-RUN apt-get update && apt-get install -y openssh-server
+RUN apt-get update
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    openssh-server \
+    singularity-container \
+    git \
+    python3 \
+    python3-pip \
+    libfuse2 \
+    vim \
+    tcl \
+    rsync \
+    tclsh \
+    gcc \
+    make \
+    ruby \
+    ruby-dev \
+    libpam0g-dev \
+    libmariadb-client-lgpl-dev \
+    libmysqlclient-dev \
+    libmunge-dev \
+    libmunge2 \
+    mariadb-server \
+    munge \
+    slurmd \
+    slurm-client \
+    slurmctld \
+    slurmdbd
+
+RUN wget https://sourceforge.net/projects/lmod/files/lua-5.1.4.9.tar.bz2 \
+    && tar xf lua-5.1.4.9.tar.bz2 \
+    && cd lua-5.1.4.9 \
+    && ./configure --prefix=/opt/apps/lua/5.1.4.9 \
+    && make; make install \
+    && cd /opt/apps/lua; ln -s 5.1.4.9 lua \
+    && ln -s /opt/apps/lua/lua/bin/lua /usr/local/bin \
+    && ln -s /opt/apps/lua/lua/bin/luac /usr/local/bin \
+    && export PATH=$PATH:/usr/local/bin/lua \
+    && export PATH=$PATH:/usr/local/bin/luac \
+    && cd
+
+RUN wget https://sourceforge.net/projects/lmod/files/Lmod-8.2.tar.bz2 \
+    && tar xf Lmod-8.2.tar.bz2 \
+    && cd Lmod-8.2 \
+    && ./configure --prefix=/opt/apps --with-fastTCLInterp=no \
+    && make install \
+    && ln -s /opt/apps/lmod/lmod/init/profile /etc/profile.d/z00_lmod.sh \
+    && ln -s /opt/apps/lmod/lmod/init/cshrc /etc/profile.d/z00_lmod.csh
+
 RUN mkdir /var/run/sshd
 RUN echo 'root:root' | chpasswd
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
@@ -15,20 +62,15 @@ RUN echo "export VISIBLE=now" >> /etc/profile
 EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]
 
-RUN apt-get install -y curl vim
-
-RUN apt-get install -y singularity-container
-
 COPY dockerfiles/cluster/qsub /usr/bin
 
-RUN apt-get update; apt-get install -y git python3 python3-pip
 RUN mkdir -p /opt/; \
     cd /opt; \
+    mkdir -p plantit-clusterside-home; \
     git clone https://github.com/Computational-Plant-Science/plantit-clusterside.git; \
     cd plantit-clusterside; \
     pip3 install -e .
 
-RUN apt-get install libfuse2
 RUN wget https://files.renci.org/pub/irods/releases/4.1.12/ubuntu14/irods-icommands-4.1.12-ubuntu14-x86_64.deb
 RUN dpkg -i irods-icommands-4.1.12-ubuntu14-x86_64.deb
 RUN rm irods-icommands-4.1.12-ubuntu14-x86_64.deb
@@ -36,3 +78,30 @@ COPY ./wait-for-it.sh /root/
 COPY ./configure-irods.sh /root/
 RUN chmod +x /root/wait-for-it.sh
 RUN chmod +x /root/configure-irods.sh
+
+RUN mkdir /opt/slurm
+RUN mkdir /etc/slurm
+COPY dockerfiles/cluster/configure-slurm-db.sql /opt/slurm
+COPY dockerfiles/cluster/slurm.conf /etc/slurm-llnl
+
+RUN cd /opt/slurm \
+    && gem install fpm \
+    && service munge start \
+    && service mysql start \
+    && mysql -u root < /opt/slurm/configure-slurm-db.sql \
+    && wget https://download.schedmd.com/slurm/slurm-17.11.12.tar.bz2 \
+    && tar xvjf slurm-17.11.12.tar.bz2 \
+    && cd slurm-17.11.12 \
+    && ./configure --prefix=/tmp/slurm-build --sysconfdir=/etc/slurm --enable-pam --with-pam_dir=/lib/x86_64-linux-gnu/security/ --without-shared-libslurm \
+    && make \
+    && make install
+    # TODO debug SLURM configuration and add PBS... testing with local Dask cluster for now
+    # && service slurmctld start \
+    # && service slurmdbd start \
+    # && service slurmd start \
+    # && sacctmgr add cluster compute-cluster \
+    # && sacctmgr add account compute-account description="PlantIT account" Organization=PlantIT \
+    # && sacctmgr create user myuser account=compute-account adminlevel=None
+
+SHELL ["/bin/bash", "-c"]
+RUN echo $'if [ -d /etc/profile.d ]; then for i in /etc/profile.d/*.sh; do if [ -r $i ]; then . $i; fi done; fi' >> /etc/bash.bashrc
