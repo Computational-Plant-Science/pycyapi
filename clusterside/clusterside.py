@@ -20,7 +20,7 @@ from dask_jobqueue import PBSCluster, SLURMCluster
 from clusterside.dagster.pipelines import *
 
 
-class ClusterSide:
+class Clusterside:
     workflow = {}
     server = None
 
@@ -28,11 +28,7 @@ class ClusterSide:
         with open(workflow_file, 'r') as w:
             self.workflow = json.load(w)
 
-        self.server = RESTComms(url=self.workflow['server_url'],
-                                headers={
-                                    "Authorization": "Token " + self.workflow['token']
-                                },
-                                job_pk=self.workflow['job_pk'])
+        self.server = RESTComms(url=self.workflow['server_url'])
 
     def __dask(self, client: Client):
         self.server.update_status(self.server.OK,
@@ -138,7 +134,7 @@ def cli():
     parser = argparse.ArgumentParser(description="PlantIT's workflow orchestration CLI")
     parser.add_argument('cmd', type=str, help='What to do')
     args, unknownargs = parser.parse_known_args(sys.argv[1:])
-    main = ClusterSide()
+    main = Clusterside()
 
     if args.cmd == "local":
         main.dask_local()

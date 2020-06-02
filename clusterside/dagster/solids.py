@@ -15,8 +15,7 @@ def extract_inputs(context, workflow: Workflow) -> Workflow:
 @solid
 def run_pre_commands(context, workflow: Workflow) -> Workflow:
     server = RESTComms(url=workflow.server_url,
-                       headers={"Authorization": "Token " + workflow.token},
-                       job_pk=workflow.job_pk)
+                       headers={"Authorization": "Token " + workflow.token})
 
     try:
         if workflow.pre_commands:
@@ -24,29 +23,28 @@ def run_pre_commands(context, workflow: Workflow) -> Workflow:
             if ret.returncode != 0:
                 msg = f"Non-zero exit code while running job '{workflow.job_pk}' pre-commands: {ret.stderr.decode('utf-8') if ret.stderr else ret.stdout.decode('utf-8') if ret.stdout else 'Unknown error'}"
                 context.log.error(msg)
-                server.update_status(server.FAILED, msg)
-                return
-            msg = f"Successfully ran job '{workflow.job_pk}' pre-commands"
-            context.log.info(msg)
-            server.update_status(server.OK, msg)
+                server.update_status(workflow.job_pk, server.FAILED, msg)
+            else:
+                msg = f"Successfully ran job '{workflow.job_pk}' pre-commands"
+                context.log.info(msg)
+                server.update_status(workflow.job_pk, server.OK, msg)
         else:
             msg = f"No pre-commands configured for job '{workflow.job_pk}', skipping"
             context.log.info(msg)
-            server.update_status(server.OK, msg)
-
-        return workflow
+            server.update_status(workflow.job_pk, server.OK, msg)
 
     except Exception:
         msg = f"Failed to run job '{workflow.job_pk}' pre-commands: {traceback.format_exc()}"
         context.log.error(msg)
-        server.update_status(server.FAILED, msg)
+        server.update_status(workflow.job_pk, server.FAILED, msg)
+
+    return workflow
 
 
 @solid
 def run_container(context, workflow: Workflow) -> Workflow:
     server = RESTComms(url=workflow.server_url,
-                       headers={"Authorization": "Token " + workflow.token},
-                       job_pk=workflow.job_pk)
+                       headers={"Authorization": "Token " + workflow.token})
 
     try:
         cmd = [
@@ -61,26 +59,24 @@ def run_container(context, workflow: Workflow) -> Workflow:
         if ret.returncode != 0:
             msg = f"Non-zero exit code while running job '{workflow.job_pk}': {ret.stderr.decode('utf-8') if ret.stderr else ret.stdout.decode('utf-8') if ret.stdout else 'Unknown error'}"
             context.log.error(msg)
-            server.update_status(server.FAILED, msg)
-            return
-
-        msg = f"Successfully ran job '{workflow.job_pk}'"
-        context.log.info(msg)
-        server.update_status(server.OK, msg)
-        return workflow
+            server.update_status(workflow.job_pk, server.FAILED, msg)
+        else:
+            msg = f"Successfully ran job '{workflow.job_pk}'"
+            context.log.info(msg)
+            server.update_status(workflow.job_pk, server.OK, msg)
 
     except Exception:
         msg = f"Failed to run job '{workflow.job_pk}': {traceback.format_exc()}"
         context.log.error(msg)
-        server.update_status(server.FAILED, msg)
-        return
+        server.update_status(workflow.job_pk, server.FAILED, msg)
+
+    return workflow
 
 
 @solid
 def run_post_commands(context, workflow: Workflow) -> Workflow:
     server = RESTComms(url=workflow.server_url,
-                       headers={"Authorization": "Token " + workflow.token},
-                       job_pk=workflow.job_pk)
+                       headers={"Authorization": "Token " + workflow.token})
 
     try:
         if workflow.post_commands:
@@ -88,22 +84,22 @@ def run_post_commands(context, workflow: Workflow) -> Workflow:
             if ret.returncode != 0:
                 msg = f"Non-zero exit code while running job '{workflow.job_pk}' post-commands: {ret.stderr.decode('utf-8') if ret.stderr else ret.stdout.decode('utf-8') if ret.stdout else 'Unknown error'}"
                 context.log.error(msg)
-                server.update_status(server.FAILED, msg)
-                return
-            msg = f"Successfully ran job '{workflow.job_pk}' post-commands"
-            context.log.info(msg)
-            server.update_status(server.OK, msg)
+                server.update_status(workflow.job_pk, server.FAILED, msg)
+            else:
+                msg = f"Successfully ran job '{workflow.job_pk}' post-commands"
+                context.log.info(msg)
+                server.update_status(workflow.job_pk, server.OK, msg)
         else:
             msg = f"No post-commands configured for job '{workflow.job_pk}', skipping"
             context.log.info(msg)
-            server.update_status(server.OK, msg)
-
-        return workflow
+            server.update_status(workflow.job_pk, server.OK, msg)
 
     except Exception:
         msg = f"Failed to run job '{workflow.job_pk}' post-commands: {traceback.format_exc()}"
         context.log.error(msg)
-        server.update_status(server.FAILED, msg)
+        server.update_status(workflow.job_pk, server.FAILED, msg)
+
+    return workflow
 
 
 @solid
