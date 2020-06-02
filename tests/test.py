@@ -1,90 +1,63 @@
-"""
-    This script runs clusterside locally printing all output to the command
-    line (instead of to the PlantIT server).
+import concurrent.futures
+import subprocess
+import os
+import logging
+import tornado
+import tornado.web
+import tornado.ioloop
+import json
 
-    It assumes irods is setup using iinit and the sample paths in the
-    sample_file dictionary exist on the irods server.
-"""
+from clusterside.workflow import Workflow
 
-from clusterside.executors import SingleJobExecutor
-from clusterside.workflow import Collection, Workflow
-from clusterside.comms import STDOUTComms
+logger = logging.getLogger('plantit-clusterside-test')
+logMessages = []
 
-process_file = '''
-def process_sample(name,path,args):
-    from pathlib import Path
-    Path('a_really_awecsome_file.txt').touch()
-    return {
-        'key-val': {'name': name, 'path': path}
-    }
-'''
 
-sample_file = '''
+class Handler(tornado.web.RequestHandler):
+    def post(self):
+        logMessages.append(self.get_body_argument("task_set"))
+        self.write(f"Received log message '{self.get_body_argument('task_set')}'")
+
+
+def loggers():
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s [%(name)s] %(message)s'))
+    logger.addHandler(handler)
+    tornadoLogger = logging.getLogger("tornado.access")
+    tornadoLogger.propagate = False
+    tornadoLogger.setLevel(logging.DEBUG)
+    tornadoLogger.handlers = [handler]
+
+
+def run_tornado():
+    loggers()
+    tornado.web.Application([(r"/test", Handler)]).listen(4141)
+    tornado.ioloop.IOLoop.current().start()
+
+
+workflow_definition = '''
 {
-    "name": "TestCollection",
-    "storage_type": "irods",
-    "base_file_path": "/tempZone/home/rods/",
-    "sample_set":{
-    	"Sample1": {
-    		"storage": "irods",
-    		"path": "/tempZone/home/rods/sample1.jpg"
-    	},
-    	"Sample2": {
-    		"storage": "irods",
-    		"path": "/tempZone/home/rods/sample2.jpg"
-    	},
-    	"Sample3": {
-    		"storage": "irods",
-    		"path": "/tempZone/home/rods/sample3.jpg"
-    	}
-    }
-}
-'''
-
-workflow_file = '''
-{
-	"server_url": "http://localhost/jobs/api/",
-        "container_url": "docker://python:3.6-stretch",
-    "api_version": 0.1,
-	"token": "asdf",
-	"job_pk": 2,
-	"parameters": {},
-    "pre_commands": [],
+    "job_pk": 2,
+    "token": "some_secret_value",
+	"server_url": "http://localhost:4141/test",
+    "container_url": "docker://python:3.6-stretch",
+	"parameters": {
+	    "output_file": "output.txt"
+	},
+    "pre_commands": null,
+    "post_commands": null,
+    "commands": "python3 --version > $OUTPUT_FILE",
     "flags": []
 }
 '''
 
-with open("samples.json", "w") as fout:
-    fout.write(sample_file)
-
 with open("workflow.json", "w") as fout:
-    fout.write(workflow_file)
+    fout.write(workflow_definition)
 
-with open("process.py", "w") as fout:
-    fout.write(process_file)
-
-collection = Collection("samples.json")
 workflow = Workflow("workflow.json")
-server = STDOUTComms()
 
-executor = SingleJobExecutor(collection, workflow, server)
-executor.process()
-results_path = executor.reduce()
+with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+    server = executor.submit(run_tornado)
+    subprocess.run("clusterside local")
 
-import os
-import shutil
-from clusterside.workflow import upload_file
-
-_, file_extension = os.path.splitext(results_path)
-remote_results_path = os.path.join(collection.base_file_path,
-                                   "results_job%d%s" % (workflow.job_pk, file_extension))
-upload_file(results_path, remote_results_path)
-
-server.update_job({'remote_results_path': remote_results_path})
-
-server.task_complete(1)
-
-os.remove("samples.json")
 os.remove("workflow.json")
-os.remove("process.py")
-

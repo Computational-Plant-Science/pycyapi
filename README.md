@@ -6,9 +6,9 @@ Workflow manager for PlantIT. Allows the PlantIT web platform to deploy jobs to 
 
 ## Requirements
 
-The following are required to run PlantIT Clusterside:
+The following are required to run PlantIT Clusterside in a Unix environment:
 
-- Python >= 3.6
+- Python 3.6+
 - [Singularity](https://sylabs.io/docs/)
 - [iRODS iCommands](https://wiki.cyverse.org/wiki/display/DS/Setting+Up+iCommands)
 
