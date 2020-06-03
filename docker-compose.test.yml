@@ -6,6 +6,8 @@ services:
     build:
       context: .
       dockerfile: dockerfiles/cluster/Dockerfile
+    volumes:
+      - .:/code
     privileged: true
 
   irods:

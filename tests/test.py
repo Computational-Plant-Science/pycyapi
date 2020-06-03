@@ -35,29 +35,30 @@ def run_tornado():
     tornado.ioloop.IOLoop.current().start()
 
 
-workflow_definition = '''
-{
+workflow_definition = {
     "job_pk": 2,
     "token": "some_secret_value",
-	"server_url": "http://localhost:4141/test",
+    "server_url": "http://localhost:4141/test",
     "container_url": "docker://python:3.6-stretch",
-	"parameters": {
-	    "output_file": "output.txt"
-	},
-    "pre_commands": null,
-    "post_commands": null,
-    "commands": "python3 --version > $OUTPUT_FILE",
+    "pre_commands": None,
+    "post_commands": None,
+    "commands": "python3 --version",
     "flags": []
 }
-'''
 
-with open("workflow.json", "w") as fout:
-    fout.write(workflow_definition)
-
-workflow = Workflow("workflow.json")
+workflow = Workflow(
+    job_pk=workflow_definition['job_pk'],
+    token=workflow_definition['token'],
+    server_url=workflow_definition['server_url'],
+    container_url=workflow_definition['container_url'],
+    commands=workflow_definition['commands'],
+    pre_commands=workflow_definition['pre_commands'],
+    post_commands=workflow_definition['post_commands'],
+    flags=workflow_definition['flags']
+)
 
 with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
     server = executor.submit(run_tornado)
-    subprocess.run("clusterside local")
+    job = executor.submit(lambda _: subprocess.run("clusterside local"))
 
 os.remove("workflow.json")

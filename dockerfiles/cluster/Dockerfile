@@ -3,6 +3,7 @@ FROM ubuntu:18.04
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
     openssh-server \
+    postgresql-client \
     singularity-container \
     git \
     python3 \
@@ -102,6 +103,13 @@ RUN cd /opt/slurm \
     # && sacctmgr add cluster compute-cluster \
     # && sacctmgr add account compute-account description="PlantIT account" Organization=PlantIT \
     # && sacctmgr create user myuser account=compute-account adminlevel=None
+
+RUN mkdir /code
+WORKDIR /code
+COPY . ./
+RUN chmod +x configure-irods.sh
+RUN chmod +x wait-for-it.sh
+RUN chmod +x wait-for-postgres.sh
 
 SHELL ["/bin/bash", "-c"]
 RUN echo $'if [ -d /etc/profile.d ]; then for i in /etc/profile.d/*.sh; do if [ -r $i ]; then . $i; fi done; fi' >> /etc/bash.bashrc
