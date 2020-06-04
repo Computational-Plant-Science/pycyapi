@@ -130,7 +130,6 @@ Sample*
 
 .telemetry/
 dask-worker-space/
-env.yaml
 history/
 intermediates/
 schedules/

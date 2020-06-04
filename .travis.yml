@@ -56,7 +56,7 @@ before_install:
 install:
   - singularity pull docker://python:3.6-stretch
   - sudo pip3 install -e .
-  - sudo pip3 install -U pytest
+  # - sudo pip3 install -U pytest
 
 script:
   - ./bootstrap.sh
