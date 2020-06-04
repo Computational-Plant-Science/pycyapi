@@ -18,59 +18,59 @@ from dask.distributed import Client
 from dask_jobqueue import PBSCluster, SLURMCluster
 
 from clusterside.dagster.pipelines import *
+from clusterside.job import Job
 
 
 class Clusterside:
-    workflow = {}
+    job = None
     server = None
 
-    def __init__(self, workflow_file="workflow.json", ):
-        with open(workflow_file, 'r') as w:
-            self.workflow = json.load(w)
+    def __init__(self, job: Job, mock_comms: bool = False):
+        self.job = job
+        self.server = STDOUTComms() if mock_comms or not self.job.server else RESTComms(url=self.job.server, headers={
+            "Authorization": "Token " + job.token})
 
-        self.server = RESTComms(url=self.workflow['server_url'])
-
-    def __dask(self, client: Client):
-        self.server.update_status(self.server.OK,
-                                  f"Started Dask scheduler at '{client.scheduler}'... Starting job '{self.workflow['job_pk']}'")
-        execute_pipeline(
-            singularity_workflow,
-            environment_dict={
-                'solids': {
-                    'extract_inputs': {
-                        'inputs': {
-                            'workflow': self.workflow
-                        }
-                    }
-                },
-                'storage': {
-                    'filesystem': {
-                        'config': {
-                            'base_dir': self.workflow['work_dir']
-                        }
-                    }
-                },
-                'execution': {
-                    'dask': {
-                        'config': {
-                            'address': client.scheduler
-                        }
-                    }
-                }
-            })
-        self.server.update_status(self.server.OK, f"Job '{self.workflow['job_pk']}' completed successfully")
-
-    def dask_local(self):
+    def in_process(self):
         """
-        Submit a job on a local Dask-Distributed cluster.
+        Submit a job in-process.
         """
 
         try:
-            self.__dask(Client())
+            msg = f"Starting job '{self.job.id}' (in-process)"
+            print(msg)
+            self.server.update_status(self.job.id, self.job.token, self.server.OK, msg)
+            execute_pipeline(
+                singularity_job,
+                environment_dict={
+                    'solids': {
+                        'sources': {
+                            'inputs': {
+                                'job': {
+                                    "id": self.job.id,
+                                    "workdir": self.job.workdir,
+                                    "token": self.job.token,
+                                    "server": self.job.server,
+                                    "container": self.job.container,
+                                    "commands": ' '.join(self.job.commands)
+                                }
+                            }
+                        }
+                    },
+                    'storage': {
+                        'filesystem': {
+                            'config': {
+                                'base_dir': self.job.workdir
+                            }
+                        }
+                    },
+                })
+            msg = f"Completed job '{self.job.id}' (in-process)"
+            print(msg)
+            self.server.update_status(self.job.id, self.job.token, self.server.OK, msg)
         except Exception:
-            print(f"Job '{self.workflow['job_pk']}' failed: {traceback.format_exc()}")
-            self.server.update_status(self.server.FAILED,
-                                      f"Job '{self.workflow['job_pk']}' failed: {traceback.format_exc()}")
+            msg = f"Job '{self.job.id}' (in-process) failed: {traceback.format_exc()}"
+            print(msg)
+            self.server.update_status(self.job.id, self.job.token, self.server.FAILED, msg)
             return
 
     def dask_jobqueue(self,
@@ -84,7 +84,7 @@ class Clusterside:
                       min_jobs: int = 1,
                       max_jobs: int = 10):
         """
-        Submit a job to cluster management system supported by Dask-Jobqueue.
+        Submit a job to a resource management system supported by Dask-Jobqueue.
 
         Args:
             queue_type (str): Cluster queueing system.
@@ -122,24 +122,75 @@ class Clusterside:
                 raise ValueError(f"Queue type '{queue_type}' not supported")
 
             cluster.adapt(minimum_jobs=min_jobs, maximum_jobs=max_jobs)
-            self.__dask(Client(cluster))
+            client = Client(cluster)
+            msg = f"Starting job '{self.job.id}' (dask-distributed scheduler '{client.scheduler}')"
+            print(msg)
+            self.server.update_status(self.job.id, self.job.token, self.server.OK, msg)
+            execute_pipeline(
+                singularity_job,
+                environment_dict={
+                    'solids': {
+                        'extract_inputs': {
+                            'inputs': {
+                                'job': json.loads(json.dumps(self.job))
+                            }
+                        }
+                    },
+                    'storage': {
+                        'filesystem': {
+                            'config': {
+                                'base_dir': self.job.workdir
+                            }
+                        }
+                    },
+                    'execution': {
+                        'dask': {
+                            'config': {
+                                'address': client.scheduler
+                            }
+                        }
+                    }
+                })
+            msg = f"Completed job '{self.job.id}' (dask-jobqueue)"
+            print(msg)
+            self.server.update_status(self.job.id, self.job.token, self.server.OK, msg)
         except Exception:
-            print(f"Job '{self.workflow['job_pk']}' failed: {traceback.format_exc()}")
-            self.server.update_status(self.server.FAILED,
-                                      f"Job '{self.workflow['job_pk']}' failed: {traceback.format_exc()}")
+            msg = f"Job '{self.job.id}' (dask-jobqueue) failed: {traceback.format_exc()}"
+            print(msg)
+            self.server.update_status(self.job.id, self.job.token, self.server.FAILED, msg)
             return
 
 
 def cli():
-    parser = argparse.ArgumentParser(description="PlantIT's workflow orchestration CLI")
+    parser = argparse.ArgumentParser(description="PlantIT's job orchestration CLI")
     parser.add_argument('cmd', type=str, help='What to do')
     args, unknownargs = parser.parse_known_args(sys.argv[1:])
-    main = Clusterside()
+    parser.add_argument('--id',
+                        type=str,
+                        help="Unique identifier")
+    parser.add_argument('--token',
+                        type=str,
+                        help="Authentication token")
+    parser.add_argument('--workdir',
+                        type=str,
+                        help="Working directory")
+    parser.add_argument('--server',
+                        type=str,
+                        help="PlantIT web API URL")
+    parser.add_argument('--container',
+                        type=str,
+                        help="Docker Hub or Singularity Hub container URL")
+    parser.add_argument('--commands',
+                        type=str,
+                        default="echo 'Hello, world!'",
+                        help="Commands to execute in container")
 
     if args.cmd == "local":
-        main.dask_local()
+        opts = parser.parse_args(unknownargs)
+        workflow = Job(opts.id, opts.token, opts.workdir, opts.server, opts.container, opts.commands)
+        cluster = Clusterside(workflow)
+        cluster.in_process()
     elif args.cmd == "jobqueue":
-        parser = argparse.ArgumentParser(description='Run a workflow')
         parser.add_argument('--type',
                             type=str,
                             default="pbs",
@@ -169,8 +220,10 @@ def cli():
                             default="01:00:00",
                             help="Job walltime")
         opts = parser.parse_args(unknownargs)
-
-        main.dask_jobqueue(opts.script, opts.type, opts.cores, opts.memory, opts.processes, opts.queue, opts.directory, opts.walltime)
+        workflow = Job(opts.id, opts.token, opts.workdir, opts.server, opts.container, opts.commands)
+        cluster = Clusterside(workflow)
+        cluster.dask_jobqueue(opts.script, opts.type, opts.cores, opts.memory, opts.processes, opts.queue,
+                              opts.directory, opts.walltime)
     else:
         raise ValueError(f"Unsupported command: {args.cmd}")
 

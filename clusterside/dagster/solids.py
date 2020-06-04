@@ -3,105 +3,51 @@ import traceback
 
 from dagster import solid
 
-from clusterside.comms import RESTComms
-from clusterside.workflow import Workflow
+from clusterside.comms import RESTComms, STDOUTComms
+from clusterside.dagster.types import DagsterJob
+from clusterside.exceptions import JobException
 
 
 @solid
-def extract_inputs(context, workflow: Workflow) -> Workflow:
-    return workflow
+def sources(context, job: DagsterJob) -> DagsterJob:
+    context.log.info(f"Successfully pulled from sources for job '{job.id}'")
+    return job
 
 
 @solid
-def run_pre_commands(context, workflow: Workflow) -> Workflow:
-    server = RESTComms(url=workflow.server_url,
-                       headers={"Authorization": "Token " + workflow.token})
-
-    try:
-        if workflow.pre_commands:
-            ret = subprocess.run(workflow.pre_commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            if ret.returncode != 0:
-                msg = f"Non-zero exit code while running job '{workflow.job_pk}' pre-commands: {ret.stderr.decode('utf-8') if ret.stderr else ret.stdout.decode('utf-8') if ret.stdout else 'Unknown error'}"
-                context.log.error(msg)
-                server.update_status(workflow.job_pk, server.FAILED, msg)
-            else:
-                msg = f"Successfully ran job '{workflow.job_pk}' pre-commands"
-                context.log.info(msg)
-                server.update_status(workflow.job_pk, server.OK, msg)
-        else:
-            msg = f"No pre-commands configured for job '{workflow.job_pk}', skipping"
-            context.log.info(msg)
-            server.update_status(workflow.job_pk, server.OK, msg)
-
-    except Exception:
-        msg = f"Failed to run job '{workflow.job_pk}' pre-commands: {traceback.format_exc()}"
-        context.log.error(msg)
-        server.update_status(workflow.job_pk, server.FAILED, msg)
-
-    return workflow
-
-
-@solid
-def run_container(context, workflow: Workflow) -> Workflow:
-    server = RESTComms(url=workflow.server_url,
-                       headers={"Authorization": "Token " + workflow.token})
+def container(context, job: DagsterJob) -> DagsterJob:
+    server = STDOUTComms() if not job.server else RESTComms(url=job.server,
+                                                            headers={"Authorization": "Token " + job.token})
 
     try:
         cmd = [
                   "singularity",
-                  "exec"
-              ] + [f for f in workflow.flags] + [
+                  "exec",
                   "--containall",
-                  workflow.container_url,
-                  workflow.commands
-              ]
+                  job.container
+              ] + job.commands
+        context.log.info(f"Preparing to execute '{cmd}'")
         ret = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if ret.returncode != 0:
-            msg = f"Non-zero exit code while running job '{workflow.job_pk}': {ret.stderr.decode('utf-8') if ret.stderr else ret.stdout.decode('utf-8') if ret.stdout else 'Unknown error'}"
+            msg = f"Non-zero exit code while running job '{job.id}': {ret.stderr.decode('utf-8') if ret.stderr else ret.stdout.decode('utf-8') if ret.stdout else 'Unknown error'}"
             context.log.error(msg)
-            server.update_status(workflow.job_pk, server.FAILED, msg)
+            server.update_status(job.id, job.token, server.FAILED, msg)
+            raise JobException(msg)
         else:
-            msg = f"Successfully ran job '{workflow.job_pk}'"
+            msg = f"Successfully ran job '{job.id}' with output: {ret.stdout.decode('utf-8')}"
             context.log.info(msg)
-            server.update_status(workflow.job_pk, server.OK, msg)
+            server.update_status(job.id, job.token, server.OK, msg)
 
-    except Exception:
-        msg = f"Failed to run job '{workflow.job_pk}': {traceback.format_exc()}"
+    except Exception as error:
+        msg = f"Failed to run job '{job.id}': {traceback.format_exc()}"
         context.log.error(msg)
-        server.update_status(workflow.job_pk, server.FAILED, msg)
+        server.update_status(job.id, job.token, server.FAILED, msg)
+        raise error
 
-    return workflow
+    return job
 
 
 @solid
-def run_post_commands(context, workflow: Workflow) -> Workflow:
-    server = RESTComms(url=workflow.server_url,
-                       headers={"Authorization": "Token " + workflow.token})
-
-    try:
-        if workflow.post_commands:
-            ret = subprocess.run(workflow.post_commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            if ret.returncode != 0:
-                msg = f"Non-zero exit code while running job '{workflow.job_pk}' post-commands: {ret.stderr.decode('utf-8') if ret.stderr else ret.stdout.decode('utf-8') if ret.stdout else 'Unknown error'}"
-                context.log.error(msg)
-                server.update_status(workflow.job_pk, server.FAILED, msg)
-            else:
-                msg = f"Successfully ran job '{workflow.job_pk}' post-commands"
-                context.log.info(msg)
-                server.update_status(workflow.job_pk, server.OK, msg)
-        else:
-            msg = f"No post-commands configured for job '{workflow.job_pk}', skipping"
-            context.log.info(msg)
-            server.update_status(workflow.job_pk, server.OK, msg)
-
-    except Exception:
-        msg = f"Failed to run job '{workflow.job_pk}' post-commands: {traceback.format_exc()}"
-        context.log.error(msg)
-        server.update_status(workflow.job_pk, server.FAILED, msg)
-
-    return workflow
-
-
-@solid
-def load_outputs(context, workflow: Workflow) -> Workflow:
-    return workflow
+def targets(context, job: DagsterJob) -> DagsterJob:
+    context.log.info(f"Successfully pushed to targets for job '{job.id}'")
+    return job

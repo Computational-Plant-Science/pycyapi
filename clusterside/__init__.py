@@ -7,7 +7,7 @@
         not documentation in the Plant IT cookiecutter docs:
 
         .. code-block:: python
-            :caption: workflow.py
+            :caption: job.py
 
             WORKFLOW_CONFIG = {
 
@@ -39,7 +39,7 @@
                 #
                 # In the example below, the empty singularity container
                 # created using the above "pre-commands" is overlayed
-                # onto the workflow singularity container.
+                # onto the job singularity container.
                 "flags": ["--overlay", "{workdir}/file.img"]
             }
 

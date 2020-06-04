@@ -65,13 +65,6 @@ CMD ["/usr/sbin/sshd", "-D"]
 
 COPY dockerfiles/cluster/qsub /usr/bin
 
-RUN mkdir -p /opt/; \
-    cd /opt; \
-    mkdir -p plantit-clusterside-home; \
-    git clone https://github.com/Computational-Plant-Science/plantit-clusterside.git; \
-    cd plantit-clusterside; \
-    pip3 install -e .
-
 RUN wget https://files.renci.org/pub/irods/releases/4.1.12/ubuntu14/irods-icommands-4.1.12-ubuntu14-x86_64.deb
 RUN dpkg -i irods-icommands-4.1.12-ubuntu14-x86_64.deb
 RUN rm irods-icommands-4.1.12-ubuntu14-x86_64.deb
@@ -104,12 +97,14 @@ RUN cd /opt/slurm \
     # && sacctmgr add account compute-account description="PlantIT account" Organization=PlantIT \
     # && sacctmgr create user myuser account=compute-account adminlevel=None
 
-RUN mkdir /code
-WORKDIR /code
+RUN mkdir -p /opt/plantit-clusterside-home \
+    && mkdir -p /opt/plantit-clusterside
+WORKDIR /opt/plantit-clusterside
 COPY . ./
-RUN chmod +x configure-irods.sh
-RUN chmod +x wait-for-it.sh
-RUN chmod +x wait-for-postgres.sh
+RUN chmod +x configure-irods.sh \
+    && chmod +x wait-for-it.sh \
+    && chmod +x wait-for-postgres.sh \
+    && pip3 install -e .
 
 SHELL ["/bin/bash", "-c"]
 RUN echo $'if [ -d /etc/profile.d ]; then for i in /etc/profile.d/*.sh; do if [ -r $i ]; then . $i; fi done; fi' >> /etc/bash.bashrc

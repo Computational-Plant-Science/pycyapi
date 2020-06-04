@@ -1,6 +1,6 @@
-from dagster import input_hydration_config, Permissive, Int, Field, String, DagsterType, Dict, Selector, List
+from dagster import input_hydration_config, Permissive, Int, Field, String, DagsterType, Dict, Selector, List, Array
 
-from clusterside.workflow import Workflow
+from clusterside.job import Job
 
 
 class DaskJobqueueOptions:
@@ -46,31 +46,24 @@ DagsterDaskJobqueueOptions = DagsterType(
 
 
 @input_hydration_config(Permissive({
-    'job_pk': Field(String),
+    'id': Field(String),
     'token': Field(String),
-    'server_url': Field(String),
-    'container_url': Field(String),
-    'commands': Field(String),
-    'pre_commands': Field(String),
-    'post_commands': Field(String),
-    'flags': Field(List)}
-))
-def workflow_input_hydration_config(_, selector) -> Workflow:
-    return Workflow(
-        job_pk=selector['job_pk'],
+    'workdir': Field(String),
+    'container': Field(String),
+    'commands': Field(String)}))
+def job_input_hydration_config(_, selector) -> Job:
+    return Job(
+        id=selector['id'],
         token=selector['token'],
-        server_url=selector['server_url'],
-        container_url=selector['container_url'],
-        commands=selector['commands'],
-        pre_commands=selector['pre_commands'],
-        post_commands=selector['post_commands'],
-        flags=selector['flags']
-    )
+        workdir=selector['workdir'],
+        server=selector['server'] if 'server' in selector else None,
+        container=selector['container'],
+        commands=str(selector['commands']).split())
 
 
-DagsterWorkflow = DagsterType(
-    name='Workflow',
-    type_check_fn=lambda _, value: isinstance(value, Workflow),
-    description='Workflow definition',
-    input_hydration_config=workflow_input_hydration_config
+DagsterJob = DagsterType(
+    name='Job',
+    type_check_fn=lambda _, value: isinstance(value, Job),
+    description='Job definition',
+    input_hydration_config=job_input_hydration_config
 )

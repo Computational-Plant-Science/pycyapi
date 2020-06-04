@@ -48,11 +48,11 @@ class RESTComms(Comms):
             self.headers = headers
         self.headers["Content-Type"] = "application/json"
 
-    def update_job(self, pk: str, token: str, props: dict):
+    def update_job(self, id: str, token: str, props: dict):
         patch = json.dumps(props)
         headers = dict(self.headers)
-        headers["Authorization": "Token " + self.workflow['token']]
-        response = requests.patch(self.url + f"jobs/{pk}/", patch, headers=self.headers)
+        headers["Authorization"] = f"Token {token}"
+        response = requests.patch(self.url + f"jobs/{id}/", patch, headers=self.headers)
         response.raise_for_status()
 
     def update_status(self, pk, token: str,  status: str, description: str):

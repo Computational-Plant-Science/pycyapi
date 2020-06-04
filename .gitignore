@@ -127,3 +127,11 @@ singularity/
 integration_tests.sh
 Sample*
 *.sif
+
+.telemetry/
+dask-worker-space/
+env.yaml
+history/
+intermediates/
+schedules/
+storage/

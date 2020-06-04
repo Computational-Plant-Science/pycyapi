@@ -1,0 +1,3 @@
+repository:
+    module: clusterside.dagster.repository
+    fn: define_repo
