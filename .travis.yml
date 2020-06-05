@@ -54,13 +54,12 @@ before_install:
     cd ..
 
 install:
-  - singularity pull docker://python:3.6-stretch
   - sudo pip3 install -e .
-  # - sudo pip3 install -U pytest
+  - sudo pip3 install -U pytest
 
 script:
   - ./bootstrap.sh
   - docker-compose -f docker-compose.test.yml up -d
-  - docker-compose -f docker-compose.test.yml exec cluster /opt/plantit-clusterside/unit-tests.sh
+  # - docker-compose -f docker-compose.test.yml exec cluster /opt/plantit-clusterside/unit-tests.sh
   - docker-compose -f docker-compose.test.yml exec cluster /opt/plantit-clusterside/integration-tests.sh
   - docker-compose -f docker-compose.test.yml down
