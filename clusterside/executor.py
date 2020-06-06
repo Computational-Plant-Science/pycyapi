@@ -211,13 +211,14 @@ def cli():
 
     with open(opts.job) as file:
         job_json = json.load(file)
-        cluster = Executor(Job(
+        job = Job(
             id=job_json['id'],
             token=job_json['token'],
             workdir=job_json['workdir'],
             server=job_json['server'] if 'server' in job_json else None,
             container=job_json['container'],
-            commands=str(job_json['commands']).split()))
+            commands=str(job_json['commands']).split())
+        cluster = Executor(job)
         if opts.executor == "local":
             cluster.local()
         elif opts.executor == "jobqueue":

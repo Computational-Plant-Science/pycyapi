@@ -6,4 +6,4 @@ from clusterside.dagster.solids import *
 
 @pipeline(mode_defs=[ModeDefinition(executor_defs=default_executors + [dask_executor])])
 def singularity():
-    targets(container(sources()))
+    targets(singularity_container(sources()))
