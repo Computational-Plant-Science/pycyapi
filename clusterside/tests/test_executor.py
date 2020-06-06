@@ -1,4 +1,3 @@
-from clusterside.comms import FileComms
 from clusterside.executor import Executor
 from clusterside.job import Job
 

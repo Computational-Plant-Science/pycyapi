@@ -5,4 +5,4 @@
 # ./wait-for-it.sh irods:1247 --
 
 echo "Running integration tests..."
-python3 /opt/plantit-clusterside/tests/test.py
+clusterside --job "test_job.json" --executor "local"

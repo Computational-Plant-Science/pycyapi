@@ -41,37 +41,37 @@ class Executor:
                 status=self.server.OK,
                 description=f"Starting local '{singularity.__name__}' job '{self.job.id}'")
             for event in execute_pipeline_iterator(
-                singularity,
-                environment_dict={
-                    'solids': {
-                        'sources': {
-                            'inputs': {
-                                'job': {
-                                    "id": self.job.id,
-                                    "workdir": self.job.workdir,
-                                    "token": self.job.token,
-                                    "server": self.job.server,
-                                    "container": self.job.container,
-                                    "commands": ' '.join(self.job.commands)
+                    singularity,
+                    environment_dict={
+                        'solids': {
+                            'sources': {
+                                'inputs': {
+                                    'job': {
+                                        "id": self.job.id,
+                                        "workdir": self.job.workdir,
+                                        "token": self.job.token,
+                                        "server": self.job.server,
+                                        "container": self.job.container,
+                                        "commands": ' '.join(self.job.commands)
+                                    }
+                                }
+                            }
+                        },
+                        'storage': {
+                            'filesystem': {
+                                'config': {
+                                    'base_dir': self.job.workdir
+                                }
+                            }
+                        },
+                        'loggers': {
+                            'console': {
+                                'config': {
+                                    'log_level': 'INFO'
                                 }
                             }
                         }
-                    },
-                    'storage': {
-                        'filesystem': {
-                            'config': {
-                                'base_dir': self.job.workdir
-                            }
-                        }
-                    },
-                    'loggers': {
-                        'console': {
-                            'config': {
-                                'log_level': 'INFO'
-                            }
-                        }
-                    }
-                }):
+                    }):
                 self.server.update_status(
                     pk=self.job.id,
                     token=self.job.token,
@@ -142,46 +142,47 @@ class Executor:
 
             cluster.adapt(minimum_jobs=min_jobs, maximum_jobs=max_jobs)
             client = Client(cluster)
-            self.server.update_status(self.job.id, self.job.token, self.server.OK, f"Starting {singularity.__name__} job '{self.job.id}' on dask-jobqueue scheduler '{client.scheduler}'")
+            self.server.update_status(self.job.id, self.job.token, self.server.OK,
+                                      f"Starting {singularity.__name__} job '{self.job.id}' on dask-jobqueue scheduler '{client.scheduler}'")
             for event in execute_pipeline_iterator(
-                singularity,
-                environment_dict={
-                    'solids': {
-                        'sources': {
-                            'inputs': {
-                                'job': {
-                                    "id": self.job.id,
-                                    "workdir": self.job.workdir,
-                                    "token": self.job.token,
-                                    "server": self.job.server,
-                                    "container": self.job.container,
-                                    "commands": ' '.join(self.job.commands)
+                    singularity,
+                    environment_dict={
+                        'solids': {
+                            'sources': {
+                                'inputs': {
+                                    'job': {
+                                        "id": self.job.id,
+                                        "workdir": self.job.workdir,
+                                        "token": self.job.token,
+                                        "server": self.job.server,
+                                        "container": self.job.container,
+                                        "commands": ' '.join(self.job.commands)
+                                    }
+                                }
+                            }
+                        },
+                        'storage': {
+                            'filesystem': {
+                                'config': {
+                                    'base_dir': self.job.workdir
+                                }
+                            }
+                        },
+                        'execution': {
+                            'dask': {
+                                'config': {
+                                    'address': client.scheduler.address
+                                }
+                            }
+                        },
+                        'loggers': {
+                            'console': {
+                                'config': {
+                                    'log_level': 'INFO'
                                 }
                             }
                         }
-                    },
-                    'storage': {
-                        'filesystem': {
-                            'config': {
-                                'base_dir': self.job.workdir
-                            }
-                        }
-                    },
-                    'execution': {
-                        'dask': {
-                            'config': {
-                                'address': client.scheduler.address
-                            }
-                        }
-                    },
-                    'loggers': {
-                        'console': {
-                            'config': {
-                                'log_level': 'INFO'
-                            }
-                        }
-                    }
-                }):
+                    }):
                 self.server.update_status(
                     self.job.id,
                     self.job.token,
@@ -189,27 +190,37 @@ class Executor:
                     f"Dagster pipeline event: '{event.event_type}'")
                 if not event.is_successful_output:
                     raise JobException(event)
-            self.server.update_status(self.job.id, self.job.token, self.server.OK, f"Completed {singularity.__name__} job '{self.job.id}' on dask-jobqueue scheduler '{client.scheduler}'")
+            self.server.update_status(self.job.id, self.job.token, self.server.OK,
+                                      f"Completed {singularity.__name__} job '{self.job.id}' on dask-jobqueue scheduler '{client.scheduler}'")
         except Exception:
-            self.server.update_status(self.job.id, self.job.token, self.server.FAILED, f"Dask-jobqueue {singularity.__name__} job '{self.job.id}' failed: {traceback.format_exc()}")
+            self.server.update_status(self.job.id, self.job.token, self.server.FAILED,
+                                      f"Dask-jobqueue {singularity.__name__} job '{self.job.id}' failed: {traceback.format_exc()}")
             return
 
 
 def cli():
     parser = argparse.ArgumentParser(description="PlantIT's job orchestration CLI")
-    parser.add_argument('cmd', type=str)
     cmds, args = parser.parse_known_args(sys.argv[1:])
-    parser.add_argument('--file',
+    parser.add_argument('--job',
                         type=str,
                         help="JSON job definition file")
+    parser.add_argument('--executor',
+                        type=str,
+                        help="Job executor (currently supported: 'local', 'jobqueue')")
     opts = parser.parse_args(args)
 
     with open(opts.job) as file:
-        job = json.load(file)
-        cluster = Executor(job)
-        if cmds.cmd == "local":
+        job_json = json.load(file)
+        cluster = Executor(Job(
+            id=job_json['id'],
+            token=job_json['token'],
+            workdir=job_json['workdir'],
+            server=job_json['server'] if 'server' in job_json else None,
+            container=job_json['container'],
+            commands=str(job_json['commands']).split()))
+        if opts.executor == "local":
             cluster.local()
-        elif cmds.cmd == "jobqueue":
+        elif opts.executor == "jobqueue":
             # TODO read from config file
             cluster.jobqueue(
                 "slurm",

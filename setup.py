@@ -11,7 +11,7 @@ setup(name='clusterside',
       packages=['clusterside'],
       entry_points={
         'console_scripts':[
-            'clusterside = clusterside.clusterside:cli'
+            'clusterside = clusterside.executor:cli'
         ]
       },
       install_requires=['requests','python-irodsclient', 'dask', 'dask-jobqueue', 'dagster', 'dagster-dask'],
