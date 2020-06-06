@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Plant IT Clusterside documentation build configuration file, created by
+# Plant IT Executor documentation build configuration file, created by
 # sphinx-quickstart on Mon Jun 24 12:19:42 2019.
 #
 # This file is execfile()d with the current directory set to its
@@ -50,7 +50,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'Plant IT Clusterside'
+project = 'Plant IT Executor'
 copyright = '2019, CPS Lab'
 author = 'CPS Lab'
 
@@ -143,7 +143,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'PlantITClusterside.tex', 'Plant IT Clusterside Documentation',
+    (master_doc, 'PlantITClusterside.tex', 'Plant IT Executor Documentation',
      'CPS Lab', 'manual'),
 ]
 
@@ -153,7 +153,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'plantitclusterside', 'Plant IT Clusterside Documentation',
+    (master_doc, 'plantitclusterside', 'Plant IT Executor Documentation',
      [author], 1)
 ]
 
@@ -164,7 +164,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'PlantITClusterside', 'Plant IT Clusterside Documentation',
+    (master_doc, 'PlantITClusterside', 'Plant IT Executor Documentation',
      author, 'PlantITClusterside', 'One line description of project.',
      'Miscellaneous'),
 ]

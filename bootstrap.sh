@@ -8,7 +8,7 @@ echo "Bringing containers down..."
 $DOCKER_COMPOSE down
 
 echo "Building containers..."
-$DOCKER_COMPOSE build "$@"
+$DOCKER_COMPOSE build "$@" --no-cache
 
 echo "Configuring mock IRODS..."
 $DOCKER_COMPOSE up -d irods

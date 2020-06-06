@@ -88,13 +88,22 @@ RUN cd /opt/slurm \
     && cd slurm-17.11.12 \
     && ./configure --prefix=/tmp/slurm-build --sysconfdir=/etc/slurm --enable-pam --with-pam_dir=/lib/x86_64-linux-gnu/security/ --without-shared-libslurm \
     && make \
-    && make install
-    # TODO debug SLURM configuration and add PBS... testing with local Dask cluster for now
-    # && service slurmctld start \
-    # && service slurmdbd start \
-    # && service slurmd start \
+    && make install \
+    && cd .. \
+    && mkdir -p /etc/slurm /etc/slurm/prolog.d /etc/slurm/epilog.d /var/spool/slurm/ctld /var/spool/slurm/d /var/log/slurm \
+    # && chown slurm /var/spool/slurm/ctld /var/spool/slurm/d /var/log/slurm \
+    # && systemctl enable mysql \
+    # && systemctl start mysql \
+    # && mysql -u root < /opt/slurm/configure-slurm-db.sql \
+    # && cp ubuntu-slurm/slurmdbd.service /etc/systemd/system/ \
+    # && cp ubuntu-slurm/slurmctld.service /etc/systemd/system/ \
+    # && systemctl daemon-reload \
+    # && systemctl enable slurmdbd \
+    # && systemctl start slurmdbd \
+    # && systemctl enable slurmctld \
+    # && systemctl start slurmctld \
     # && sacctmgr add cluster compute-cluster \
-    # && sacctmgr add account compute-account description="PlantIT account" Organization=PlantIT \
+    # && sacctmgr add account compute-account description="PlantIT" Organization=PlantIT \
     # && sacctmgr create user myuser account=compute-account adminlevel=None
 
 RUN mkdir -p /opt/plantit-clusterside-home \
@@ -104,7 +113,8 @@ COPY . ./
 RUN chmod +x configure-irods.sh \
     && chmod +x wait-for-it.sh \
     && chmod +x wait-for-postgres.sh \
-    && pip3 install -e .
+    && pip3 install -e . \
+    && pip3 install -U pytest
 
 SHELL ["/bin/bash", "-c"]
 RUN echo $'if [ -d /etc/profile.d ]; then for i in /etc/profile.d/*.sh; do if [ -r $i ]; then . $i; fi done; fi' >> /etc/bash.bashrc

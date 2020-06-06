@@ -1,6 +1,6 @@
-from clusterside import clusterside
+from clusterside.comms import FileComms
+from clusterside.executor import Executor
 from clusterside.job import Job
-
 
 definition = {
     "id": "2",
@@ -19,4 +19,22 @@ job = Job(
     container=definition['container'],
     commands=definition['commands'].split())
 
-clusterside.Clusterside(job).in_process()
+
+def test_local():
+    Executor(job).local()
+
+
+def test_jobqueue_slurm():
+    pass
+#     Executor(job).jobqueue(
+#         queue_type="slurm",
+#         cores=1,
+#         memory="1MB",
+#         processes=1,
+#         queue='default',
+#         local_directory=job.workdir,
+#         walltime="00:01:00")
+
+
+def test_jobqueue_pbs():
+    pass

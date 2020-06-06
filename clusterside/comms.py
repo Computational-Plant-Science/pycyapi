@@ -31,6 +31,19 @@ class STDOUTComms(Comms):
         print(f"Job updated with: {props}")
 
 
+class FileComms(Comms):
+    def __init__(self, path: str):
+        self.path = path
+
+    def update_status(self, pk: str, token: str,  status: str, description: str):
+        with open(self.path, "a") as file:
+            file.write(f"{pk}, {token}, {status}, {description}\n")
+
+    def update_job(self, pk: str, token: str,  props: dict):
+        with open(self.path, "a") as file:
+            file.write(f"{pk}, {token}, {props}\n")
+
+
 class RESTComms(Comms):
     def __init__(self, url: str, headers: dict = None):
         """
