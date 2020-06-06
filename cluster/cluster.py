@@ -1,29 +1,25 @@
 """
-    Command line interface and logic.
+    Command line interface.
 
-    Provides the command line commands of:
+    **cluster --job "definition.json" --run "[local/jobqueue]":** Runs a PlantIT job described in the given file
+    on the given executor.
 
-    **clusterside submit:** Creates a submit file containing the
-    `clusterside run` command and submits the file using qsub.
-
-    **clusterside run:** Runs the analysis. This should be called inside a
-    cluster job, as done by `clusterside submit`.
 """
 import argparse
 import json
 import sys
 import traceback
 
-from clusterside.comms import Comms, STDOUTComms, RESTComms
+from cluster.comms import Comms, STDOUTComms, RESTComms
 from dagster import execute_pipeline_iterator
 from dask.distributed import Client
 from dask_jobqueue import PBSCluster, SLURMCluster
 
-from clusterside.dagster.pipelines import *
-from clusterside.job import Job
+from cluster.dagster.pipelines import *
+from cluster.job import Job
 
 
-class Executor:
+class Cluster:
     def __init__(self, job: Job, server: Comms = STDOUTComms()):
         self.job = job
         self.server = server if not self.job.server else RESTComms(url=self.job.server, headers={
@@ -31,7 +27,7 @@ class Executor:
 
     def local(self):
         """
-        Submit a job in-process.
+        Runs a job in-process.
         """
 
         try:
@@ -76,20 +72,20 @@ class Executor:
                     pk=self.job.id,
                     token=self.job.token,
                     status=self.server.WARN if event.is_failure else self.server.OK,
-                    description=f"{event.event_type} with message: '{event.message}'")
+                    description=f"Dagster even '{event.event_type}' with message: '{event.message}'")
                 if event.is_pipeline_failure:
                     raise JobException(event.message)
             self.server.update_status(
                 pk=self.job.id,
                 token=self.job.token,
                 status=self.server.OK,
-                description=f"Completed local '{singularity.__name__}' job '{self.job.id}'")
+                description=f"Completed local job '{self.job.id}'")
         except Exception:
             self.server.update_status(
                 pk=self.job.id,
                 token=self.job.token,
                 status=self.server.FAILED,
-                description=f"Local '{singularity.__name__}' job '{self.job.id}' failed: {traceback.format_exc()}")
+                description=f"Local job '{self.job.id}' failed: {traceback.format_exc()}")
             return
 
     def jobqueue(self,
@@ -103,7 +99,7 @@ class Executor:
                  min_jobs: int = 1,
                  max_jobs: int = 10):
         """
-        Submit a job to a resource management system with dask-jobqueue.
+        Submits a job to a resource management system with dask-jobqueue.
 
         Args:
             queue_type (str): Cluster queueing system.
@@ -143,7 +139,7 @@ class Executor:
             cluster.adapt(minimum_jobs=min_jobs, maximum_jobs=max_jobs)
             client = Client(cluster)
             self.server.update_status(self.job.id, self.job.token, self.server.OK,
-                                      f"Starting {singularity.__name__} job '{self.job.id}' on dask-jobqueue scheduler '{client.scheduler}'")
+                                      f"Starting jobqueue job '{self.job.id}' on dask-jobqueue scheduler '{client.scheduler}'")
             for event in execute_pipeline_iterator(
                     singularity,
                     environment_dict={
@@ -186,27 +182,27 @@ class Executor:
                 self.server.update_status(
                     self.job.id,
                     self.job.token,
-                    self.server.OK if event.is_successful_output else self.server.WARN,
-                    f"Dagster pipeline event: '{event.event_type}'")
-                if not event.is_successful_output:
+                    self.server.WARN if event.is_failure else self.server.OK,
+                    f"Dagster event '{event.event_type}' with message: '{event.message}'")
+                if event.is_pipeline_failure:
                     raise JobException(event)
             self.server.update_status(self.job.id, self.job.token, self.server.OK,
-                                      f"Completed {singularity.__name__} job '{self.job.id}' on dask-jobqueue scheduler '{client.scheduler}'")
+                                      f"Completed jobqueue job '{self.job.id}' on dask-jobqueue scheduler '{client.scheduler}'")
         except Exception:
             self.server.update_status(self.job.id, self.job.token, self.server.FAILED,
-                                      f"Dask-jobqueue {singularity.__name__} job '{self.job.id}' failed: {traceback.format_exc()}")
+                                      f"Jobqueue job '{self.job.id}' failed: {traceback.format_exc()}")
             return
 
 
 def cli():
-    parser = argparse.ArgumentParser(description="PlantIT's job orchestration CLI")
-    cmds, args = parser.parse_known_args(sys.argv[1:])
+    parser = argparse.ArgumentParser(description="PlantIT workflow management API.")
+    _, args = parser.parse_known_args(sys.argv[1:])
     parser.add_argument('--job',
                         type=str,
                         help="JSON job definition file")
-    parser.add_argument('--executor',
+    parser.add_argument('--run',
                         type=str,
-                        help="Job executor (currently supported: 'local', 'jobqueue')")
+                        help="How to run the job (currently supported: 'local', 'jobqueue')")
     opts = parser.parse_args(args)
 
     with open(opts.job) as file:
@@ -218,10 +214,11 @@ def cli():
             server=job_json['server'] if 'server' in job_json else None,
             container=job_json['container'],
             commands=str(job_json['commands']).split())
-        cluster = Executor(job)
-        if opts.executor == "local":
+        # TODO pass job to run command rather than at init time - cluster should be persistent
+        cluster = Cluster(job)
+        if opts.run == "local":
             cluster.local()
-        elif opts.executor == "jobqueue":
+        elif opts.run == "jobqueue":
             # TODO read from config file
             cluster.jobqueue(
                 "slurm",
@@ -232,7 +229,7 @@ def cli():
                 job.workdir,
                 "00:00:01")
         else:
-            raise ValueError(f"Unsupported command: {cmds.cmd}")
+            raise ValueError(f"Unknown run configuration '{opts.run}' (currently supported: 'local', 'jobqueue')")
 
 
 if __name__ == "__main__":

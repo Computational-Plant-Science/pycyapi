@@ -2,8 +2,8 @@ import subprocess
 
 from dagster import solid
 
-from clusterside.dagster.types import DagsterJob
-from clusterside.exceptions import JobException
+from cluster.dagster.types import DagsterJob
+from cluster.exceptions import JobException
 
 
 @solid
@@ -18,16 +18,16 @@ def singularity_container(context, job: DagsterJob) -> DagsterJob:
               "singularity",
               "exec",
               "--containall",
-              job.singularity_container
+              job.container
           ] + job.commands
-    context.log.info(f"Running '{cmd}' for job '{job.id}'")
+    context.log.info(f"Running Singularity container with '{cmd}' for job '{job.id}'")
     ret = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if ret.returncode != 0:
-        msg = f"Non-zero exit code from '{cmd}' for job '{job.id}': {ret.stderr.decode('utf-8') if ret.stderr else ret.stdout.decode('utf-8') if ret.stdout else 'Unknown error'}"
+        msg = f"Non-zero exit code from Singularity container for job '{job.id}': {ret.stderr.decode('utf-8') if ret.stderr else ret.stdout.decode('utf-8') if ret.stdout else 'Unknown error'}"
         context.log.error(msg)
         raise JobException(msg)
     else:
-        context.log.info(f"Successfully executed '{cmd}' for job '{job.id}' with output: {ret.stdout.decode('utf-8')}")
+        context.log.info(f"Successfully ran Singularity container for job '{job.id}' with output: {ret.stdout.decode('utf-8')}")
 
     return job
 
@@ -39,14 +39,14 @@ def docker_container(context, job: DagsterJob) -> DagsterJob:
               "run",
               job.container
           ] + job.commands
-    context.log.info(f"Running '{cmd}' for job '{job.id}'")
+    context.log.info(f"Running Docker container with '{cmd}' for job '{job.id}'")
     ret = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if ret.returncode != 0:
-        msg = f"Non-zero exit code from '{cmd}' for job '{job.id}': {ret.stderr.decode('utf-8') if ret.stderr else ret.stdout.decode('utf-8') if ret.stdout else 'Unknown error'}"
+        msg = f"Non-zero exit code from Docker container for job '{job.id}': {ret.stderr.decode('utf-8') if ret.stderr else ret.stdout.decode('utf-8') if ret.stdout else 'Unknown error'}"
         context.log.error(msg)
         raise JobException(msg)
     else:
-        context.log.info(f"Successfully executed '{cmd}' for job '{job.id}' with output: {ret.stdout.decode('utf-8')}")
+        context.log.info(f"Successfully ran Docker container for job '{job.id}' with output: {ret.stdout.decode('utf-8')}")
 
     return job
 

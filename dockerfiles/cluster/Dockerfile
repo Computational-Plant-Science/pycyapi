@@ -90,7 +90,7 @@ RUN cd /opt/slurm \
     && make \
     && make install \
     && cd .. \
-    && mkdir -p /etc/slurm /etc/slurm/prolog.d /etc/slurm/epilog.d /var/spool/slurm/ctld /var/spool/slurm/d /var/log/slurm \
+    && mkdir -p /etc/slurm /etc/slurm/prolog.d /etc/slurm/epilog.d /var/spool/slurm/ctld /var/spool/slurm/d /var/log/slurm
     # && chown slurm /var/spool/slurm/ctld /var/spool/slurm/d /var/log/slurm \
     # && systemctl enable mysql \
     # && systemctl start mysql \
@@ -106,9 +106,9 @@ RUN cd /opt/slurm \
     # && sacctmgr add account compute-account description="PlantIT" Organization=PlantIT \
     # && sacctmgr create user myuser account=compute-account adminlevel=None
 
-RUN mkdir -p /opt/plantit-clusterside-home \
-    && mkdir -p /opt/plantit-clusterside
-WORKDIR /opt/plantit-clusterside
+RUN mkdir -p /opt/plantit-cluster-home \
+    && mkdir -p /opt/plantit-cluster
+WORKDIR /opt/plantit-cluster
 COPY . ./
 RUN chmod +x configure-irods.sh \
     && chmod +x wait-for-it.sh \

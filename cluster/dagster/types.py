@@ -1,6 +1,6 @@
 from dagster import input_hydration_config, Permissive, Int, Field, String, DagsterType, Dict, Selector, List, Array
 
-from clusterside.job import Job
+from cluster.job import Job
 
 
 class DaskJobqueueOptions:

@@ -1,5 +1,5 @@
-from clusterside.executor import Executor
-from clusterside.job import Job
+from cluster.cluster import Cluster
+from cluster.job import Job
 
 definition = {
     "id": "2",
@@ -20,12 +20,12 @@ job = Job(
 
 
 def test_local():
-    Executor(job).local()
+    Cluster(job).local()
 
 
 def test_jobqueue_slurm():
     pass
-#     Executor(job).jobqueue(
+#     Cluster(job).jobqueue(
 #         queue_type="slurm",
 #         cores=1,
 #         memory="1MB",

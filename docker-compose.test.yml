@@ -7,9 +7,9 @@ services:
       context: .
       dockerfile: dockerfiles/cluster/Dockerfile
     volumes:
-      - .:/opt/plantit-clusterside/
+      - .:/opt/plantit-cluster/
     environment:
-      - DAGSTER_HOME=/opt/plantit-clusterside/
+      - DAGSTER_HOME=/opt/plantit-cluster/
     privileged: true
 
   irods:

@@ -2,7 +2,7 @@ import tempfile
 
 from irods.session import iRODSSession
 
-from clusterside.irods import IRODSOptions, IRODS
+from cluster.irods import IRODSOptions, IRODS
 
 # TODO finish these
 
