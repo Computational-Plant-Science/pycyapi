@@ -2,7 +2,7 @@ import tempfile
 
 from irods.session import iRODSSession
 
-from cluster.irods import IRODSOptions, IRODS
+from plantit_cluster.irods import IRODSOptions, IRODS
 
 # TODO finish these
 

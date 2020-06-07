@@ -2,8 +2,8 @@ import subprocess
 
 from dagster import solid
 
-from cluster.dagster.types import DagsterJob
-from cluster.exceptions import JobException
+from plantit_cluster.dagster.types import DagsterJob
+from plantit_cluster.exceptions import JobException
 
 
 @solid

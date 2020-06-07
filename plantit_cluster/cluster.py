@@ -10,13 +10,13 @@ import json
 import sys
 import traceback
 
-from cluster.comms import Comms, STDOUTComms, RESTComms
+from plantit_cluster.comms import Comms, STDOUTComms, RESTComms
 from dagster import execute_pipeline_iterator
 from dask.distributed import Client
 from dask_jobqueue import PBSCluster, SLURMCluster
 
-from cluster.dagster.pipelines import *
-from cluster.job import Job
+from plantit_cluster.dagster.pipelines import *
+from plantit_cluster.job import Job
 
 
 class Cluster:

@@ -1,5 +1,5 @@
-from cluster.cluster import Cluster
-from cluster.job import Job
+from plantit_cluster.cluster import Cluster
+from plantit_cluster.job import Job
 
 definition = {
     "id": "2",
