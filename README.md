@@ -28,10 +28,8 @@ make html
 To install `plantit-cluster` on a compute cluster, run:
 
 ```
-pip3 install --user git+https://github.com/Computational-Plant-Science/plantit-cluster
+pip3 install plantit-cluster
 ```
-
-Cluster expects [iRODS iCommands](https://wiki.cyverse.org/wiki/display/DS/Setting+Up+iCommands) to be installed and configured with the `iinit` command. Cluster reads in the configuration created by `iinit` to connect to the iRODS server. Configuration information for CyVerse iRODS is available [here](https://wiki.cyverse.org/wiki/display/DS/Setting+Up+iCommands).
 
 ## Usage
 

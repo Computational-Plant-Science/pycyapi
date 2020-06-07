@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
+from setuptools import setup
 
 setup(name='plantit-cluster',
       version='0.0.1',
@@ -10,10 +10,10 @@ setup(name='plantit-cluster',
       url='https://github.com/Computational-Plant-Science/plantit-cluster',
       packages=['plantit_cluster'],
       entry_points={
-        'console_scripts':[
-            'plantit = plantit_cluster.cluster:cli'
-        ]
+          'console_scripts': [
+              'plantit = plantit_cluster.cluster:cli'
+          ]
       },
-      install_requires=['requests','python-irodsclient', 'dask', 'dask-jobqueue', 'dagster', 'dagster-dask'],
-      tests_require=['pytest']
-     )
+      install_requires=['requests', 'python-irodsclient', 'dask', 'dask-jobqueue', 'dagster', 'dagster-dask'],
+      setup_requires=['wheel'],
+      tests_require=['pytest'])
