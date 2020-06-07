@@ -33,7 +33,7 @@ pip3 install plantit-cluster
 
 ## Usage
 
-`plantit-cluster` currently supports a run configuration: `plantit --job some.json --run [local]`. `dask-jobqueue` integration is in development.
+`plantit-cluster` currently only supports a single in-process run configuration: `plantit --job some.json --run local`. A `dask-jobqueue` integration is in development.
 
 ## Tests
 
