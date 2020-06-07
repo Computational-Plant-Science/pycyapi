@@ -33,7 +33,7 @@ pip3 install plantit-cluster
 
 ## Usage
 
-PlantIT Cluster provides a single command: `plantit --job some.json --run [local,jobqueue]`.
+`plantit-cluster` currently supports a run configuration: `plantit --job some.json --run [local]`. `dask-jobqueue` integration is in development.
 
 ## Tests
 
