@@ -25,7 +25,7 @@ make html
 
 ## Installation
 
-To install `plantit-cluster` on a compute cluster, run:
+To install `plantit-cluster`, run:
 
 ```
 pip3 install plantit-cluster
