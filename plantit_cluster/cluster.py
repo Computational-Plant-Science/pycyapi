@@ -11,7 +11,7 @@ import sys
 import traceback
 
 from plantit_cluster.comms import Comms, STDOUTComms, RESTComms
-from dagster import execute_pipeline_iterator
+from dagster import execute_pipeline_iterator, DagsterEventType
 from dask.distributed import Client
 from dask_jobqueue import PBSCluster, SLURMCluster
 
@@ -72,8 +72,8 @@ class Cluster:
                     pk=self.job.id,
                     token=self.job.token,
                     status=self.server.WARN if event.is_failure else self.server.OK,
-                    description=f"Dagster even '{event.event_type}' with message: '{event.message}'")
-                if event.is_pipeline_failure:
+                    description=f"Dagster event '{event.event_type}' with message: '{event.message}'")
+                if event.event_type is DagsterEventType.PIPELINE_INIT_FAILURE or event.is_pipeline_failure:
                     raise JobException(event.message)
             self.server.update_status(
                 pk=self.job.id,
@@ -117,6 +117,7 @@ class Cluster:
         """
 
         try:
+            # TODO support for more resource managers? HTCondor, what else?
             if queue_type.lower() == "pbs":
                 cluster = PBSCluster(
                     cores=cores,
@@ -138,8 +139,10 @@ class Cluster:
 
             cluster.adapt(minimum_jobs=min_jobs, maximum_jobs=max_jobs)
             client = Client(cluster)
-            self.server.update_status(self.job.id, self.job.token, self.server.OK,
-                                      f"Starting jobqueue job '{self.job.id}' on dask-jobqueue scheduler '{client.scheduler}'")
+            self.server.update_status(self.job.id,
+                                      self.job.token,
+                                      self.server.OK,
+                                      f"Starting jobqueue job '{self.job.id}' on dask scheduler '{client.scheduler}'")
             for event in execute_pipeline_iterator(
                     singularity,
                     environment_dict={
@@ -157,13 +160,6 @@ class Cluster:
                                 }
                             }
                         },
-                        'storage': {
-                            'filesystem': {
-                                'config': {
-                                    'base_dir': self.job.workdir
-                                }
-                            }
-                        },
                         'execution': {
                             'dask': {
                                 'config': {
@@ -171,23 +167,30 @@ class Cluster:
                                 }
                             }
                         },
-                        'loggers': {
-                            'console': {
-                                'config': {
-                                    'log_level': 'INFO'
-                                }
-                            }
-                        }
+                        # 'storage': {
+                        #     'filesystem': {
+                        #         'config': {
+                        #             'base_dir': self.job.workdir
+                        #         }
+                        #     }
+                        # },
+                        # 'loggers': {
+                        #     'console': {
+                        #         'config': {
+                        #             'log_level': 'INFO'
+                        #         }
+                        #     }
+                        # },
                     }):
                 self.server.update_status(
                     self.job.id,
                     self.job.token,
                     self.server.WARN if event.is_failure else self.server.OK,
                     f"Dagster event '{event.event_type}' with message: '{event.message}'")
-                if event.is_pipeline_failure:
+                if event.event_type is DagsterEventType.PIPELINE_INIT_FAILURE or event.is_pipeline_failure:
                     raise JobException(event)
             self.server.update_status(self.job.id, self.job.token, self.server.OK,
-                                      f"Completed jobqueue job '{self.job.id}' on dask-jobqueue scheduler '{client.scheduler}'")
+                                      f"Completed jobqueue job '{self.job.id}' on dask scheduler '{client.scheduler}'")
         except Exception:
             self.server.update_status(self.job.id, self.job.token, self.server.FAILED,
                                       f"Jobqueue job '{self.job.id}' failed: {traceback.format_exc()}")

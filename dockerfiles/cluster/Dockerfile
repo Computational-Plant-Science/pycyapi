@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:16.04
 
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
@@ -78,6 +78,9 @@ RUN mkdir /etc/slurm
 COPY dockerfiles/cluster/configure-slurm-db.sql /opt/slurm
 COPY dockerfiles/cluster/slurm.conf /etc/slurm-llnl
 
+RUN cd /opt \
+    && git clone https://github.com/mknoxnv/ubuntu-slurm.git
+
 RUN cd /opt/slurm \
     && gem install fpm \
     && service munge start \
@@ -90,21 +93,21 @@ RUN cd /opt/slurm \
     && make \
     && make install \
     && cd .. \
-    && mkdir -p /etc/slurm /etc/slurm/prolog.d /etc/slurm/epilog.d /var/spool/slurm/ctld /var/spool/slurm/d /var/log/slurm
-    # && chown slurm /var/spool/slurm/ctld /var/spool/slurm/d /var/log/slurm \
-    # && systemctl enable mysql \
-    # && systemctl start mysql \
-    # && mysql -u root < /opt/slurm/configure-slurm-db.sql \
-    # && cp ubuntu-slurm/slurmdbd.service /etc/systemd/system/ \
-    # && cp ubuntu-slurm/slurmctld.service /etc/systemd/system/ \
-    # && systemctl daemon-reload \
-    # && systemctl enable slurmdbd \
-    # && systemctl start slurmdbd \
-    # && systemctl enable slurmctld \
-    # && systemctl start slurmctld \
-    # && sacctmgr add cluster compute-cluster \
-    # && sacctmgr add account compute-account description="PlantIT" Organization=PlantIT \
-    # && sacctmgr create user myuser account=compute-account adminlevel=None
+    && mkdir -p /etc/slurm /etc/slurm/prolog.d /etc/slurm/epilog.d /var/spool/slurm/ctld /var/spool/slurm/d /var/log/slurm \
+    && chown slurm /var/spool/slurm/ctld /var/spool/slurm/d /var/log/slurm \
+    && systemctl enable mysql \
+    && systemctl start mysql \
+    && mysql -u root < /opt/slurm/configure-slurm-db.sql \
+    && cp ubuntu-slurm/slurmdbd.service /etc/systemd/system/ \
+    && cp ubuntu-slurm/slurmctld.service /etc/systemd/system/ \
+    && cp /opt/ubuntu-slurm/slurmdbd.conf /etc/slurm-llnl/slurmdbd.conf \
+    && systemctl enable slurmdbd \
+    && systemctl start slurmdbd \
+    && systemctl enable slurmctld \
+    && systemctl start slurmctld \
+    && sacctmgr add cluster compute-cluster \
+    && sacctmgr add account compute-account description="PlantIT" Organization=PlantIT \
+    && sacctmgr create user myuser account=compute-account adminlevel=None
 
 RUN mkdir -p /opt/plantit-cluster-home \
     && mkdir -p /opt/plantit-cluster

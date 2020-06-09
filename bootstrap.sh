@@ -1,14 +1,31 @@
 #!/bin/bash
 
-echo "Bootstrapping..."
+nocache=0
+
+while getopts 'n' opt; do
+    case $opt in
+        n) nocache=1 ;;
+        *) echo 'Error in command line parsing' >&2
+           exit 1
+    esac
+done
+shift "$(( OPTIND - 1 ))"
+
+echo "Bootstrapping ${PWD##*/}..."
 
 DOCKER_COMPOSE="docker-compose -f docker-compose.test.yml"
 
 echo "Bringing containers down..."
 $DOCKER_COMPOSE down
 
-echo "Building containers..."
-$DOCKER_COMPOSE build "$@" --no-cache
+if [[ "$nocache" -eq 0 ]]; then
+  echo "Building containers..."
+  $DOCKER_COMPOSE build "$@"
+else
+  echo "Building containers with option '--no-cache'..."
+  $DOCKER_COMPOSE build "$@" --no-cache
+fi
+$DOCKER_COMPOSE up -d plantit
 
 echo "Configuring mock IRODS..."
 $DOCKER_COMPOSE up -d irods

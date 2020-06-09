@@ -1,4 +1,4 @@
 #!/bin/bash
 
 echo "Running integration tests..."
-plantit --job "test_job.json" --run "local"
+plantit --job "test_job.json" --run "jobqueue"
