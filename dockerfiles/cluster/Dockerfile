@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
@@ -15,7 +15,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
     postgresql-client \
     # singularity-container \
     git \
-    python3 \
+    python-minimal \
     python3-pip \
     libfuse2 \
     vim \
@@ -128,6 +128,7 @@ RUN cd /opt/slurm \
     && chown slurm /var/spool/slurm/ctld /var/spool/slurm/d /var/log/slurm \
     && cp /opt/ubuntu-slurm/slurmd.service /etc/systemd/system/ \
     && cp /opt/ubuntu-slurm/slurmctld.service /etc/systemd/system/ \
+    && service munge start \
     && service slurmctld start \
     && service slurmd start
 
