@@ -2,9 +2,18 @@ FROM ubuntu:16.04
 
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    build-essential \
+    libssl-dev \
+    uuid-dev \
+    libgpgme11-dev \
+    squashfs-tools \
+    libseccomp-dev \
+    wget \
+    pkg-config \
+    cryptsetup \
     openssh-server \
     postgresql-client \
-    singularity-container \
+    # singularity-container \
     git \
     python3 \
     python3-pip \
@@ -27,7 +36,28 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
     slurmd \
     slurm-client \
     slurmctld \
-    slurmdbd
+    slurmdbd \
+    uuid-dev
+
+RUN mkdir /opt/go; cd /opt/go \
+    && export VERSION=1.13 OS=linux ARCH=amd64 \
+    && wget https://dl.google.com/go/go$VERSION.$OS-$ARCH.tar.gz \
+    && tar -C /usr/local -xzvf go$VERSION.$OS-$ARCH.tar.gz \
+    && rm go$VERSION.$OS-$ARCH.tar.gz \
+    && export GOROOT=/usr/local/go \
+    && export GOPATH=/opt/go \
+    && export PATH=/usr/local/go/bin:$PATH \
+    && echo 'export GOROOT=/opt/go' >> ~/.bashrc \
+    && echo 'export PATH=/usr/local/go/bin:$PATH' >> ~/.bashrc
+
+RUN mkdir /opt/singularity; cd /opt/singularity \
+    && export VERSION=3.5.2  \
+    && wget https://github.com/sylabs/singularity/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz \
+    && tar -xzf singularity-${VERSION}.tar.gz \
+    && cd singularity \
+    && ./mconfig \
+    && make -C builddir \
+    && make -C builddir install
 
 RUN wget https://sourceforge.net/projects/lmod/files/lua-5.1.4.9.tar.bz2 \
     && tar xf lua-5.1.4.9.tar.bz2 \
