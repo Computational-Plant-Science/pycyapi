@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(name='plantit-cluster',
-      version='0.0.1',
+      version='0.0.2',
       description='PlantIT workflow management API.',
       author='Computational Plant Science Lab',
       author_email='wbonelli@uga.edu',
