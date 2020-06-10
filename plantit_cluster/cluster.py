@@ -167,20 +167,20 @@ class Cluster:
                                 }
                             }
                         },
-                        # 'storage': {
-                        #     'filesystem': {
-                        #         'config': {
-                        #             'base_dir': self.job.workdir
-                        #         }
-                        #     }
-                        # },
-                        # 'loggers': {
-                        #     'console': {
-                        #         'config': {
-                        #             'log_level': 'INFO'
-                        #         }
-                        #     }
-                        # },
+                        'storage': {
+                            'filesystem': {
+                                'config': {
+                                    'base_dir': self.job.workdir
+                                }
+                            }
+                        },
+                        'loggers': {
+                            'console': {
+                                'config': {
+                                    'log_level': 'INFO'
+                                }
+                            }
+                        },
                     }):
                 self.server.update_status(
                     self.job.id,

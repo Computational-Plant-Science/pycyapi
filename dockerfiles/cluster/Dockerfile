@@ -47,11 +47,15 @@ RUN mkdir /opt/go; cd /opt/go \
     && export GOROOT=/usr/local/go \
     && export GOPATH=/opt/go \
     && export PATH=/usr/local/go/bin:$PATH \
-    && echo 'export GOROOT=/opt/go' >> ~/.bashrc \
+    && echo 'export GOROOT=/usr/local/go' >> ~/.bashrc \
+    && echo 'export GOPATH=/opt/go' >> ~/.bashrc \
     && echo 'export PATH=/usr/local/go/bin:$PATH' >> ~/.bashrc
 
 RUN mkdir /opt/singularity; cd /opt/singularity \
     && export VERSION=3.5.2  \
+    && export GOROOT=/usr/local/go \
+    && export GOPATH=/opt/go \
+    && export PATH=/usr/local/go/bin:$PATH \
     && wget https://github.com/sylabs/singularity/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz \
     && tar -xzf singularity-${VERSION}.tar.gz \
     && cd singularity \
@@ -113,9 +117,6 @@ RUN cd /opt \
 
 RUN cd /opt/slurm \
     && gem install fpm \
-    && service munge start \
-    && service mysql start \
-    && mysql -u root < /opt/slurm/configure-slurm-db.sql \
     && wget https://download.schedmd.com/slurm/slurm-17.11.12.tar.bz2 \
     && tar xvjf slurm-17.11.12.tar.bz2 \
     && cd slurm-17.11.12 \
@@ -125,19 +126,12 @@ RUN cd /opt/slurm \
     && cd .. \
     && mkdir -p /etc/slurm /etc/slurm/prolog.d /etc/slurm/epilog.d /var/spool/slurm/ctld /var/spool/slurm/d /var/log/slurm \
     && chown slurm /var/spool/slurm/ctld /var/spool/slurm/d /var/log/slurm \
-    && systemctl enable mysql \
-    && systemctl start mysql \
-    && mysql -u root < /opt/slurm/configure-slurm-db.sql \
-    && cp ubuntu-slurm/slurmdbd.service /etc/systemd/system/ \
-    && cp ubuntu-slurm/slurmctld.service /etc/systemd/system/ \
-    && cp /opt/ubuntu-slurm/slurmdbd.conf /etc/slurm-llnl/slurmdbd.conf \
-    && systemctl enable slurmdbd \
-    && systemctl start slurmdbd \
+    && cp /opt/ubuntu-slurm/slurmd.service /etc/systemd/system/ \
+    && cp /opt/ubuntu-slurm/slurmctld.service /etc/systemd/system/ \
     && systemctl enable slurmctld \
-    && systemctl start slurmctld \
-    && sacctmgr add cluster compute-cluster \
-    && sacctmgr add account compute-account description="PlantIT" Organization=PlantIT \
-    && sacctmgr create user myuser account=compute-account adminlevel=None
+    && service slurmctld start \
+    && systemctl enable slurmd \
+    && service slurmd start
 
 RUN mkdir -p /opt/plantit-cluster-home \
     && mkdir -p /opt/plantit-cluster
