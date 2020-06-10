@@ -14,6 +14,7 @@ setup(name='plantit-cluster',
               'plantit = plantit_cluster.cluster:cli'
           ]
       },
+      python_requires='>=3.6.9',
       install_requires=['requests', 'python-irodsclient', 'dask', 'dask-jobqueue', 'dagster', 'dagster-dask'],
       setup_requires=['wheel'],
       tests_require=['pytest'])

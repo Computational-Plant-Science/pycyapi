@@ -25,7 +25,6 @@ else
   echo "Building containers with option '--no-cache'..."
   $DOCKER_COMPOSE build "$@" --no-cache
 fi
-$DOCKER_COMPOSE up -d plantit
 
 echo "Configuring mock IRODS..."
 $DOCKER_COMPOSE up -d irods

@@ -128,9 +128,7 @@ RUN cd /opt/slurm \
     && chown slurm /var/spool/slurm/ctld /var/spool/slurm/d /var/log/slurm \
     && cp /opt/ubuntu-slurm/slurmd.service /etc/systemd/system/ \
     && cp /opt/ubuntu-slurm/slurmctld.service /etc/systemd/system/ \
-    && systemctl enable slurmctld \
     && service slurmctld start \
-    && systemctl enable slurmd \
     && service slurmd start
 
 RUN mkdir -p /opt/plantit-cluster-home \
