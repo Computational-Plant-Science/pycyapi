@@ -33,7 +33,41 @@ pip3 install plantit-cluster
 
 ## Usage
 
-`plantit-cluster` currently only supports a single in-process run configuration: `plantit --job some.json --run local`. A `dask-jobqueue` integration is in development.
+To execute a job defined in `job.json`, run `plantit --job job.json`. The `job.json` definition should conform to the following schema:
+
+```json
+{
+    "id": "2",
+    "workdir": "/",
+    "token": "token",
+    "server": "",
+    "container": "docker://alpine:latest",
+    "commands": "/bin/ash -c 'pwd'",
+    "executor": {
+        "name": "local"
+    }
+}
+```
+
+`plantit-cluster` currently supports `local` and `slurm` executors. A `pbs` executor is in development. If no executor is specified in the job definition file, `plantit-cluster` will default to the `local` (in-process) executor.
+
+To use the SLURM executor, add an `executor` section like the following to the top-level job definition:
+
+```
+{
+    ...
+    "executor": {
+        "name": "slurm",
+        "cores": 1,
+        "memory": "250MB",
+        "walltime": "00:00:10",
+        "partition": "debug",
+        "processes": 1,
+        "local_directory": "/opt/plantit-cluster-home"
+    }
+    ...
+}
+```
 
 ## Tests
 

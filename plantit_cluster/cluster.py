@@ -90,60 +90,49 @@ class Cluster:
             return
 
     def jobqueue(self,
-                 queue_type: str,
-                 cores: int,
-                 memory: str,
-                 processes: int,
-                 queue: str,
-                 local_directory: str,
-                 walltime: str,
+                 type: str,
                  min_jobs: int = 1,
                  max_jobs: int = 10):
         """
         Submits a job to a resource management system with dask-jobqueue.
 
         Args:
-            queue_type (str): Cluster queueing system.
+            type (str): Queueing system.
                 Currently supported:
                 - 'pbs'
                 - 'slurm'
-            cores (int): Cores per node.
-            memory (str): RAM per node.
-            processes (int): Processes per core.
-            queue (str): Queue name.
-            local_directory (str): Local working (or scratch) directory.
-            walltime (str): Maximum job walltime.
             min_jobs (int): Minimum concurrent jobs.
             max_jobs (int): Maximum concurrent jobs.
         """
 
         try:
-            # TODO support for more resource managers? HTCondor, what else?
-            if queue_type.lower() == "pbs":
+            # TODO support for more queueing systems? HTCondor, what else?
+            if type == "pbs":
                 cluster = PBSCluster(
-                    cores=cores,
-                    memory=memory,
-                    processes=processes,
-                    queue=queue,
-                    local_directory=local_directory,
-                    walltime=walltime)
-            elif queue_type.lower() == "slurm":
+                    cores=self.job.executor['cores'],
+                    memory=self.job.executor['memory'],
+                    walltime=self.job.executor['walltime'],
+                    processes=self.job.executor['processes'] if 'processes' in self.job.executor.keys() else None,
+                    queue=self.job.executor['queue'] if 'queue' in self.job.executor.keys() else None,
+                    local_directory=self.job.executor['local_directory'] if 'local_directory' in self.job.executor.keys() else None)
+            elif type == "slurm":
                 cluster = SLURMCluster(
-                    cores=cores,
-                    memory=memory,
-                    processes=processes,
-                    local_directory=local_directory,
-                    walltime=walltime,
-                    job_extra=['-p "debug"'])
+                    cores=self.job.executor['cores'],
+                    memory=self.job.executor['memory'],
+                    walltime=self.job.executor['walltime'],
+                    job_extra=[f"-p \"{self.job.executor['partition']}\""],
+                    processes=self.job.executor['processes'] if 'processes' in self.job.executor.keys() else None,
+                    queue=self.job.executor['queue'] if 'queue' in self.job.executor.keys() else None,
+                    local_directory=self.job.executor['local_directory'] if 'local_directory' in self.job.executor.keys() else None)
             else:
-                raise ValueError(f"Queue type '{queue_type}' not supported")
+                raise ValueError(f"Queue type '{type}' not supported")
 
             cluster.adapt(minimum_jobs=min_jobs, maximum_jobs=max_jobs)
             client = Client(cluster)
             self.server.update_status(self.job.id,
                                       self.job.token,
                                       self.server.OK,
-                                      f"Starting jobqueue job '{self.job.id}' on dask scheduler '{client.scheduler}'")
+                                      f"Starting {type} job '{self.job.id}' on dask scheduler '{client.scheduler}'")
 
             config = {
                 'solids': {
@@ -180,7 +169,8 @@ class Cluster:
                             'log_level': 'INFO'
                         }
                     }
-                }
+                },
+                # TODO (optional) remote Dagit run launcher
             }
 
             with open("dask.yaml", "w") as config_file:
@@ -191,10 +181,10 @@ class Cluster:
                 raise JobException(f"Non-zero exit code from Dagster pipeline for job '{self.job.id}': {ret.stderr.decode('utf-8') if ret.stderr else ret.stdout.decode('utf-8') if ret.stdout else 'Unknown error'}")
 
             self.server.update_status(self.job.id, self.job.token, self.server.OK,
-                                      f"Completed jobqueue job '{self.job.id}' on dask scheduler '{client.scheduler}'")
+                                      f"Completed {type} job '{self.job.id}' on dask scheduler '{client.scheduler}'")
         except Exception:
             self.server.update_status(self.job.id, self.job.token, self.server.FAILED,
-                                      f"Jobqueue job '{self.job.id}' failed: {traceback.format_exc()}")
+                                      f"{type} job '{self.job.id}' failed: {traceback.format_exc()}")
             return
 
 
@@ -204,36 +194,27 @@ def cli():
     parser.add_argument('--job',
                         type=str,
                         help="JSON job definition file")
-    parser.add_argument('--run',
-                        type=str,
-                        help="How to run the job (currently supported: 'local', 'jobqueue')")
     opts = parser.parse_args(args)
 
     with open(opts.job) as file:
         job_json = json.load(file)
+        executor = job_json['executor']
         job = Job(
             id=job_json['id'],
             token=job_json['token'],
             workdir=job_json['workdir'],
             server=job_json['server'] if 'server' in job_json else None,
             container=job_json['container'],
-            commands=str(job_json['commands']).split())
+            commands=str(job_json['commands']).split(),
+            executor=executor)
         # TODO pass job to run command rather than at init time - cluster should be persistent
         cluster = Cluster(job)
-        if opts.run == "local":
+        if executor['name'] == "local":
             cluster.local()
-        elif opts.run == "jobqueue":
-            # TODO read from config file
-            cluster.jobqueue(
-                "slurm",
-                1,
-                "250MB",
-                1,
-                "",
-                job.workdir,
-                "00:00:10")
+        elif executor['name'] == "slurm" or executor['name'] == "pbs":
+            cluster.jobqueue(type=executor['name'])
         else:
-            raise ValueError(f"Unknown run configuration '{opts.run}' (currently supported: 'local', 'jobqueue')")
+            raise ValueError(f"Unknown executor '{executor['name']}' (currently supported: 'local', 'slurm', 'pbs')")
 
 
 if __name__ == "__main__":

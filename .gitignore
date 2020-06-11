@@ -114,7 +114,7 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
-# Pyre queue_type checker
+# Pyre type checker
 .pyre/
 
 .idea

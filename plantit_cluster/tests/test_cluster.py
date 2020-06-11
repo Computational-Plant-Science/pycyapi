@@ -26,7 +26,7 @@ def test_local():
 def test_jobqueue_slurm():
     pass
 #     Cluster(job).jobqueue(
-#         queue_type="slurm",
+#         type="slurm",
 #         cores=1,
 #         memory="1MB",
 #         processes=1,

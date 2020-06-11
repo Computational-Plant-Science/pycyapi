@@ -1,0 +1,17 @@
+{
+    "id": "2",
+    "workdir": "/",
+    "token": "token",
+    "server": "",
+    "container": "docker://alpine:latest",
+    "commands": "/bin/ash -c 'pwd'",
+    "executor": {
+        "name": "slurm",
+        "cores": 1,
+        "memory": "250MB",
+        "walltime": "00:00:10",
+        "partition": "debug",
+        "processes": 1,
+        "local_directory": "/opt/plantit-cluster-home"
+    }
+}

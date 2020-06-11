@@ -11,6 +11,7 @@ class Job:
             server (str): The PlantIT web API endpoint (optional).
             sources (dict): Workflow input sources (optional).
             targets (dict): Workflow output targets (optional).
+            executor (dict): Executor configuration (optional).
     """
 
     def __init__(self,
@@ -21,7 +22,8 @@ class Job:
                  commands: list,
                  server: str = None,
                  sources: dict = None,
-                 targets: dict = None):
+                 targets: dict = None,
+                 executor: dict = None):
         """
         Args:
             id (str): The PlantIT job ID.
@@ -32,6 +34,7 @@ class Job:
             server (str): The PlantIT web API endpoint (optional).
             sources (dict): Workflow input sources (optional).
             targets (dict): Workflow output targets (optional).
+            executor (dict): Executor configuration (optional).
         """
 
         self.id = id
@@ -42,3 +45,4 @@ class Job:
         self.commands = commands
         self.sources = sources
         self.targets = targets
+        self.executor = {'name': 'local'} if executor is None else executor
