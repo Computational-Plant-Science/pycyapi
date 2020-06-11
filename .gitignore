@@ -134,3 +134,6 @@ history/
 intermediates/
 schedules/
 storage/
+
+*.out
+dask.yaml

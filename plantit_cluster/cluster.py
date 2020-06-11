@@ -9,6 +9,7 @@ import argparse
 import json
 import sys
 import traceback
+import yaml
 
 from plantit_cluster.comms import Comms, STDOUTComms, RESTComms
 from dagster import execute_pipeline_iterator, DagsterEventType
@@ -131,9 +132,9 @@ class Cluster:
                     cores=cores,
                     memory=memory,
                     processes=processes,
-                    queue=queue,
                     local_directory=local_directory,
-                    walltime=walltime)
+                    walltime=walltime,
+                    job_extra=['-p "debug"'])
             else:
                 raise ValueError(f"Queue type '{queue_type}' not supported")
 
@@ -143,52 +144,52 @@ class Cluster:
                                       self.job.token,
                                       self.server.OK,
                                       f"Starting jobqueue job '{self.job.id}' on dask scheduler '{client.scheduler}'")
-            for event in execute_pipeline_iterator(
-                    singularity,
-                    environment_dict={
-                        'solids': {
-                            'sources': {
-                                'inputs': {
-                                    'job': {
-                                        "id": self.job.id,
-                                        "workdir": self.job.workdir,
-                                        "token": self.job.token,
-                                        "server": self.job.server,
-                                        "container": self.job.container,
-                                        "commands": ' '.join(self.job.commands)
-                                    }
-                                }
+
+            config = {
+                'solids': {
+                    'sources': {
+                        'inputs': {
+                            'job': {
+                                "id": self.job.id,
+                                "workdir": self.job.workdir,
+                                "token": self.job.token,
+                                "server": self.job.server,
+                                "container": self.job.container,
+                                "commands": ' '.join(self.job.commands)
                             }
-                        },
-                        'execution': {
-                            'dask': {
-                                'config': {
-                                    'address': client.scheduler.address
-                                }
-                            }
-                        },
-                        'storage': {
-                            'filesystem': {
-                                'config': {
-                                    'base_dir': self.job.workdir
-                                }
-                            }
-                        },
-                        'loggers': {
-                            'console': {
-                                'config': {
-                                    'log_level': 'INFO'
-                                }
-                            }
-                        },
-                    }):
-                self.server.update_status(
-                    self.job.id,
-                    self.job.token,
-                    self.server.WARN if event.is_failure else self.server.OK,
-                    f"Dagster event '{event.event_type}' with message: '{event.message}'")
-                if event.event_type is DagsterEventType.PIPELINE_INIT_FAILURE or event.is_pipeline_failure:
-                    raise JobException(event)
+                        }
+                    }
+                },
+                'execution': {
+                    'dask': {
+                        'config': {
+                            'address': client.scheduler.address
+                        }
+                    }
+                },
+                'storage': {
+                    'filesystem': {
+                        'config': {
+                            'base_dir': self.job.workdir
+                        }
+                    }
+                },
+                'loggers': {
+                    'console': {
+                        'config': {
+                            'log_level': 'INFO'
+                        }
+                    }
+                }
+            }
+
+            with open("dask.yaml", "w") as config_file:
+                yaml.dump(config, config_file)
+
+            ret = subprocess.run(["dagster", "pipeline", "execute", "singularity", "-y", "plantit_cluster/dagster/repository.yaml", "-e", "dask.yaml"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if ret.returncode != 0:
+                raise JobException(f"Non-zero exit code from Dagster pipeline for job '{self.job.id}': {ret.stderr.decode('utf-8') if ret.stderr else ret.stdout.decode('utf-8') if ret.stdout else 'Unknown error'}")
+
             self.server.update_status(self.job.id, self.job.token, self.server.OK,
                                       f"Completed jobqueue job '{self.job.id}' on dask scheduler '{client.scheduler}'")
         except Exception:
@@ -226,11 +227,11 @@ def cli():
             cluster.jobqueue(
                 "slurm",
                 1,
-                "1GB",
+                "250MB",
                 1,
-                "batch",
+                "",
                 job.workdir,
-                "00:00:01")
+                "00:00:10")
         else:
             raise ValueError(f"Unknown run configuration '{opts.run}' (currently supported: 'local', 'jobqueue')")
 

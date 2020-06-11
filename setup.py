@@ -15,6 +15,6 @@ setup(name='plantit-cluster',
           ]
       },
       python_requires='>=3.6.9',
-      install_requires=['requests', 'python-irodsclient', 'dask', 'dask-jobqueue', 'dagster', 'dagster-dask'],
+      install_requires=['requests', 'python-irodsclient', 'dask', 'dask-jobqueue', 'dagster', 'dagster-dask', 'pyaml'],
       setup_requires=['wheel'],
       tests_require=['pytest'])
