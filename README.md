@@ -1,6 +1,6 @@
 # PlantIT Cluster [![Build Status](https://travis-ci.com/Computational-Plant-Science/plantit-cluster.svg?branch=master)](https://travis-ci.com/Computational-Plant-Science/plantit-cluster)
 
-Workflow manager for PlantIT. Allows the PlantIT web platform to deploy jobs to compute resources.
+PlantIT workflow management CLI. Executes jobs on local or distributed compute resources.
 
 **This project is under active development and is not yet stable.**
 
