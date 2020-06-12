@@ -130,7 +130,10 @@ RUN cd /opt/slurm \
     && cp /opt/ubuntu-slurm/slurmctld.service /etc/systemd/system/ \
     && service munge start \
     && service slurmctld start \
-    && service slurmd start
+    && service slurmd start \
+    && update-rc.d munge defaults \
+    && update-rc.d slurmctld defaults \
+    && update-rc.d slurmd defaults
 
 RUN mkdir -p /opt/plantit-cluster-home \
     && mkdir -p /opt/plantit-cluster

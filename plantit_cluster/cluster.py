@@ -107,32 +107,13 @@ class Cluster:
 
         try:
             # TODO support for more queueing systems? HTCondor, what else?
-            if type == "pbs":
-                cluster = PBSCluster(
-                    cores=self.job.executor['cores'],
-                    memory=self.job.executor['memory'],
-                    walltime=self.job.executor['walltime'],
-                    processes=self.job.executor['processes'] if 'processes' in self.job.executor.keys() else None,
-                    queue=self.job.executor['queue'] if 'queue' in self.job.executor.keys() else None,
-                    local_directory=self.job.executor['local_directory'] if 'local_directory' in self.job.executor.keys() else None)
-            elif type == "slurm":
-                cluster = SLURMCluster(
-                    cores=self.job.executor['cores'],
-                    memory=self.job.executor['memory'],
-                    walltime=self.job.executor['walltime'],
-                    job_extra=[f"-p \"{self.job.executor['partition']}\""],
-                    processes=self.job.executor['processes'] if 'processes' in self.job.executor.keys() else None,
-                    queue=self.job.executor['queue'] if 'queue' in self.job.executor.keys() else None,
-                    local_directory=self.job.executor['local_directory'] if 'local_directory' in self.job.executor.keys() else None)
-            else:
+            if not (type == "pbs" or type == "slurm"):
                 raise ValueError(f"Queue type '{type}' not supported")
 
-            cluster.adapt(minimum_jobs=min_jobs, maximum_jobs=max_jobs)
-            client = Client(cluster)
             self.server.update_status(self.job.id,
                                       self.job.token,
                                       self.server.OK,
-                                      f"Starting {type} job '{self.job.id}' on dask scheduler '{client.scheduler}'")
+                                      f"Starting {type} job '{self.job.id}'")
 
             config = {
                 'solids': {
@@ -152,36 +133,47 @@ class Cluster:
                 'execution': {
                     'dask': {
                         'config': {
-                            'address': client.scheduler.address
-                        }
+                            'cluster': {
+                                type: {}
+                            }
+                        },
+                        'storage': {
+                            'filesystem': {
+                                'config': {
+                                    'base_dir': self.job.workdir
+                                }
+                            }
+                        },
+                        'loggers': {
+                            'console': {
+                                'config': {
+                                    'log_level': 'INFO'
+                                }
+                            }
+                        },
+                        # TODO (optional) remote Dagit run launcher
                     }
-                },
-                'storage': {
-                    'filesystem': {
-                        'config': {
-                            'base_dir': self.job.workdir
-                        }
-                    }
-                },
-                'loggers': {
-                    'console': {
-                        'config': {
-                            'log_level': 'INFO'
-                        }
-                    }
-                },
-                # TODO (optional) remote Dagit run launcher
+                }
             }
+
+            if self.job.executor:
+                for k, v in self.job.executor.items():
+                    if k == "name":
+                        continue
+                    config['execution']['dask']['config']['cluster'][type][k] = v
 
             with open("dask.yaml", "w") as config_file:
                 yaml.dump(config, config_file)
 
-            ret = subprocess.run(["dagster", "pipeline", "execute", "singularity", "-y", "plantit_cluster/dagster/repository.yaml", "-e", "dask.yaml"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            ret = subprocess.run(
+                ["dagster", "pipeline", "execute", "-p", "singularity", "-w", "plantit_cluster/dagster/workspace.yaml",
+                 "-c", "dask.yaml"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if ret.returncode != 0:
-                raise JobException(f"Non-zero exit code from Dagster pipeline for job '{self.job.id}': {ret.stderr.decode('utf-8') if ret.stderr else ret.stdout.decode('utf-8') if ret.stdout else 'Unknown error'}")
+                raise JobException(
+                    f"Non-zero exit code from Dagster pipeline for job '{self.job.id}': {ret.stderr.decode('utf-8') if ret.stderr else ret.stdout.decode('utf-8') if ret.stdout else 'Unknown error'}")
 
             self.server.update_status(self.job.id, self.job.token, self.server.OK,
-                                      f"Completed {type} job '{self.job.id}' on dask scheduler '{client.scheduler}'")
+                                      f"Completed {type} job '{self.job.id}'")
         except Exception:
             self.server.update_status(self.job.id, self.job.token, self.server.FAILED,
                                       f"{type} job '{self.job.id}' failed: {traceback.format_exc()}")

@@ -7,6 +7,7 @@ setup(name='plantit-cluster',
       description='PlantIT workflow management CLI.',
       author='Computational Plant Science Lab',
       author_email='wbonelli@uga.edu',
+      license='BSD-3-Clause',
       url='https://github.com/Computational-Plant-Science/plantit-cluster',
       packages=['plantit_cluster'],
       entry_points={

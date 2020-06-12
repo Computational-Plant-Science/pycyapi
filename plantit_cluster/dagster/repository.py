@@ -1,9 +1,8 @@
-from dagster import RepositoryDefinition
+from dagster.core.definitions import repository
 
 from .pipelines import *
 
 
-def define_repo():
-    return RepositoryDefinition(
-        name='jobs', pipeline_defs=[singularity]
-    )
+@repository
+def plantit_repository():
+    return [docker, singularity]

@@ -12,6 +12,6 @@
         "walltime": "00:00:10",
         "partition": "debug",
         "processes": 1,
-        "local_directory": "/opt/plantit-cluster-home"
+        "local_directory": "/scratch/wpb36237"
     }
 }

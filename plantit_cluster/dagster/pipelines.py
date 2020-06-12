@@ -7,3 +7,8 @@ from plantit_cluster.dagster.solids import *
 @pipeline(mode_defs=[ModeDefinition(executor_defs=default_executors + [dask_executor])])
 def singularity():
     targets(singularity_container(sources()))
+
+
+@pipeline(mode_defs=[ModeDefinition(executor_defs=default_executors + [dask_executor])])
+def docker():
+    targets(docker_container(sources()))

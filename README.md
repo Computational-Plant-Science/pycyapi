@@ -49,7 +49,7 @@ To execute a job defined in `job.json`, run `plantit --job job.json`. The `job.j
 }
 ```
 
-`plantit-cluster` currently supports `local` and `slurm` executors. A `pbs` executor is in development. If no executor is specified in the job definition file, `plantit-cluster` will default to the `local` (in-process) executor.
+Currently `local` and `slurm` executors are supported. A `pbs` executor is in development. If no executor is specified in the job definition file, `plantit-cluster` will default to the `local` (in-process) executor.
 
 To use the SLURM executor, add an `executor` section like the following to the top-level job definition:
 
