@@ -136,24 +136,24 @@ class Cluster:
                             'cluster': {
                                 type: {}
                             }
-                        },
-                        'storage': {
-                            'filesystem': {
-                                'config': {
-                                    'base_dir': self.job.workdir
-                                }
-                            }
-                        },
-                        'loggers': {
-                            'console': {
-                                'config': {
-                                    'log_level': 'INFO'
-                                }
-                            }
-                        },
-                        # TODO (optional) remote Dagit run launcher
+                        }
                     }
-                }
+                },
+                'storage': {
+                    'filesystem': {
+                        'config': {
+                            'base_dir': self.job.workdir
+                        }
+                    }
+                },
+                'loggers': {
+                    'console': {
+                        'config': {
+                            'log_level': 'INFO'
+                        }
+                    }
+                },
+                # TODO (optional) remote Dagit run launcher
             }
 
             if self.job.executor:
