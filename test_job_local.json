@@ -6,6 +6,6 @@
     "container": "docker://alpine:latest",
     "commands": "/bin/ash -c 'pwd'",
     "executor": {
-        "name": "local"
+        "type": "local"
     }
 }

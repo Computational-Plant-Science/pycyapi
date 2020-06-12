@@ -201,12 +201,12 @@ def cli():
             executor=executor)
         # TODO pass job to run command rather than at init time - cluster should be persistent
         cluster = Cluster(job)
-        if executor['name'] == "local":
+        if executor['type'] == "local":
             cluster.local()
-        elif executor['name'] == "slurm" or executor['name'] == "pbs":
-            cluster.jobqueue(type=executor['name'])
+        elif executor['type'] == "slurm" or executor['type'] == "pbs":
+            cluster.jobqueue(type=executor['type'])
         else:
-            raise ValueError(f"Unknown executor '{executor['name']}' (currently supported: 'local', 'slurm', 'pbs')")
+            raise ValueError(f"Unknown executor '{executor['type']}' (currently supported: 'local', 'slurm', 'pbs')")
 
 
 if __name__ == "__main__":
