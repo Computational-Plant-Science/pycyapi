@@ -15,9 +15,9 @@ def sources(context, job: DagsterJob) -> DagsterJob:
 @solid
 def singularity_container(context, job: DagsterJob) -> DagsterJob:
     cmd = [
-              "singularity",
-              "exec",
+              "singularity", "exec",
               "--containall",
+              "--home", job.workdir,
               job.container
           ] + job.commands
     context.log.info(f"Running Singularity container with '{cmd}' for job '{job.id}'")
@@ -27,7 +27,8 @@ def singularity_container(context, job: DagsterJob) -> DagsterJob:
         context.log.error(msg)
         raise JobException(msg)
     else:
-        context.log.info(f"Successfully ran Singularity container for job '{job.id}' with output: {ret.stdout.decode('utf-8')}")
+        context.log.info(
+            f"Successfully ran Singularity container for job '{job.id}' with output: {ret.stdout.decode('utf-8')}")
 
     return job
 
@@ -46,7 +47,8 @@ def docker_container(context, job: DagsterJob) -> DagsterJob:
         context.log.error(msg)
         raise JobException(msg)
     else:
-        context.log.info(f"Successfully ran Docker container for job '{job.id}' with output: {ret.stdout.decode('utf-8')}")
+        context.log.info(
+            f"Successfully ran Docker container for job '{job.id}' with output: {ret.stdout.decode('utf-8')}")
 
     return job
 

@@ -163,6 +163,7 @@ class Cluster:
             env = os.environ.copy()
             env["LC_ALL"] = "en_US.utf8"
             env["LANG"] = "en_US.utf8"
+            env["DAGSTER_HOME"] = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dagster")
             ret = subprocess.run(
                 ["dagster", "pipeline", "execute",
                  "-p", "singularity",

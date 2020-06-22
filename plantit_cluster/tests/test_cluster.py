@@ -3,7 +3,7 @@ from plantit_cluster.job import Job
 
 definition = {
     "id": "2",
-    "workdir": '/',
+    "workdir": '/test',
     "token": "token",
     "server": "",
     "container": "docker://alpine:latest",
