@@ -102,8 +102,8 @@ COPY dockerfiles/cluster/qsub /usr/bin
 RUN wget https://files.renci.org/pub/irods/releases/4.1.12/ubuntu14/irods-icommands-4.1.12-ubuntu14-x86_64.deb
 RUN dpkg -i irods-icommands-4.1.12-ubuntu14-x86_64.deb
 RUN rm irods-icommands-4.1.12-ubuntu14-x86_64.deb
-COPY ./wait-for-it.sh /root/
-COPY ./configure-irods.sh /root/
+COPY ./scripts/wait-for-it.sh /root/
+COPY ./scripts/configure-irods.sh /root/
 RUN chmod +x /root/wait-for-it.sh
 RUN chmod +x /root/configure-irods.sh
 
@@ -139,9 +139,9 @@ RUN mkdir -p /opt/plantit-cluster-home \
     && mkdir -p /opt/plantit-cluster
 WORKDIR /opt/plantit-cluster
 COPY . ./
-RUN chmod +x configure-irods.sh \
-    && chmod +x wait-for-it.sh \
-    && chmod +x wait-for-postgres.sh \
+RUN chmod +x scripts/configure-irods.sh \
+    && chmod +x scripts/wait-for-it.sh \
+    && chmod +x scripts/wait-for-postgres.sh \
     && pip3 install -e . \
     && pip3 install -U pytest
 

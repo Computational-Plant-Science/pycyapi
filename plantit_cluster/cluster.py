@@ -5,6 +5,7 @@
     on the given executor.
 
 """
+import os
 import argparse
 import json
 import sys
@@ -26,9 +27,9 @@ class Cluster:
         self.server = server if not self.job.server else RESTComms(url=self.job.server, headers={
             "Authorization": "Token " + job.token})
 
-    def local(self):
+    def run(self):
         """
-        Runs a job in-process.
+        Runs a job.
         """
 
         try:
@@ -36,10 +37,10 @@ class Cluster:
                 pk=self.job.id,
                 token=self.job.token,
                 status=self.server.OK,
-                description=f"Starting local '{singularity.__name__}' job '{self.job.id}'")
+                description=f"Starting '{singularity.__name__}' job '{self.job.id}'")
             for event in execute_pipeline_iterator(
                     singularity,
-                    environment_dict={
+                    run_config={
                         'solids': {
                             'sources': {
                                 'inputs': {
@@ -89,24 +90,19 @@ class Cluster:
                 description=f"Local job '{self.job.id}' failed: {traceback.format_exc()}")
             return
 
-    def jobqueue(self,
-                 type: str,
-                 min_jobs: int = 1,
-                 max_jobs: int = 10):
+    def dask_jobqueue(self, type: str):
         """
-        Submits a job to a resource management system with dask-jobqueue.
+        Submits a job to a queueing system with dask-jobqueue.
 
         Args:
             type (str): Queueing system.
                 Currently supported:
                 - 'pbs'
                 - 'slurm'
-            min_jobs (int): Minimum concurrent jobs.
-            max_jobs (int): Maximum concurrent jobs.
         """
 
         try:
-            # TODO support for more queueing systems? HTCondor, what else?
+            # TODO support for more systems? HTCondor, what else?
             if not (type == "pbs" or type == "slurm"):
                 raise ValueError(f"Queue type '{type}' not supported")
 
@@ -115,7 +111,7 @@ class Cluster:
                                       self.server.OK,
                                       f"Starting {type} job '{self.job.id}'")
 
-            config = {
+            run_config = {
                 'solids': {
                     'sources': {
                         'inputs': {
@@ -153,24 +149,29 @@ class Cluster:
                         }
                     }
                 },
-                # TODO (optional) remote Dagit run launcher
             }
 
             if self.job.executor:
                 for k, v in self.job.executor.items():
                     if k == "name":
                         continue
-                    config['execution']['dask']['config']['cluster'][type][k] = v
+                    run_config['execution']['dask']['config']['cluster'][type][k] = v
 
-            with open("dask.yaml", "w") as config_file:
-                yaml.dump(config, config_file)
+            with open("run_config.yaml", "w") as config_file:
+                yaml.dump(run_config, config_file)
 
+            env = os.environ.copy()
+            env["LC_ALL"] = "en_US.utf8"
+            env["LANG"] = "en_US.utf8"
             ret = subprocess.run(
-                ["dagster", "pipeline", "execute", "-p", "singularity", "-w", "plantit_cluster/dagster/workspace.yaml",
-                 "-c", "dask.yaml"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                ["dagster", "pipeline", "execute",
+                 "-p", "singularity",
+                 "-w", f"{os.environ.copy()['DAGSTER_HOME']}/plantit_cluster/dagster/workspace.yaml",
+                 "-c", "run_config.yaml"],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if ret.returncode != 0:
                 raise JobException(
-                    f"Non-zero exit code from Dagster pipeline for job '{self.job.id}': {ret.stderr.decode('utf-8') if ret.stderr else ret.stdout.decode('utf-8') if ret.stdout else 'Unknown error'}")
+                    f"Non-zero exit code from {type} job '{self.job.id}': {ret.stderr.decode('utf-8') if ret.stderr else ret.stdout.decode('utf-8') if ret.stdout else 'Unknown error'}")
 
             self.server.update_status(self.job.id, self.job.token, self.server.OK,
                                       f"Completed {type} job '{self.job.id}'")
@@ -199,12 +200,11 @@ def cli():
             container=job_json['container'],
             commands=str(job_json['commands']).split(),
             executor=executor)
-        # TODO pass job to run command rather than at init time - cluster should be persistent
         cluster = Cluster(job)
         if executor['type'] == "local":
-            cluster.local()
+            cluster.run()
         elif executor['type'] == "slurm" or executor['type'] == "pbs":
-            cluster.jobqueue(type=executor['type'])
+            cluster.dask_jobqueue(type=executor['type'])
         else:
             raise ValueError(f"Unknown executor '{executor['type']}' (currently supported: 'local', 'slurm', 'pbs')")
 

@@ -1,6 +1,6 @@
 {
     "id": "2",
-    "workdir": "/scratch/wpb36237",
+    "workdir": "/",
     "token": "token",
     "server": "",
     "container": "docker://alpine:latest",
@@ -11,8 +11,7 @@
         "memory": "250MB",
         "walltime": "00:00:10",
         "partition": "debug",
-        "queue": "bucksch_q",
         "processes": 1,
-        "local_directory": "/scratch/wpb36237"
+        "n_workers": 1
     }
 }

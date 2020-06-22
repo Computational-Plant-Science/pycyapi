@@ -7,7 +7,10 @@ definition = {
     "token": "token",
     "server": "",
     "container": "docker://alpine:latest",
-    "commands": "/bin/ash -c 'pwd'"
+    "commands": "/bin/ash -c 'pwd'",
+    "executor": {
+        "type": "local"
+    }
 }
 
 job = Job(
@@ -16,24 +19,10 @@ job = Job(
     token=definition['token'],
     server=definition['server'],
     container=definition['container'],
-    commands=definition['commands'].split())
+    commands=definition['commands'].split(),
+    executor=definition['executor'])
 
 
 def test_local():
-    Cluster(job).local()
+    Cluster(job).run()
 
-
-def test_jobqueue_slurm():
-    pass
-#     Cluster(job).jobqueue(
-#         type="slurm",
-#         cores=1,
-#         memory="1MB",
-#         processes=1,
-#         queue='default',
-#         local_directory=job.workdir,
-#         walltime="00:01:00")
-
-
-def test_jobqueue_pbs():
-    pass
