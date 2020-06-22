@@ -33,8 +33,6 @@ pip3 install plantit-cluster
 
 ## Usage
 
-The CLI expects the `DAGSTER_HOME` environment variable to point to the `plantit-cluster/plantit_cluster/dagster` directory, wherever you installed it on your machine.
-
 To execute a job defined in `job.json`, first run `plantit --job job.json`. The `job.json` definition should conform to the following schema:
 
 ```json

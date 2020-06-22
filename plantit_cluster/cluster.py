@@ -167,7 +167,7 @@ class Cluster:
             ret = subprocess.run(
                 ["dagster", "pipeline", "execute",
                  "-p", "singularity",
-                 "-w", f"{os.environ.copy()['DAGSTER_HOME']}/workspace.yaml",
+                 "-w", f"{env['DAGSTER_HOME']}/workspace.yaml",
                  "-c", "run_config.yaml"],
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if ret.returncode != 0:
