@@ -16,6 +16,7 @@ setuptools.setup(
     license='BSD-3-Clause',
     url='https://github.com/Computational-Plant-Science/plantit-cluster',
     packages=setuptools.find_packages(),
+    include_package_data=True,
     entry_points={
         'console_scripts': [
             'plantit = plantit_cluster.cluster:cli'
