@@ -169,7 +169,7 @@ class Cluster:
                  "-p", "singularity",
                  "-w", f"{env['DAGSTER_HOME']}/workspace.yaml",
                  "-c", "run_config.yaml"],
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
             if ret.returncode != 0:
                 raise JobException(
                     f"Non-zero exit code from {type} job '{self.job.id}': {ret.stderr.decode('utf-8') if ret.stderr else ret.stdout.decode('utf-8') if ret.stdout else 'Unknown error'}")
