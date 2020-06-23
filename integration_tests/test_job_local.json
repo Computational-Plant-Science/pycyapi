@@ -4,8 +4,8 @@
     "token": "token",
     "server": "",
     "container": "docker://alpine:latest",
-    "commands": "/bin/ash -c 'pwd'",
+    "commands": ["/bin/ash", "-c", "'pwd'"],
     "executor": {
-        "type": "local"
+        "name": "local"
     }
 }

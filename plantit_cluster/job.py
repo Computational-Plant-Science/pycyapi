@@ -1,4 +1,4 @@
-class Job:
+class Job(object):
     """
         A single execution of a job.
 
@@ -46,3 +46,4 @@ class Job:
         self.sources = sources
         self.targets = targets
         self.executor = {'name': 'local'} if executor is None else executor
+

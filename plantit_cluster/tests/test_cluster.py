@@ -1,28 +1,17 @@
 from plantit_cluster.cluster import Cluster
 from plantit_cluster.job import Job
 
-definition = {
-    "id": "2",
-    "workdir": '/test',
-    "token": "token",
-    "server": "",
-    "container": "docker://alpine:latest",
-    "commands": "/bin/ash -c 'pwd'",
-    "executor": {
-        "type": "local"
-    }
-}
-
 job = Job(
-    id=definition['id'],
-    workdir=definition['workdir'],
-    token=definition['token'],
-    server=definition['server'],
-    container=definition['container'],
-    commands=definition['commands'].split(),
-    executor=definition['executor'])
+    id="2",
+    workdir="/test",
+    token="token",
+    server="",
+    container="docker://alpine:latest",
+    commands=["/bin/ash", "-c", "'pwd'"],
+    executor={"name": "local"}
+)
 
 
-def test_local():
-    Cluster(job).run()
+def test_run_inprocess():
+    Cluster.run_inprocess(job)
 

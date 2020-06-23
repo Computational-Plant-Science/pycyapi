@@ -44,7 +44,7 @@ To execute a job defined in `job.json`, first run `plantit --job job.json`. The 
     "container": "docker://alpine:latest",
     "commands": "/bin/ash -c 'pwd'",
     "executor": {
-        "type": "local"
+        "name": "local"
     }
 }
 ```
@@ -57,7 +57,7 @@ To use the PBS executor, add an `executor` section like the following to the top
 {
     ...
     "executor": {
-        "type": "PBS",
+        "name": "PBS",
         "cores": 1,
         "memory": "250MB",
         "walltime": "00:00:10",
