@@ -10,7 +10,6 @@ The following are required to run `plantit-cluster` in a Unix environment:
 
 - Python 3.6.9+
 - [Singularity](https://sylabs.io/docs/)
-- [iRODS iCommands](https://wiki.cyverse.org/wiki/display/DS/Setting+Up+iCommands)
 
 ## Documentation
 
@@ -71,7 +70,7 @@ To use the PBS executor, add an `executor` section like the following to the top
 
 ## Tests
 
-Before running tests, run `bootstrap.sh`, then bring test containers up with `docker-compose -f docker-compose.test.yml up` (`-d` for detached mode).
+Before running tests, run `scripts/bootstrap.sh`, then bring test containers up with `docker-compose -f docker-compose.test.yml up` (`-d` for detached mode).
 
 Unit tests can be run using: `docker-compose -f docker-compose.test.yml exec cluster pytest . -s`
 
