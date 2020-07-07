@@ -28,9 +28,47 @@ def run_container(context, pipeline: Pipeline):
             f"Successfully ran container with output: {ret.stdout.decode('utf-8')}")
 
 
-def construct_pipeline(pipeline: Pipeline, files: [str] = []):
+def construct_pipeline_with_no_input(pipeline: Pipeline):
+    @solid(output_defs=[OutputDefinition(Pipeline, 'pipeline', is_required=True)])
+    def yield_definition(context):
+        yield Output(Pipeline(
+            workdir=pipeline.workdir,
+            image=pipeline.image,
+            commands=pipeline.commands,
+            params=pipeline.params,
+            input=pipeline.input
+        ), 'pipeline')
+
+    @dagster.pipeline(name='pipeline_with_no_inputs',
+                      mode_defs=[ModeDefinition(executor_defs=default_executors + [dask_executor])])
+    def construct():
+        run_container(yield_definition())
+
+    return construct
+
+
+def construct_pipeline_with_input_directory(pipeline: Pipeline, directory: str):
+    @solid(output_defs=[OutputDefinition(Pipeline, 'pipeline', is_required=True)])
+    def yield_definition(context):
+        yield Output(Pipeline(
+            workdir=pipeline.workdir,
+            image=pipeline.image,
+            commands=pipeline.commands,
+            params=pipeline.params + [f"INPUT={directory}"],
+            input=pipeline.input
+        ), 'pipeline')
+
+    @dagster.pipeline(name='pipeline_with_input_directory',
+                      mode_defs=[ModeDefinition(executor_defs=default_executors + [dask_executor])])
+    def construct():
+        run_container(yield_definition())
+
+    return construct
+
+
+def construct_pipeline_with_input_files(pipeline: Pipeline, files: [str] = []):
     output_defs = [
-        OutputDefinition(Pipeline, name, is_required=False) for name in files
+        OutputDefinition(Pipeline, name.split('/')[-1], is_required=False) for name in files
     ]
 
     @solid(output_defs=output_defs)
@@ -40,9 +78,9 @@ def construct_pipeline(pipeline: Pipeline, files: [str] = []):
                 workdir=pipeline.workdir,
                 image=pipeline.image,
                 commands=pipeline.commands,
-                params=pipeline.params + [f"INPUT={join(pipeline.workdir, name)}"],
+                params=pipeline.params + [f"INPUT={name}"],
                 input=pipeline.input
-            ), name)
+            ), name.split('/')[-1])
 
     @solid(output_defs=[OutputDefinition(Pipeline, 'pipeline', is_required=True)])
     def yield_definition(context):
@@ -54,7 +92,7 @@ def construct_pipeline(pipeline: Pipeline, files: [str] = []):
             input=pipeline.input
         ), 'pipeline')
 
-    @dagster.pipeline(name='plantit_pipeline',
+    @dagster.pipeline(name='pipeline_with_input_files',
                       mode_defs=[ModeDefinition(executor_defs=default_executors + [dask_executor])])
     def construct():
         definitions = yield_definitions()

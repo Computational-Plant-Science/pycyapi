@@ -3,7 +3,7 @@ import traceback
 
 from dagster import execute_pipeline_iterator, reconstructable, DagsterInstance, DagsterEventType
 
-from plantit_cluster.dagster.solids import construct_pipeline
+from plantit_cluster.dagster.solids import construct_pipeline_with_input_files
 from plantit_cluster.exceptions import PlantitException
 from plantit_cluster.executor.executor import Executor
 from plantit_cluster.input.irodsinput import IRODSInput
@@ -81,7 +81,7 @@ class JobQueueExecutor(Executor):
                 run_config['execution']['dask']['config']['cluster'][self.name][k] = v
 
             for event in execute_pipeline_iterator(
-                    construct_pipeline(pipeline, files),
+                    construct_pipeline_with_input_files(pipeline, files),
                     run_config=run_config,
                     instance=DagsterInstance.get()):
                 print(f"Dagster event '{event.event_type}' with message '{event.message}'")

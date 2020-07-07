@@ -54,7 +54,8 @@ To execute a job defined in `example_pipeline.json`, run `plantit run example_pi
         "user":"rods",
         "password":"rods",
         "zone":"testZone",
-        "path": "testCollection"
+        "path": "testCollection",
+        "param": "file"
     },
     "executor": {
         "name": "in-process"

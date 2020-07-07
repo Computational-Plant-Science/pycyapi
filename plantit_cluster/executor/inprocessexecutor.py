@@ -1,8 +1,10 @@
+import os
 import traceback
+from os.path import join
 
 from dagster import execute_pipeline_iterator, DagsterEventType
 
-from plantit_cluster.dagster.solids import construct_pipeline
+from plantit_cluster.dagster.solids import *
 from plantit_cluster.exceptions import PlantitException
 from plantit_cluster.executor.executor import Executor
 from plantit_cluster.input.irodsinput import IRODSInput
@@ -25,24 +27,36 @@ class InProcessExecutor(Executor):
         """
 
         try:
-            irods = IRODSInput(
-                path=pipeline.input.path,
-                host=pipeline.input.host,
-                port=pipeline.input.port,
-                user=pipeline.input.user,
-                password=pipeline.input.password,
-                zone=pipeline.input.zone,
-            )
-            files = irods.list()
-            print(f"Pulling input files {files}")
-            irods.pull(pipeline.workdir)
-            print(f"Successfully pulled input files {files}")
+            if pipeline.input is not None:
+                irods = IRODSInput(
+                    path=pipeline.input.path,
+                    host=pipeline.input.host,
+                    port=pipeline.input.port,
+                    user=pipeline.input.user,
+                    password=pipeline.input.password,
+                    zone=pipeline.input.zone,
+                )
+                print(f"Pulling input files")
+                directory = join(pipeline.workdir, 'input')
+                os.makedirs(directory, exist_ok=True)
+                irods.pull(directory)
+                files = [os.path.abspath(join(directory, file)) for file in os.listdir(directory)]
+                print(f"Successfully pulled input files {files}")
 
+                if pipeline.input.param is None:
+                    dagster_pipeline = construct_pipeline_with_no_input(pipeline)
+                elif pipeline.input.param == 'directory':
+                    dagster_pipeline = construct_pipeline_with_input_directory(pipeline, directory)
+                elif pipeline.input.param == 'file':
+                    dagster_pipeline = construct_pipeline_with_input_files(pipeline, files)
+                else:
+                    raise ValueError(f"Value of 'input.param' must be either 'file' or 'directory'")
+            else:
+                dagster_pipeline = construct_pipeline_with_no_input(pipeline)
 
             print(f"Running {self.name} pipeline")
             for event in execute_pipeline_iterator(
-                    # plantit_pipeline,
-                    construct_pipeline(pipeline, files),
+                    dagster_pipeline,
                     run_config={
                         'storage': {
                             'filesystem': {

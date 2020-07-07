@@ -12,6 +12,11 @@ class Input(ABC):
     def path(self):
         pass
 
+    @property
+    @abstractmethod
+    def param(self):
+        pass
+
     @abstractmethod
     def list(self) -> List[str]:
         """

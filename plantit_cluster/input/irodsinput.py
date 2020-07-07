@@ -5,6 +5,7 @@ import ssl
 
 from irods.session import iRODSSession
 
+from plantit_cluster.exceptions import PlantitException
 from plantit_cluster.input.input import Input
 from plantit_cluster.input.util import *
 
@@ -15,13 +16,20 @@ class IRODSInput(Input):
     def path(self):
         return self.__path
 
-    def __init__(self, path: str, host: str = None, port: int = None, user: str = None, password: str = None, zone: str = None):
+    @property
+    def param(self):
+        return self.__param
+
+    def __init__(self, path: str, host: str = None, port: int = None, user: str = None, password: str = None, zone: str = None, param: str = None):
         self.__path = path
         self.host = host
         self.port = port
         self.user = user
         self.password = password
         self.zone = zone
+        if not param == 'file' and not param == 'directory' and param is not None:
+            raise ValueError(f"Value of 'param' must be either 'file' or 'directory'")
+        self.__param = param
 
     def __session(self):
         if self.host is not None:
