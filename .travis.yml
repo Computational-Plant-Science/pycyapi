@@ -61,5 +61,4 @@ script:
   - ./scripts/bootstrap.sh
   - docker-compose -f docker-compose.test.yml up -d
   - docker-compose -f docker-compose.test.yml exec cluster pytest . -s
-  - docker-compose -f docker-compose.test.yml exec cluster /opt/plantit-cluster/integration_tests/integration-tests.sh
   - docker-compose -f docker-compose.test.yml down
