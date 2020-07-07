@@ -1,17 +1,86 @@
-from plantit_cluster.cluster import Cluster
-from plantit_cluster.job import Job
+import tempfile
+from os.path import join
 
-job = Job(
-    id="2",
-    workdir="/test",
-    token="token",
-    server="",
-    container="docker://alpine:latest",
-    commands=["/bin/ash", "-c", "'pwd'"],
-    executor={"name": "local"}
-)
+import pytest
+from irods.session import iRODSSession
+
+from plantit_cluster.executor.inprocessexecutor import InProcessExecutor
+from plantit_cluster.input.irodsinput import IRODSInput
+from plantit_cluster.pipeline import Pipeline
+
+host = "irods"
+port = 1247
+user = "rods"
+password = "rods"
+zone = "tempZone"
+path = f"/{zone}"
+message = "Message!"
+local_dir = tempfile.gettempdir()
 
 
-def test_run_inprocess():
-    Cluster.run_inprocess(job)
+@pytest.fixture
+def session():
+    return iRODSSession(host=host,
+                        port=port,
+                        user=user,
+                        password=password,
+                        zone=zone)
 
+
+@pytest.fixture
+def executor():
+    return InProcessExecutor()
+
+
+@pytest.fixture
+def pipeline():
+    return Pipeline(
+        workdir="/test",
+        image="docker://alpine:latest",
+        commands=[
+            'echo',
+            '$MESSAGE'
+            '&&',
+            "cat",
+            '$INPUT',
+        ],
+        params=[
+            f"MESSAGE={message}",
+        ],
+        input=IRODSInput(
+            host=host,
+            port=port,
+            user=user,
+            password=password,
+            zone=zone,
+            path=join(path, "testCollection"))
+    )
+
+
+def test_run_inprocess(session, pipeline, executor):
+    local_file_1 = tempfile.NamedTemporaryFile()
+    local_file_2 = tempfile.NamedTemporaryFile()
+    local_path_1 = local_file_1.name
+    local_path_2 = local_file_2.name
+    remote_coll = join(path, "testCollection")
+    remote_path_1 = join(remote_coll, local_file_1.name.split('/')[-1])
+    remote_path_2 = join(remote_coll, local_file_2.name.split('/')[-1])
+
+    try:
+        session.collections.create(remote_coll)
+        local_file_1.write(b'Input1!')
+        local_file_1.seek(0)
+        local_file_2.write(b'Input2!')
+        local_file_2.seek(0)
+        session.data_objects.put(local_path_1, remote_path_1)
+        session.data_objects.put(local_path_2, remote_path_2)
+        local_file_1.close()
+        local_file_2.close()
+
+        coll = session.collections.get(remote_coll)
+        for obj in coll.data_objects:
+            print(obj)
+
+        executor.execute(pipeline)
+    finally:
+        session.collections.remove(remote_coll, force=True)

@@ -1,2 +1,2 @@
-class JobException(Exception):
+class PlantitException(Exception):
     pass

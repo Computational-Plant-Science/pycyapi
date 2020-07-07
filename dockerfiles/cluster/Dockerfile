@@ -13,9 +13,9 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
     cryptsetup \
     openssh-server \
     postgresql-client \
-    # singularity-container \
+    # singularity-image \
     git \
-    python-minimal \
+    python-pip \
     python3-pip \
     libfuse2 \
     vim \

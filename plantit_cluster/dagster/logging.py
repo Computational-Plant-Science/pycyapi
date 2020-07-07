@@ -1,4 +1,3 @@
-import json
 import logging
 import logging.handlers
 from ast import literal_eval

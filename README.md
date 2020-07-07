@@ -1,6 +1,6 @@
 # PlantIT Cluster [![Build Status](https://travis-ci.com/Computational-Plant-Science/plantit-cluster.svg?branch=master)](https://travis-ci.com/Computational-Plant-Science/plantit-cluster)
 
-PlantIT workflow management CLI. Executes jobs on local or distributed compute resources.
+Executes jobs on local or distributed compute resources.
 
 **This project is under active development and is not yet stable.**
 
@@ -32,23 +32,37 @@ pip3 install plantit-cluster
 
 ## Usage
 
-To execute a job defined in `job.json`, first run `plantit --job job.json`. The `job.json` definition should conform to the following schema:
+To execute a job defined in `example_pipeline.json`, run `plantit run example_pipeline.json`. The JSON definition should conform to the following schema:
 
 ```json
 {
-    "id": "2",
-    "workdir": "/your/working/directory",
-    "token": "token",
-    "server": "",
-    "container": "docker://alpine:latest",
-    "commands": "/bin/ash -c 'pwd'",
+    "workdir": "/test",
+    "image": "docker://alpine:latest",
+    "commands": [
+        "echo",
+        "$MESSAGE",
+        "&&",
+        "cat",
+        "$INPUT"
+    ],
+    "params":[
+        "MESSAGE=Hello!"
+    ],
+    "input": {
+        "host":"irods",
+        "port": 1247,
+        "user":"rods",
+        "password":"rods",
+        "zone":"testZone",
+        "path": "testCollection"
+    },
     "executor": {
-        "name": "local"
+        "name": "in-process"
     }
 }
 ```
 
-Currently `local` and `pbs`  executors are supported. If no executor is specified in the job definition file, `plantit-cluster` will default to the `local` (in-process) executor.
+Currently `local`, `pbs`, and `slurm`  executors are supported. If no executor is specified in the job definition file, `plantit-cluster` will default to the `local` (in-process) executor.
 
 To use the PBS executor, add an `executor` section like the following to the top-level job definition:
 
@@ -56,7 +70,7 @@ To use the PBS executor, add an `executor` section like the following to the top
 {
     ...
     "executor": {
-        "name": "PBS",
+        "name": "pbs",
         "cores": 1,
         "memory": "250MB",
         "walltime": "00:00:10",
@@ -68,10 +82,29 @@ To use the PBS executor, add an `executor` section like the following to the top
 }
 ```
 
+To use the SLURM executor:
+
+To use the PBS executor, add an `executor` section like the following to the top-level job definition:
+
+```
+{
+    ...
+    "executor": {
+        "name": "slurm",
+        "cores": 1,
+        "memory": "250MB",
+        "walltime": "00:00:10",
+        "processes": 1,
+        "local_directory": "/your/scratch/directory",
+        "n_workers": 1,
+        "partition": "debug",
+    }
+    ...
+}
+```
+
 ## Tests
 
-Before running tests, run `scripts/bootstrap.sh`, then bring test containers up with `docker-compose -f docker-compose.test.yml up` (`-d` for detached mode).
+Before running tests, run `scripts/bootstrap.sh`.
 
-Unit tests can be run using: `docker-compose -f docker-compose.test.yml exec cluster pytest . -s`
-
-Run integration tests with `docker-compose -f docker-compose.test.yml exec cluster /opt/plantit-cluster/integration_tests/integration-tests.sh`.
+Unit tests can then be run with: `docker-compose -f docker-compose.test.yml run cluster /bin/bash /root/wait-for-it.sh irods:1247 -- pytest . -s`

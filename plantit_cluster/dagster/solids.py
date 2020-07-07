@@ -1,59 +1,69 @@
+import os
 import subprocess
+from os.path import join
 
-from dagster import solid
+import dagster
+from dagster import solid, OutputDefinition, Output, default_executors, ModeDefinition
+from dagster.core.definitions.composition import InvokedSolidOutputHandle
+from dagster_dask import dask_executor
 
-from plantit_cluster.dagster.types import DagsterJob
-from plantit_cluster.exceptions import JobException
-
-
-@solid
-def sources(context, job: DagsterJob) -> DagsterJob:
-    context.log.info(f"Successfully pulled from sources for job '{job.id}'")
-    return job
+from plantit_cluster.exceptions import PlantitException
+from plantit_cluster.pipeline import Pipeline
 
 
 @solid
-def singularity_container(context, job: DagsterJob) -> DagsterJob:
-    cmd = [
-              "singularity", "exec",
-              "--containall",
-              "--home", job.workdir,
-              job.container
-          ] + job.commands
-    context.log.info(f"Running Singularity container with '{cmd}' for job '{job.id}'")
-    ret = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+def run_container(context, pipeline: Pipeline):
+    cmd = f"singularity exec --containall --home {pipeline.workdir} {pipeline.image} {' '.join(pipeline.commands)}"
+    for param in pipeline.params:
+        split = param.split('=')
+        cmd = cmd.replace(f"${split[0]}", split[1])
+    context.log.info(f"Running container with '{cmd}'")
+    ret = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     if ret.returncode != 0:
-        msg = f"Non-zero exit code from Singularity container for job '{job.id}': {ret.stderr.decode('utf-8') if ret.stderr else ret.stdout.decode('utf-8') if ret.stdout else 'Unknown error'}"
+        msg = f"Non-zero exit code from container: {ret.stderr.decode('utf-8') if ret.stderr else ret.stdout.decode('utf-8') if ret.stdout else 'Unknown error'}"
         context.log.error(msg)
-        raise JobException(msg)
+        raise PlantitException(msg)
     else:
         context.log.info(
-            f"Successfully ran Singularity container for job '{job.id}' with output: {ret.stdout.decode('utf-8')}")
-
-    return job
+            f"Successfully ran container with output: {ret.stdout.decode('utf-8')}")
 
 
-@solid
-def docker_container(context, job: DagsterJob) -> DagsterJob:
-    cmd = [
-              "docker",
-              "run",
-              job.container
-          ] + job.commands
-    context.log.info(f"Running Docker container with '{cmd}' for job '{job.id}'")
-    ret = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if ret.returncode != 0:
-        msg = f"Non-zero exit code from Docker container for job '{job.id}': {ret.stderr.decode('utf-8') if ret.stderr else ret.stdout.decode('utf-8') if ret.stdout else 'Unknown error'}"
-        context.log.error(msg)
-        raise JobException(msg)
-    else:
-        context.log.info(
-            f"Successfully ran Docker container for job '{job.id}' with output: {ret.stdout.decode('utf-8')}")
+def construct_pipeline(pipeline: Pipeline, files: [str] = []):
+    output_defs = [
+        OutputDefinition(Pipeline, name, is_required=False) for name in files
+    ]
 
-    return job
+    @solid(output_defs=output_defs)
+    def yield_definitions(context):
+        for name in files:
+            yield Output(Pipeline(
+                workdir=pipeline.workdir,
+                image=pipeline.image,
+                commands=pipeline.commands,
+                params=pipeline.params + [f"INPUT={join(pipeline.workdir, name)}"],
+                input=pipeline.input
+            ), name)
 
+    @solid(output_defs=[OutputDefinition(Pipeline, 'pipeline', is_required=True)])
+    def yield_definition(context):
+        yield Output(Pipeline(
+            workdir=pipeline.workdir,
+            image=pipeline.image,
+            commands=pipeline.commands,
+            params=pipeline.params,
+            input=pipeline.input
+        ), 'pipeline')
 
-@solid
-def targets(context, job: DagsterJob) -> DagsterJob:
-    context.log.info(f"Successfully pushed to targets for job '{job.id}'")
-    return job
+    @dagster.pipeline(name='plantit_pipeline',
+                      mode_defs=[ModeDefinition(executor_defs=default_executors + [dask_executor])])
+    def construct():
+        definitions = yield_definitions()
+        if definitions is None:
+            run_container(yield_definition())
+        elif type(definitions) is InvokedSolidOutputHandle:
+            run_container(definitions)
+        else:
+            for definition in definitions:
+                run_container.alias(definition.output_name)(definition)
+
+    return construct

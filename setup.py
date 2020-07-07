@@ -24,6 +24,6 @@ setuptools.setup(
     },
     python_requires='>=3.6.9',
     install_requires=['requests', 'python-irodsclient', 'dask', 'dask-jobqueue', 'dagster', 'dagster-dask',
-                      'pyaml'],
+                      'pyaml', 'click'],
     setup_requires=['wheel'],
     tests_require=['pytest'])
