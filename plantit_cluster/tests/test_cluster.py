@@ -5,8 +5,8 @@ import pytest
 from irods.session import iRODSSession
 
 from plantit_cluster.executor.inprocessexecutor import InProcessExecutor
-from plantit_cluster.input.irodsinput import IRODSInput
-from plantit_cluster.pipeline import Pipeline
+from plantit_cluster.store.irodsstore import IRODSStore
+from plantit_cluster.run import Run
 
 host = "irods"
 port = 1247
@@ -34,10 +34,10 @@ def executor():
 
 @pytest.fixture
 def pipeline_with_no_inputs():
-    return Pipeline(
+    return Run(
         workdir="/test",
         image="docker://alpine:latest",
-        commands=[
+        command=[
             'echo',
             '$MESSAGE'
         ],
@@ -49,10 +49,10 @@ def pipeline_with_no_inputs():
 
 @pytest.fixture
 def pipeline_with_file_inputs():
-    return Pipeline(
+    return Run(
         workdir="/test",
         image="docker://alpine:latest",
-        commands=[
+        command=[
             'echo',
             '$MESSAGE'
             '&&',
@@ -62,7 +62,7 @@ def pipeline_with_file_inputs():
         params=[
             f"MESSAGE={message}",
         ],
-        input=IRODSInput(
+        source=IRODSStore(
             host=host,
             port=port,
             user=user,
@@ -75,10 +75,10 @@ def pipeline_with_file_inputs():
 
 @pytest.fixture
 def pipeline_with_directory_input():
-    return Pipeline(
+    return Run(
         workdir="/test",
         image="docker://alpine:latest",
-        commands=[
+        command=[
             'echo',
             '$MESSAGE'
             '&&',
@@ -88,7 +88,7 @@ def pipeline_with_directory_input():
         params=[
             f"MESSAGE={message}",
         ],
-        input=IRODSInput(
+        source=IRODSStore(
             host=host,
             port=port,
             user=user,

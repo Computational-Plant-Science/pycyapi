@@ -5,12 +5,12 @@ import ssl
 
 from irods.session import iRODSSession
 
-from plantit_cluster.exceptions import PlantitException
-from plantit_cluster.input.input import Input
-from plantit_cluster.input.util import *
+from plantit_cluster.exceptions import PipelineException
+from plantit_cluster.store.store import Store
+from plantit_cluster.store.util import *
 
 
-class IRODSInput(Input):
+class IRODSStore(Store):
 
     @property
     def path(self):

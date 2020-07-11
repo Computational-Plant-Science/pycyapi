@@ -1,2 +1,2 @@
-class PlantitException(Exception):
+class PipelineException(Exception):
     pass

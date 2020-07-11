@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from plantit_cluster.pipeline import Pipeline
+from plantit_cluster.run import Run
 
 
 class Executor(ABC):
@@ -14,5 +14,5 @@ class Executor(ABC):
         pass
 
     @abstractmethod
-    def execute(self, pipeline: Pipeline):
+    def execute(self, pipeline: Run):
         pass

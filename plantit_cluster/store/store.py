@@ -2,20 +2,10 @@ from abc import ABC, abstractmethod
 from typing import List
 
 
-class Input(ABC):
+class Store(ABC):
     """
     A remote file/object store.
     """
-
-    @property
-    @abstractmethod
-    def path(self):
-        pass
-
-    @property
-    @abstractmethod
-    def param(self):
-        pass
 
     @abstractmethod
     def list(self) -> List[str]:
@@ -46,3 +36,4 @@ class Input(ABC):
             local_path: The local path.
         """
         pass
+

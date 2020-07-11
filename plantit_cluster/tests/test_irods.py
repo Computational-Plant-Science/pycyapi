@@ -4,7 +4,7 @@ from os.path import join, isfile
 import pytest
 from irods.session import iRODSSession
 
-from plantit_cluster.input.irodsinput import IRODSInput
+from plantit_cluster.store.irodsstore import IRODSStore
 
 host = "irods"
 port = 1247
@@ -26,8 +26,8 @@ def session():
 
 
 @pytest.fixture
-def irods():
-    return IRODSInput(path=path,
+def store():
+    return IRODSStore(path=path,
                       host=host,
                       port=port,
                       user=user,
@@ -66,7 +66,7 @@ def test_pull(session, irods):
         session.data_objects.put(local_path, remote_path)
         local_file.close()
 
-        irods.pull(local_dir)
+        irods.pull_to(local_dir)
         assert isfile(local_path)
 
         with open(local_path) as file:
