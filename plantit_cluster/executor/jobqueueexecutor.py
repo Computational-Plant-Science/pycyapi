@@ -1,16 +1,15 @@
-import json
 import os
 import traceback
 from os.path import join
 
 from dagster import execute_pipeline_iterator, reconstructable, DagsterInstance, DagsterEventType
 
-from plantit_cluster.dagster.solids import construct_pipeline_with_input_files, construct_pipeline_with_input_directory, \
+from plantit_cluster.dagster.solids import construct_pipeline_with_input_directory, \
     construct_pipeline_with_no_input
 from plantit_cluster.exceptions import PipelineException
 from plantit_cluster.executor.executor import Executor
-from plantit_cluster.store.irodsstore import IRODSStore
 from plantit_cluster.run import Run
+from plantit_cluster.store.irodsstore import IRODSStore
 
 
 def object_hook(dct):
@@ -22,7 +21,7 @@ def object_hook(dct):
 
 class JobQueueExecutor(Executor):
     """
-    Runs pipelines on an HPC/HTC queueing system with dask-jobqueue.
+    Runs workflows on an HPC/HTC queueing system with dask-jobqueue.
     """
 
     name = None
@@ -31,35 +30,35 @@ class JobQueueExecutor(Executor):
         self.name = kwargs["name"]
         self.kwargs = kwargs
 
-    def execute(self, pipeline: Run):
+    def execute(self, run: Run):
         """
         Runs a pipeline on an HPC/HTC queueing system with dask-jobqueue.
 
         Args:
-            pipeline: The pipeline definition.
+            run: The run definition.
         """
 
         try:
-            input_kind = None if pipeline.source is None else pipeline.source['kind']
-            output_kind = None if pipeline.sink is None else pipeline.sink['kind']
+            input_kind = None if run.input is None else run.input['kind']
+            output_kind = None if run.output is None else run.output['kind']
 
             if input_kind is not None:
                 inputStore = IRODSStore(
-                    host=pipeline.source['host'],
-                    port=pipeline.source['port'],
-                    user=pipeline.source['user'],
-                    password=pipeline.source['password'],
-                    zone=pipeline.source['zone'],
-                    path=pipeline.source['irods_path'])
+                    host=run.input['host'],
+                    port=run.input['port'],
+                    user=run.input['user'],
+                    password=run.input['password'],
+                    zone=run.input['zone'],
+                    path=run.input['irods_path'])
 
             if output_kind is not None:
                 outputStore = IRODSStore(
-                    host=pipeline.sink['host'],
-                    port=pipeline.sink['port'],
-                    user=pipeline.sink['user'],
-                    password=pipeline.sink['password'],
-                    zone=pipeline.sink['zone'],
-                    path=pipeline.sink['irods_path'])
+                    host=run.output['host'],
+                    port=run.output['port'],
+                    user=run.output['user'],
+                    password=run.output['password'],
+                    zone=run.output['zone'],
+                    path=run.output['irods_path'])
 
             run_config = {
                 'execution': {
@@ -74,7 +73,7 @@ class JobQueueExecutor(Executor):
                 'storage': {
                     'filesystem': {
                         'config': {
-                            'base_dir': pipeline.workdir
+                            'base_dir': run.workdir
                         }
                     }
                 },
@@ -93,8 +92,8 @@ class JobQueueExecutor(Executor):
                 run_config['execution']['dask']['config']['cluster'][self.name][k] = v
 
             if input_kind == 'directory':
-                dagster_pipeline = reconstructable(construct_pipeline_with_input_directory)(pipeline, pipeline.source['irods_path'])
-                local_path = join(pipeline.workdir, 'input')
+                dagster_pipeline = reconstructable(construct_pipeline_with_input_directory)(run, run.input['irods_path'])
+                local_path = join(run.workdir, 'input')
                 os.mkdir(local_path)
                 files = inputStore.list()
                 print(f"Pulling input {input_kind} {files}")
@@ -102,13 +101,13 @@ class JobQueueExecutor(Executor):
             if input_kind == 'file':
                 pass
             else:
-                dagster_pipeline = construct_pipeline_with_no_input(pipeline)
+                dagster_pipeline = construct_pipeline_with_no_input(run)
 
             # TODO support for more queueing systems? HTCondor, what else?
             if not (self.name == "pbs" or self.name == "slurm"):
                 raise ValueError(f"Queue type '{self.name}' not supported")
 
-            print(f"Running {self.name} pipeline")
+            print(f"Running {self.name} workflow")
 
             for event in execute_pipeline_iterator(
                     dagster_pipeline,
@@ -118,12 +117,12 @@ class JobQueueExecutor(Executor):
                 if event.event_type is DagsterEventType.PIPELINE_INIT_FAILURE or event.is_pipeline_failure:
                     raise PipelineException(event.message)
 
-            print(f"Successfully ran {self.name} pipeline")
+            print(f"Successfully ran {self.name} workflow")
 
             if output_kind == 'file':
-                local_path = pipeline.sink['local_path']
+                local_path = run.output['local_path']
                 print(f"Pushing output {output_kind} {local_path}")
                 outputStore.push(local_path)
         except Exception:
-            print(f"Failed to run {self.name} pipeline: {traceback.format_exc()}")
+            print(f"Failed to run {self.name} workflow: {traceback.format_exc()}")
             return

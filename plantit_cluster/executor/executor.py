@@ -5,7 +5,7 @@ from plantit_cluster.run import Run
 
 class Executor(ABC):
     """
-    Pipeline execution engine.
+    Workflow execution engine.
     """
 
     @property

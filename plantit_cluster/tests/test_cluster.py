@@ -62,7 +62,7 @@ def pipeline_with_file_inputs():
         params=[
             f"MESSAGE={message}",
         ],
-        source=IRODSStore(
+        input=IRODSStore(
             host=host,
             port=port,
             user=user,
@@ -88,7 +88,7 @@ def pipeline_with_directory_input():
         params=[
             f"MESSAGE={message}",
         ],
-        source=IRODSStore(
+        input=IRODSStore(
             host=host,
             port=port,
             user=user,

@@ -6,12 +6,7 @@ from plantit_cluster.executor.jobqueueexecutor import JobQueueExecutor
 from plantit_cluster.run import Run
 
 
-@click.group()
-def cli():
-    pass
-
-
-@cli.command()
+@click.command()
 @click.argument('workflow')
 def run(workflow):
     with open(workflow, 'r') as file:
@@ -27,8 +22,4 @@ def run(workflow):
             JobQueueExecutor(**executor['slurm']).execute(Run(**definition))
         else:
             raise ValueError(f"Unrecognized executor (supported: 'in-process', 'pbs', 'slurm')")
-
-
-if __name__ == '__main__':
-    cli()
 
