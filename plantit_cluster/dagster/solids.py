@@ -37,7 +37,10 @@ def run_container(context, run: Run):
         update_status(run, 2, msg)
         raise PipelineException(msg)
     else:
-        msg = f"Successfully ran container with output:\n{ret.stdout.decode('utf-8') + ret.stderr.decode('utf-8')}"
+        msg = ret.stdout.decode('utf-8') + ret.stderr.decode('utf-8')
+        context.log.info(msg)
+        update_status(run, 3, msg)
+        msg = "Successfully ran container."
         context.log.info(msg)
         update_status(run, 3, msg)
 
