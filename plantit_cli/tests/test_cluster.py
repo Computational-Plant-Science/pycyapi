@@ -4,9 +4,9 @@ from os.path import join
 import pytest
 from irods.session import iRODSSession
 
-from plantit_cluster.executor.inprocessexecutor import InProcessExecutor
-from plantit_cluster.store.irodsstore import IRODSStore
-from plantit_cluster.run import Run
+from plantit_cli.executor.inprocessexecutor import InProcessExecutor
+from plantit_cli.store.irodsstore import IRODSStore
+from plantit_cli.run import Run
 
 host = "irods"
 port = 1247

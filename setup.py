@@ -6,20 +6,20 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name='plantit-cluster',
-    version='0.0.55',
+    name='plantit-cli',
+    version='0.0.1',
     description='PlantIT workflow management CLI.',
     long_description=long_description,
     long_description_content_type="text/markdown",
     author='Computational Plant Science Lab',
     author_email='wbonelli@uga.edu',
     license='BSD-3-Clause',
-    url='https://github.com/Computational-Plant-Science/plantit-cluster',
+    url='https://github.com/Computational-Plant-Science/plantit-cli',
     packages=setuptools.find_packages(),
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'plantit = plantit_cluster.cli:run'
+            'plantit = plantit_cli.cli:run'
         ]
     },
     python_requires='>=3.6.9',

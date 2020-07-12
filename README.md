@@ -1,13 +1,21 @@
-# PlantIT Pipeline [![Build Status](https://travis-ci.com/Computational-Plant-Science/plantit-cluster.svg?branch=master)](https://travis-ci.com/Computational-Plant-Science/plantit-cluster)
+# PlantIT CLI [![Build Status](https://travis-ci.com/Computational-Plant-Science/plantit-cli.svg?branch=master)](https://travis-ci.com/Computational-Plant-Science/plantit-cli)
 
-PlantIT pipeline management CLI. Deploy to a laptop, server, or HPC/HTC environment.
+PlantIT workflow management CLI. Deploy PlantIT workflows on laptops, servers, or HPC/HTC clusters. 
 
-**This project is under active development and is not yet stable.**
+**This project is in alpha and is not yet stable.**
 
 ## Requirements
 
 - Python 3.6.9+
 - [Singularity](https://sylabs.io/docs/)
+
+## Installation
+
+To install, clone the project with `git clone https://github.com/Computational-Plant-Science/plantit-cli.git` or use pip:
+
+```
+pip3 install plantit-cli
+```
 
 ### Python Dependencies
 
@@ -15,47 +23,32 @@ PlantIT pipeline management CLI. Deploy to a laptop, server, or HPC/HTC environm
 - [Dask](https://dask.org/)
 - [Dask-Jobqueue](https://jobqueue.dask.org/en/latest/)
 
-## Installation
-
-To install, clone the project with `git clone https://github.com/Computational-Plant-Science/plantit-pipeline.git` or use pip:
-
-```
-pip3 install plantit-cluster
-```
-
 ## Usage
 
-To deploy a pipeline defined in `pipeline.yaml`, run `plantit pipeline pipeline.yaml`. The YAML schema should look something like this:
+To run a workflow defined in `workflow.yaml`, use `plantit workflow.yaml --token <PlantIT API authentication token>`. The YAML schema should look something like this:
 
 ```yaml
-workdir: "/your/working/directory"         
-image: docker://alpine:latest             # the Docker or Singularity container image
-command: echo $MESSAGE && cat $INPUT"     # the command(s) to run inside the container
-params:                                   # parameters substituted  when command runs
-- MESSAGE=Hello!
-executor:                                 # execute the pipeline in a local process
+identifier: a42033c3-9ba1-4d99-83ed-3fdce08c706e
+image: docker://alpine
+workdir: /path/to/working/directory
+command: echo $MESSAGE
+params:
+- key: message
+  value: Hello, plant people!
+executor:
   in-process:
-
+api_url: http://plantit/apis/v1/runs/a42033c3-9ba1-4d99-83ed-3fdce08c706e/update_target_status/
 ```
 
-To access an iRODS data store, configure the following section(s):
+Taking the elements one at a time:
 
-```yaml
-source:
-  host: irods
-  port: 1247
-  user: rods
-  password: rods
-  zone: testZone
-  path: "/testZone/testCollection/"
-sink:
-  host: irods
-  port: 1247
-  user: rods
-  password: rods
-  zone: testZone
-  path: "/testZone/testCollection/"
-```
+- `identifier`: the workflow run identifier (GUID)
+- `image`: the Docker or Singularity container image
+- `workdir`: where to execute the workflow
+- `command`: the command(s) to run inside the container
+- `params`: parameters substituted  when command runs
+- `executor`: how to execute the pipeline (e.g., in-process or on an HPC/HTC resource manager)
+- `api_url`: the PlantIT API endpoint to relay run status updates
 
 Currently `in-process`, `pbs`, and `slurm`  executors are supported. If no executor is specified in the job definition file, the CLI will default to the `in-process` executor.
 

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from plantit_cluster.run import Run
+from plantit_cli.run import Run
 
 
 class Executor(ABC):

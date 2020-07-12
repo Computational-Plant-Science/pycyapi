@@ -5,9 +5,9 @@ import ssl
 
 from irods.session import iRODSSession
 
-from plantit_cluster.exceptions import PipelineException
-from plantit_cluster.store.store import Store
-from plantit_cluster.store.util import *
+from plantit_cli.exceptions import PipelineException
+from plantit_cli.store.store import Store
+from plantit_cli.store.util import *
 
 
 class IRODSStore(Store):

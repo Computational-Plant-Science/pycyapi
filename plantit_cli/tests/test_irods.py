@@ -4,7 +4,7 @@ from os.path import join, isfile
 import pytest
 from irods.session import iRODSSession
 
-from plantit_cluster.store.irodsstore import IRODSStore
+from plantit_cli.store.irodsstore import IRODSStore
 
 host = "irods"
 port = 1247

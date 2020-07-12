@@ -6,8 +6,8 @@ from dagster import solid, OutputDefinition, Output, default_executors, ModeDefi
 from dagster.core.definitions.composition import InvokedSolidOutputHandle
 from dagster_dask import dask_executor
 
-from plantit_cluster.exceptions import PipelineException
-from plantit_cluster.run import Run
+from plantit_cli.exceptions import PipelineException
+from plantit_cli.run import Run
 
 
 def update_status(run: Run, state: int, description: str):

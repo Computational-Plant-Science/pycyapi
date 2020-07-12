@@ -5,12 +5,12 @@ from os.path import join
 
 from dagster import execute_pipeline_iterator, reconstructable, DagsterInstance, DagsterEventType
 
-from plantit_cluster.dagster.solids import construct_pipeline_with_input_directory, \
+from plantit_cli.dagster.solids import construct_pipeline_with_input_directory, \
     construct_pipeline_with_no_input, update_status
-from plantit_cluster.exceptions import PipelineException
-from plantit_cluster.executor.executor import Executor
-from plantit_cluster.run import Run
-from plantit_cluster.store.irodsstore import IRODSStore
+from plantit_cli.exceptions import PipelineException
+from plantit_cli.executor.executor import Executor
+from plantit_cli.run import Run
+from plantit_cli.store.irodsstore import IRODSStore
 
 
 def object_hook(dct):

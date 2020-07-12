@@ -4,11 +4,11 @@ from os.path import join
 
 from dagster import execute_pipeline_iterator, DagsterEventType
 
-from plantit_cluster.dagster.solids import *
-from plantit_cluster.exceptions import PipelineException
-from plantit_cluster.executor.executor import Executor
-from plantit_cluster.store.irodsstore import IRODSStore
-from plantit_cluster.run import Run
+from plantit_cli.dagster.solids import *
+from plantit_cli.exceptions import PipelineException
+from plantit_cli.executor.executor import Executor
+from plantit_cli.store.irodsstore import IRODSStore
+from plantit_cli.run import Run
 
 
 class InProcessExecutor(Executor):

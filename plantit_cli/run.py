@@ -7,9 +7,9 @@ class Run(object):
                  identifier: str,
                  api_url: str,
                  workdir: str,
-                 clone: str,
                  image: str,
                  command: list,
+                 clone: str = None,
                  token: str = None,
                  params: list = None,
                  input: dict = None,
@@ -17,9 +17,9 @@ class Run(object):
         self._identifier = identifier
         self._api_url = api_url
         self._workdir = workdir
-        self._clone = clone
         self._image = image
         self._command = command
+        self._clone = clone
         self._token = token
         self._params = params
         self._input = input

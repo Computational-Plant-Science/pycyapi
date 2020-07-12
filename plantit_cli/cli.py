@@ -1,9 +1,9 @@
 import click
 import yaml
 
-from plantit_cluster.executor.inprocessexecutor import InProcessExecutor
-from plantit_cluster.executor.jobqueueexecutor import JobQueueExecutor
-from plantit_cluster.run import Run
+from plantit_cli.executor.inprocessexecutor import InProcessExecutor
+from plantit_cli.executor.jobqueueexecutor import JobQueueExecutor
+from plantit_cli.run import Run
 
 
 @click.command()
