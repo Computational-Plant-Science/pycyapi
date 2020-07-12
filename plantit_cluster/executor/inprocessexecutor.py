@@ -28,6 +28,18 @@ class InProcessExecutor(Executor):
         """
 
         try:
+            if run.clone is not None and run.clone is not '':
+                ret = subprocess.run(f"git clone {run.clone}", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+                if ret.returncode != 0:
+                    msg = f"Failed to clone repository '{run.clone}'"
+                    print(msg)
+                    update_status(run, 2, msg)
+                    raise PipelineException(msg)
+                else:
+                    msg = f"Cloned repository '{run.clone}'"
+                    print(msg)
+                    update_status(run, 3, msg)
+
             if run.input is not None:
                 irods = IRODSStore(
                     path=run.input.path,

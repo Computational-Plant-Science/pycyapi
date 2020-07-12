@@ -1,11 +1,12 @@
 import os
+import subprocess
 import traceback
 from os.path import join
 
 from dagster import execute_pipeline_iterator, reconstructable, DagsterInstance, DagsterEventType
 
 from plantit_cluster.dagster.solids import construct_pipeline_with_input_directory, \
-    construct_pipeline_with_no_input
+    construct_pipeline_with_no_input, update_status
 from plantit_cluster.exceptions import PipelineException
 from plantit_cluster.executor.executor import Executor
 from plantit_cluster.run import Run
@@ -39,6 +40,18 @@ class JobQueueExecutor(Executor):
         """
 
         try:
+            if run.clone is not None and run.clone is not '':
+                ret = subprocess.run(f"git clone {run.clone}", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+                if ret.returncode != 0:
+                    msg = f"Failed to clone repository '{run.clone}'"
+                    print(msg)
+                    update_status(run, 2, msg)
+                    raise PipelineException(msg)
+                else:
+                    msg = f"Cloned repository '{run.clone}'"
+                    print(msg)
+                    update_status(run, 3, msg)
+
             input_kind = None if run.input is None else run.input['kind']
             output_kind = None if run.output is None else run.output['kind']
 

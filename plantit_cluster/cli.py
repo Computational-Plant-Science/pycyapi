@@ -8,11 +8,13 @@ from plantit_cluster.run import Run
 
 @click.command()
 @click.argument('workflow')
-def run(workflow):
+@click.option('--token')
+def run(workflow, token):
     with open(workflow, 'r') as file:
         definition = yaml.safe_load(file)
+        definition['token'] = token
         executor = definition['executor']
-        # del definition['executor']
+        del definition['executor']
 
         if 'in-process' in executor:
             InProcessExecutor().execute(Run(**definition))

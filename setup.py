@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='plantit-cluster',
-    version='0.0.49',
+    version='0.0.54',
     description='PlantIT workflow management CLI.',
     long_description=long_description,
     long_description_content_type="text/markdown",
