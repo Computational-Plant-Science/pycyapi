@@ -65,6 +65,7 @@ def construct_pipeline_with_input_directory(run: Run, directory: str):
     def yield_definition(context):
         yield Output(Run(
             identifier=run.identifier,
+            token=run.token,
             api_url=run.api_url,
             workdir=run.workdir,
             image=run.image,
@@ -92,6 +93,7 @@ def construct_pipeline_with_input_files(run: Run, files: [str] = []):
         for file in files:
             yield Output(Run(
                 identifier=run.identifier,
+                token=run.token,
                 api_url=run.api_url,
                 workdir=run.workdir,
                 image=run.image,
