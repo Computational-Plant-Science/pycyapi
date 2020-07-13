@@ -45,7 +45,7 @@ class InProcessExecutor(Executor):
                     path=run.input['irods_path'],
                     host=run.input['host'],
                     port=run.input['port'],
-                    user=run.input['user'],
+                    user=run.input['username'],
                     password=run.input['password'],
                     zone=run.input['zone'],
                 )
