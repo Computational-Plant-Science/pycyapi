@@ -89,7 +89,6 @@ class JobQueueExecutor(Executor):
                     instance=DagsterInstance.get()):
                 if event.event_type is DagsterEventType.PIPELINE_INIT_FAILURE or event.is_pipeline_failure:
                     raise PipelineException(event.message)
-            print(f"Completed '{run.identifier}'.")
         except Exception:
-            print(f"Failed to complete '{run.identifier}': {traceback.format_exc()}")
+            update_status(run, 2, f"Failed to complete '{run.identifier}': {traceback.format_exc()}")
             return

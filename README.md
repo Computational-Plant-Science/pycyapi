@@ -46,7 +46,7 @@ Taking the elements one at a time:
 - `image`: the Docker or Singularity container image
 - `workdir`: where to execute the workflow
 - `command`: the command(s) to run inside the container
-- `params`: parameters substituted  when command runs
+- `params`: parameters substituted when `command` runs
 - `executor`: how to execute the pipeline (e.g., in-process or on an HPC/HTC resource manager)
 - `api_url`: the PlantIT API endpoint to relay run status updates
 
@@ -89,28 +89,26 @@ To configure a single container to operate on a single file, use `file` for attr
 
 ```yaml
 input:
-  irods:
-    kind: file
-    host: data.cyverse.org
-    irods_path: /iplant/home/your_username/your_collection/your_file
-    password: your_password
-    port: '1247'
-    username: your_username
-    zone: iplant
+  kind: file
+  host: data.cyverse.org
+  irods_path: /iplant/home/your_username/your_collection/your_file
+  password: your_password
+  port: '1247'
+  username: your_username
+  zone: iplant
 ```
 
 To configure a single container to operate on a directory, use `kind: directory` and a directory path for `irods_path`. For example:
 
 ```yaml
 input:
-  irods:
-    kind: directory
-    host: data.cyverse.org
-    irods_path: /iplant/home/your_username/your_directory
-    password: your_password
-    port: '1247'
-    username: your_username
-    zone: iplant
+  kind: directory
+  host: data.cyverse.org
+  irods_path: /iplant/home/your_username/your_directory
+  password: your_password
+  port: '1247'
+  username: your_username
+  zone: iplant
 ```
 
 To configure multiple containers to operate in parallel on the files in a directory, use `kind: file` and a directory path for `irods_path`. For example:
