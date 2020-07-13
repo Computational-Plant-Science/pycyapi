@@ -35,7 +35,7 @@ def store():
                       zone=zone)
 
 
-def test_list(session, irods):
+def test_list(session, store):
     local_file = tempfile.NamedTemporaryFile()
     local_path = local_file.name
     remote_path = join(path, local_file.name.split('/')[-1])
@@ -45,7 +45,7 @@ def test_list(session, irods):
         session.data_objects.put(local_path, remote_path)
         local_file.close()
 
-        listed = irods.list()
+        listed = store.list()
 
         assert remote_path.split('/')[-1] in listed
         assert path not in listed
@@ -53,7 +53,7 @@ def test_list(session, irods):
         session.collections.remove(path, force=True)
 
 
-def test_pull(session, irods):
+def test_pull(session, store):
     local_file = tempfile.NamedTemporaryFile()
     local_path = local_file.name
     remote_path = join(path, local_file.name.split('/')[-1])
@@ -66,7 +66,7 @@ def test_pull(session, irods):
         session.data_objects.put(local_path, remote_path)
         local_file.close()
 
-        irods.pull_to(local_dir)
+        store.pull(local_dir)
         assert isfile(local_path)
 
         with open(local_path) as file:
@@ -77,7 +77,7 @@ def test_pull(session, irods):
         session.data_objects.unlink(remote_path, force=True)
 
 
-def test_push(session, irods):
+def test_push(session, store):
     local_file = tempfile.NamedTemporaryFile()
     local_path = local_file.name
     remote_path = join(path, local_file.name.split('/')[-1])
@@ -87,7 +87,7 @@ def test_push(session, irods):
         with open(local_path, 'w') as file:
             file.write(data)
 
-        irods.push(local_path)
+        store.push(local_path)
         local_file.close()
 
         session.data_objects.get(remote_path, local_dir)

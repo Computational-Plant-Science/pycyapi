@@ -11,21 +11,23 @@ from plantit_cli.run import Run
 
 
 def update_status(run: Run, state: int, description: str):
-    print(run.api_url)
-    data = {
+    print(description)
+    status = {
         'run_id': run.identifier,
         'state': state,
         'description': description
     }
-    requests.post(run.api_url,
-                  data=data,
-                  headers={"Authorization": f"Token {run.token}"})
+    if run.api_url:
+        requests.post(run.api_url,
+                      data=status,
+                      headers={"Authorization": f"Token {run.token}"})
 
 
 @solid
 def run_container(context, run: Run):
     cmd = f"singularity exec --containall --home {run.workdir} {run.image} {run.command}"
     for param in run.params:
+        print(param)
         cmd = cmd.replace(f"${param['key'].upper()}", param['value'])
     msg = f"Running container with command: '{cmd}'"
     context.log.info(msg)
@@ -63,10 +65,11 @@ def construct_pipeline_with_input_directory(run: Run, directory: str):
     def yield_definition(context):
         yield Output(Run(
             identifier=run.identifier,
+            api_url=run.api_url,
             workdir=run.workdir,
             image=run.image,
             command=run.command,
-            params=run.params + [f"INPUT={directory}"],
+            params=run.params + [{'key': 'INPUT', 'value': directory}],
             input=run.input,
             output=run.output
         ), 'run')
@@ -86,16 +89,17 @@ def construct_pipeline_with_input_files(run: Run, files: [str] = []):
 
     @solid(output_defs=output_defs)
     def yield_definitions(context):
-        for name in files:
+        for file in files:
             yield Output(Run(
                 identifier=run.identifier,
+                api_url=run.api_url,
                 workdir=run.workdir,
                 image=run.image,
                 command=run.command,
-                params=run.params + [f"INPUT={name}"],
+                params=run.params + [{'key': 'INPUT', 'value': file}],
                 input=run.input,
                 output=run.output
-            ), name.split('/')[-1])
+            ), file.split('/')[-1])
 
     @solid(output_defs=[OutputDefinition(Run, 'run', is_required=True)])
     def yield_definition(context):

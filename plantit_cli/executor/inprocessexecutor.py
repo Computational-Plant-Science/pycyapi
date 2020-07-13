@@ -40,34 +40,33 @@ class InProcessExecutor(Executor):
                     print(msg)
                     update_status(run, 3, msg)
 
-            if run.input is not None:
+            if run.input:
                 irods = IRODSStore(
-                    path=run.input.path,
-                    host=run.input.host,
-                    port=run.input.port,
-                    user=run.input.user,
-                    password=run.input.password,
-                    zone=run.input.zone,
+                    path=run.input['irods_path'],
+                    host=run.input['host'],
+                    port=run.input['port'],
+                    user=run.input['user'],
+                    password=run.input['password'],
+                    zone=run.input['zone'],
                 )
-                print(f"Pulling input files.")
+
+                print(f"Pulling input (s) from '{run.input['irods_path']}'.")
                 directory = join(run.workdir, 'input')
                 os.makedirs(directory, exist_ok=True)
                 irods.pull(directory)
                 files = [os.path.abspath(join(directory, file)) for file in os.listdir(directory)]
-                print(f"Successfully pulled input files {files}.")
+                print(f"Successfully pulled input(s) {files}.")
 
-                if run.input.param is None:
-                    dagster_pipeline = construct_pipeline_with_no_input(run)
-                elif run.input.param == 'directory':
-                    dagster_pipeline = construct_pipeline_with_input_directory(run, directory)
-                elif run.input.param == 'file':
+                if run.input['kind'] == 'file':
                     dagster_pipeline = construct_pipeline_with_input_files(run, files)
+                elif run.input['kind'] == 'directory':
+                    dagster_pipeline = construct_pipeline_with_input_directory(run, directory)
                 else:
-                    raise ValueError(f"Value of 'input.param' must be either 'file' or 'directory'")
+                    raise ValueError(f"Value of 'input.kind' must be either 'file' or 'directory'")
             else:
                 dagster_pipeline = construct_pipeline_with_no_input(run)
 
-            print(f"Running {self.name} workflow.")
+            print(f"Running '{run.identifier}' with '{self.name}' executor.")
             for event in execute_pipeline_iterator(
                     dagster_pipeline,
                     run_config={
@@ -88,7 +87,7 @@ class InProcessExecutor(Executor):
                     }):
                 if event.event_type is DagsterEventType.PIPELINE_INIT_FAILURE or event.is_pipeline_failure:
                     raise PipelineException(event.message)
-            print(f"Successfully ran {self.name} workflow.")
+            print(f"Successfully completed '{run.identifier}'.")
         except Exception:
-            print(f"Failed to run {self.name} workflow: {traceback.format_exc()}")
+            print(f"Failed to complete '{run.identifier}': {traceback.format_exc()}")
             return

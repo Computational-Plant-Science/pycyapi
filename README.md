@@ -30,11 +30,11 @@ To run a workflow defined in `workflow.yaml`, use `plantit workflow.yaml --token
 ```yaml
 identifier: a42033c3-9ba1-4d99-83ed-3fdce08c706e
 image: docker://alpine
-workdir: /path/to/working/directory
+workdir: /your/working/directory
 command: echo $MESSAGE
 params:
 - key: message
-  value: Hello, plant people!
+  value: Hello, plant person!
 executor:
   in-process:
 api_url: http://plantit/apis/v1/runs/a42033c3-9ba1-4d99-83ed-3fdce08c706e/update_target_status/
@@ -77,6 +77,67 @@ executor:
     local_directory: "/your/scratch/directory"
     n_workers: 1
     partition: debug
+```
+
+### Inputs and Outputs
+
+Currently iRODS is the only supported data source. Amazon S3/Google Cloud Storage integrations are planned.
+
+To direct `plantit-cli` to pull an input file or directory from a remote data source, add an `input` section. The file or directory path will be substituted for `$INPUT` when the workflow's `command` is executed.
+
+To configure a single container to operate on a single file, use `file` for attribute `kind`. For example, to pull the file from an iRODS data store:
+
+```yaml
+input:
+  irods:
+    kind: file
+    host: data.cyverse.org
+    irods_path: /iplant/home/your_username/your_collection/your_file
+    password: your_password
+    port: '1247'
+    username: your_username
+    zone: iplant
+```
+
+To configure a single container to operate on a directory, use `kind: directory` and a directory path for `irods_path`. For example:
+
+```yaml
+input:
+  irods:
+    kind: directory
+    host: data.cyverse.org
+    irods_path: /iplant/home/your_username/your_directory
+    password: your_password
+    port: '1247'
+    username: your_username
+    zone: iplant
+```
+
+To configure multiple containers to operate in parallel on the files in a directory, use `kind: file` and a directory path for `irods_path`. For example:
+
+```yaml
+input:
+  kind: file
+  host: data.cyverse.org
+  irods_path: /iplant/home/your_username/your_directory
+  password: your_password
+  port: '1247'
+  username: your_username
+  zone: iplant
+```
+
+To push a local file or directory to an iRODS data store (the local path will be substituted for `$OUTPUT` when the workflow's `command` is executed):
+
+```yaml
+output:
+  host: data.cyverse.org
+  # local_path: /your/working/directory/your_output_file
+  local_path: /your/working/directory/your_output_directory/
+  irods_path: /iplant/home/your_username/your_collection
+  password: your_password
+  port: '1247'
+  username: your_username
+  zone: iplant
 ```
 
 ## Tests

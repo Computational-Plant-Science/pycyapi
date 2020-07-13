@@ -35,14 +35,16 @@ def executor():
 @pytest.fixture
 def pipeline_with_no_inputs():
     return Run(
+        identifier='no_inputs',
+        api_url='',
         workdir="/test",
         image="docker://alpine:latest",
-        command=[
-            'echo',
-            '$MESSAGE'
-        ],
+        command='echo $MESSAGE',
         params=[
-            f"MESSAGE={message}",
+            {
+                'key': 'MESSAGE',
+                'value': message
+            }
         ]
     )
 
@@ -50,52 +52,52 @@ def pipeline_with_no_inputs():
 @pytest.fixture
 def pipeline_with_file_inputs():
     return Run(
+        identifier='file_inputs',
+        api_url='',
         workdir="/test",
         image="docker://alpine:latest",
-        command=[
-            'echo',
-            '$MESSAGE'
-            '&&',
-            "cat",
-            '$INPUT',
-        ],
+        command='echo $MESSAGE && cat $INPUT',
         params=[
-            f"MESSAGE={message}",
+            {
+                'key': 'MESSAGE',
+                'value': message
+            }
         ],
-        input=IRODSStore(
-            host=host,
-            port=port,
-            user=user,
-            password=password,
-            zone=zone,
-            path=join(path, "testCollection"),
-            param='file')
+        input={
+            'kind': 'file',
+            'host': host,
+            'port': port,
+            'user': user,
+            'password': password,
+            'zone': zone,
+            'irods_path': join(path, "testCollection"),
+        }
     )
 
 
 @pytest.fixture
 def pipeline_with_directory_input():
     return Run(
+        identifier='directory_inputs',
+        api_url='',
         workdir="/test",
         image="docker://alpine:latest",
-        command=[
-            'echo',
-            '$MESSAGE'
-            '&&',
-            "ls",
-            '$INPUT',
-        ],
+        command='echo $MESSAGE && ls $INPUT',
         params=[
-            f"MESSAGE={message}",
+            {
+                'key': 'MESSAGE',
+                'value': message
+            }
         ],
-        input=IRODSStore(
-            host=host,
-            port=port,
-            user=user,
-            password=password,
-            zone=zone,
-            path=join(path, "testCollection"),
-            param='directory')
+        input={
+            'kind': 'directory',
+            'host': host,
+            'port': port,
+            'user': user,
+            'password': password,
+            'zone': zone,
+            'irods_path': join(path, "testCollection"),
+        }
     )
 
 

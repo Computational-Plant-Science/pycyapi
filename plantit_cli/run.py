@@ -8,7 +8,7 @@ class Run(object):
                  api_url: str,
                  workdir: str,
                  image: str,
-                 command: list,
+                 command: str = None,
                  clone: str = None,
                  token: str = None,
                  params: list = None,
