@@ -1,4 +1,6 @@
+import os
 import subprocess
+from os.path import join
 
 import dagster
 import requests
@@ -6,7 +8,7 @@ from dagster import solid, OutputDefinition, Output, default_executors, ModeDefi
 from dagster.core.definitions.composition import InvokedSolidOutputHandle
 from dagster_dask import dask_executor
 
-from plantit_cli.exceptions import PipelineException
+from plantit_cli.exceptions import PlantitException
 from plantit_cli.run import Run
 
 
@@ -25,34 +27,48 @@ def update_status(run: Run, state: int, description: str):
 
 @solid
 def run_container(context, run: Run):
-    cmd = f"singularity exec --containall --home {run.workdir} {run.image} {run.command}"
-    for param in run.params:
-        print(param)
+    cmd = f"singularity exec --home {run.workdir} {run.image} {run.command}"
+    for param in sorted(run.params, key=lambda p: len(p['key']), reverse=True):
         cmd = cmd.replace(f"${param['key'].upper()}", param['value'])
     msg = f"Running container with command: '{cmd}'"
-    context.log.info(msg)
     update_status(run, 3, msg)
     ret = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     if ret.returncode != 0:
         msg = f"Non-zero exit code from container: {ret.stderr.decode('utf-8') if ret.stderr else ret.stdout.decode('utf-8') if ret.stdout else 'Unknown error'}"
-        context.log.error(msg)
         update_status(run, 2, msg)
-        raise PipelineException(msg)
+        raise PlantitException(msg)
     else:
         msg = ret.stdout.decode('utf-8') + ret.stderr.decode('utf-8')
-        context.log.info(msg)
         update_status(run, 3, msg)
         msg = "Successfully ran container."
-        context.log.info(msg)
         update_status(run, 3, msg)
 
 
 def construct_pipeline_with_no_input(run: Run):
     @solid(output_defs=[OutputDefinition(Run, 'run', is_required=True)])
     def yield_definition(context):
-        yield Output(run, 'run')
+        if run.params:
+            params = run.params
+        else:
+            params = []
 
-    @dagster.pipeline(name='pipeline_with_no_inputs',
+        if run.output:
+            output_path = join(run.workdir, run.output['local_path']) if run.output['local_path'] is not '' else run.workdir
+            params += [{'key': 'OUTPUT', 'value': output_path}]
+
+        yield Output(Run(
+            identifier=run.identifier,
+            token=run.token,
+            api_url=run.api_url,
+            workdir=run.workdir,
+            image=run.image,
+            command=run.command,
+            params=params,
+            input=run.input,
+            output=run.output
+        ), 'run')
+
+    @dagster.pipeline(name='workflow_with_no_input',
                       mode_defs=[ModeDefinition(executor_defs=default_executors + [dask_executor])])
     def construct():
         run_container(yield_definition())
@@ -63,6 +79,18 @@ def construct_pipeline_with_no_input(run: Run):
 def construct_pipeline_with_input_directory(run: Run, directory: str):
     @solid(output_defs=[OutputDefinition(Run, 'run', is_required=True)])
     def yield_definition(context):
+        if run.params:
+            params = run.params
+        else:
+            params = []
+
+        if run.input:
+            params += [{'key': 'INPUT', 'value': directory}]
+
+        if run.output:
+            output_path = join(run.workdir, run.output['local_path']) if run.output['local_path'] is not '' else run.workdir
+            params += [{'key': 'OUTPUT', 'value': output_path}]
+
         yield Output(Run(
             identifier=run.identifier,
             token=run.token,
@@ -70,12 +98,12 @@ def construct_pipeline_with_input_directory(run: Run, directory: str):
             workdir=run.workdir,
             image=run.image,
             command=run.command,
-            params=run.params + [{'key': 'INPUT', 'value': directory}],
+            params=params,
             input=run.input,
             output=run.output
         ), 'run')
 
-    @dagster.pipeline(name='pipeline_with_input_directory',
+    @dagster.pipeline(name='workflow_with_directory_input',
                       mode_defs=[ModeDefinition(executor_defs=default_executors + [dask_executor])])
     def construct():
         run_container(yield_definition())
@@ -83,14 +111,29 @@ def construct_pipeline_with_input_directory(run: Run, directory: str):
     return construct
 
 
+def just_file_name(path):
+    return os.path.splitext(path.split('/')[-1])[0]
+
+
 def construct_pipeline_with_input_files(run: Run, files: [str] = []):
     output_defs = [
-        OutputDefinition(Run, name.split('/')[-1], is_required=False) for name in files
+        OutputDefinition(Run, just_file_name(file), is_required=False) for file in files
     ]
 
     @solid(output_defs=output_defs)
     def yield_definitions(context):
         for file in files:
+            if run.params:
+                params = run.params
+            else:
+                params = []
+
+            if run.input:
+                params += [{'key': 'INPUT', 'value': file}]
+
+            if run.output:
+                params += [{'key': 'OUTPUT', 'value': join(run.workdir, run.output['local_path'])}]
+
             yield Output(Run(
                 identifier=run.identifier,
                 token=run.token,
@@ -98,16 +141,16 @@ def construct_pipeline_with_input_files(run: Run, files: [str] = []):
                 workdir=run.workdir,
                 image=run.image,
                 command=run.command,
-                params=run.params + [{'key': 'INPUT', 'value': file}],
+                params=params,
                 input=run.input,
                 output=run.output
-            ), file.split('/')[-1])
+            ), just_file_name(file))
 
     @solid(output_defs=[OutputDefinition(Run, 'run', is_required=True)])
     def yield_definition(context):
         yield Output(run, 'run')
 
-    @dagster.pipeline(name='pipeline_with_input_files',
+    @dagster.pipeline(name='workflow_with_file_input',
                       mode_defs=[ModeDefinition(executor_defs=default_executors + [dask_executor])])
     def construct():
         definitions = yield_definitions()

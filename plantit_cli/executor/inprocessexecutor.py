@@ -3,15 +3,12 @@ import traceback
 from dagster import execute_pipeline_iterator, DagsterEventType
 
 from plantit_cli.dagster.solids import *
-from plantit_cli.exceptions import PipelineException
+from plantit_cli.exceptions import PlantitException
 from plantit_cli.executor.executor import Executor
 from plantit_cli.run import Run
 
 
 class InProcessExecutor(Executor):
-    """
-    Runs workflows in-process.
-    """
 
     name = "in-process"
 
@@ -34,14 +31,6 @@ class InProcessExecutor(Executor):
         }
 
     def execute(self, run: Run):
-        """
-        Runs a workflow in-process.
-
-        Args:
-
-            run: The workflow definition.
-        """
-
         update_status(run, 3, f"Starting '{run.identifier}' with '{self.name}' executor.")
         try:
             if run.clone is not None and run.clone is not '':
@@ -55,7 +44,10 @@ class InProcessExecutor(Executor):
             update_status(run, 3, f"Running '{run.image}' container(s) for '{run.identifier}'.")
             for event in execute_pipeline_iterator(dagster_pipeline, run_config=self.__run_config(run)):
                 if event.event_type is DagsterEventType.PIPELINE_INIT_FAILURE or event.is_pipeline_failure:
-                    raise PipelineException(event.message)
+                    raise PlantitException(event.message)
+
+            if run.output:
+                Executor.output(run)
         except Exception:
             update_status(run, 2, f"Failed to complete '{run.identifier}': {traceback.format_exc()}")
             return

@@ -129,8 +129,8 @@ To push a local file or directory to an iRODS data store (the local path will be
 ```yaml
 output:
   host: data.cyverse.org
-  # local_path: /your/working/directory/your_output_file
-  local_path: /your/working/directory/your_output_directory/
+  # local_path: your_output_file    # path relative to `workdir`, the run's working directory
+  local_path: your_output_directory # "
   irods_path: /iplant/home/your_username/your_collection
   password: your_password
   port: '1247'
