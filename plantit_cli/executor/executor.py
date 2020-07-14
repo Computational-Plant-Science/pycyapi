@@ -47,12 +47,15 @@ class Executor(ABC):
         os.makedirs(directory, exist_ok=True)
         irods.pull(directory)
         files = [os.path.abspath(join(directory, file)) for file in os.listdir(directory)]
-        update_status(run, 3, f"Pulled input(s) from '{run.input['irods_path']}': {files}")
+        file_count = len(files)
+        update_status(run, 3, f"Pulled {file_count} input(s) from '{run.input['irods_path']}': {files}")
 
         if run.input['kind'] == 'file':
             dagster_pipeline = construct_pipeline_with_input_files(run, files)
+            update_status(run, 3, f"Using fan-out workflow for {file_count} input file(s).")
         elif run.input['kind'] == 'directory':
             dagster_pipeline = construct_pipeline_with_input_directory(run, directory)
+            update_status(run, 3, f"Using linear workflow for input directory '{directory}' containing {file_count} files.")
         else:
             raise ValueError(f"Value of 'input.kind' must be either 'file' or 'directory'")
 
@@ -69,6 +72,6 @@ class Executor(ABC):
             zone=run.output['zone'],
         )
 
-        file = join(run.workdir, run.output['local_path'])
-        irods.push(file)
-        update_status(run, 3, f"Pushed output(s) to '{run.output['irods_path']}': {file}")
+        path = join(run.workdir, run.output['local_path'])
+        irods.push(path)
+        update_status(run, 3, f"Pushed output(s) to '{run.output['irods_path']}': {path}")

@@ -64,7 +64,7 @@ class JobQueueExecutor(Executor):
                     continue
                 run_config['execution']['dask']['config']['cluster'][self.name][k] = v
 
-            update_status(run, 3, f"Running '{run.image}' container(s) for '{run.identifier}'")
+            update_status(run, 3, f"Running '{run.image}' container(s).")
             for event in execute_pipeline_iterator(
                     dagster_pipeline,
                     run_config=run_config,
@@ -75,5 +75,5 @@ class JobQueueExecutor(Executor):
             if run.output:
                 Executor.output(run)
         except Exception:
-            update_status(run, 2, f"Failed to complete '{run.identifier}': {traceback.format_exc()}")
+            update_status(run, 2, f"Run '{run.identifier}' failed: {traceback.format_exc()}")
             return

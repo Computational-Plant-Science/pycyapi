@@ -66,7 +66,7 @@ def construct_pipeline_with_no_input(run: Run):
             params=params,
             input=run.input,
             output=run.output
-        ), 'run')
+        ), 'container')
 
     @dagster.pipeline(name='workflow_with_no_input',
                       mode_defs=[ModeDefinition(executor_defs=default_executors + [dask_executor])])
@@ -101,7 +101,7 @@ def construct_pipeline_with_input_directory(run: Run, directory: str):
             params=params,
             input=run.input,
             output=run.output
-        ), 'run')
+        ), f"container_for_{directory}")
 
     @dagster.pipeline(name='workflow_with_directory_input',
                       mode_defs=[ModeDefinition(executor_defs=default_executors + [dask_executor])])
@@ -144,7 +144,7 @@ def construct_pipeline_with_input_files(run: Run, files: [str] = []):
                 params=params,
                 input=run.input,
                 output=run.output
-            ), just_file_name(file))
+            ), f"container_for_{just_file_name(file)}")
 
     @solid(output_defs=[OutputDefinition(Run, 'run', is_required=True)])
     def yield_definition(context):

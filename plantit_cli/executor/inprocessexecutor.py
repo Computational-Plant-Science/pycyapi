@@ -31,7 +31,7 @@ class InProcessExecutor(Executor):
         }
 
     def execute(self, run: Run):
-        update_status(run, 3, f"Starting '{run.identifier}' with '{self.name}' executor.")
+        update_status(run, 3, f"Starting run '{run.identifier}' with '{self.name}' executor.")
         try:
             if run.clone is not None and run.clone is not '':
                 Executor.clone(run)
@@ -41,7 +41,7 @@ class InProcessExecutor(Executor):
             else:
                 dagster_pipeline = construct_pipeline_with_no_input(run)
 
-            update_status(run, 3, f"Running '{run.image}' container(s) for '{run.identifier}'.")
+            update_status(run, 3, f"Running '{run.image}' container(s).")
             for event in execute_pipeline_iterator(dagster_pipeline, run_config=self.__run_config(run)):
                 if event.event_type is DagsterEventType.PIPELINE_INIT_FAILURE or event.is_pipeline_failure:
                     raise PlantitException(event.message)
@@ -49,5 +49,5 @@ class InProcessExecutor(Executor):
             if run.output:
                 Executor.output(run)
         except Exception:
-            update_status(run, 2, f"Failed to complete '{run.identifier}': {traceback.format_exc()}")
+            update_status(run, 2, f"Run '{run.identifier}' failed: {traceback.format_exc()}")
             return
