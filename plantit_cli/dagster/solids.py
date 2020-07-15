@@ -117,7 +117,7 @@ def just_file_name(path):
 
 def construct_pipeline_with_input_files(run: Run, files: [str] = []):
     output_defs = [
-        OutputDefinition(Run, just_file_name(file), is_required=False) for file in files
+        OutputDefinition(Run, f"container_for_{just_file_name(file)}", is_required=False) for file in files
     ]
 
     @solid(output_defs=output_defs)
