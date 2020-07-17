@@ -45,7 +45,7 @@ def run_container(context, run: Run):
 
 
 def construct_pipeline_with_no_input(run: Run):
-    @solid(output_defs=[OutputDefinition(Run, 'run', is_required=True)])
+    @solid(output_defs=[OutputDefinition(Run, 'container', is_required=True)])
     def yield_definition(context):
         if run.params:
             params = run.params
@@ -77,7 +77,7 @@ def construct_pipeline_with_no_input(run: Run):
 
 
 def construct_pipeline_with_input_directory(run: Run, directory: str):
-    @solid(output_defs=[OutputDefinition(Run, 'run', is_required=True)])
+    @solid(output_defs=[OutputDefinition(Run, f"container_for_{just_name(directory)}", is_required=True)])
     def yield_definition(context):
         if run.params:
             params = run.params
@@ -101,7 +101,7 @@ def construct_pipeline_with_input_directory(run: Run, directory: str):
             params=params,
             input=run.input,
             output=run.output
-        ), f"container_for_{directory}")
+        ), f"container_for_{just_name(directory)}")
 
     @dagster.pipeline(name='workflow_with_directory_input',
                       mode_defs=[ModeDefinition(executor_defs=default_executors + [dask_executor])])
@@ -111,13 +111,13 @@ def construct_pipeline_with_input_directory(run: Run, directory: str):
     return construct
 
 
-def just_file_name(path):
+def just_name(path):
     return os.path.splitext(path.split('/')[-1])[0]
 
 
 def construct_pipeline_with_input_files(run: Run, files: [str] = []):
     output_defs = [
-        OutputDefinition(Run, f"container_for_{just_file_name(file)}", is_required=False) for file in files
+        OutputDefinition(Run, f"container_for_{just_name(file)}", is_required=False) for file in files
     ]
 
     @solid(output_defs=output_defs)
@@ -144,11 +144,11 @@ def construct_pipeline_with_input_files(run: Run, files: [str] = []):
                 params=params,
                 input=run.input,
                 output=run.output
-            ), f"container_for_{just_file_name(file)}")
+            ), f"container_for_{just_name(file)}")
 
-    @solid(output_defs=[OutputDefinition(Run, 'run', is_required=True)])
+    @solid(output_defs=[OutputDefinition(Run, 'container', is_required=True)])
     def yield_definition(context):
-        yield Output(run, 'run')
+        yield Output(run, 'container')
 
     @dagster.pipeline(name='workflow_with_file_input',
                       mode_defs=[ModeDefinition(executor_defs=default_executors + [dask_executor])])
