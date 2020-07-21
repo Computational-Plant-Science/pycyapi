@@ -1,64 +1,55 @@
 os: linux
 dist: bionic
-
 services:
-  - docker
-
+- docker
 language: go
-
 go:
-  - "1.13"
-
+- '1.13'
 python:
-  - "3.6"
-
+- '3.6'
 addons:
   apt:
     packages:
-      - flawfinder
-      - squashfs-tools
-      - uuid-dev
-      - libuuid1
-      - libffi-dev
-      - libssl-dev
-      - libssl1.0.0
-      - libarchive-dev
-      - libgpgme11-dev
-      - libseccomp-dev
-      - python3-pip
+    - flawfinder
+    - squashfs-tools
+    - uuid-dev
+    - libuuid1
+    - libffi-dev
+    - libssl-dev
+    - libssl1.0.0
+    - libarchive-dev
+    - libgpgme11-dev
+    - libseccomp-dev
+    - python3-pip
   homebrew:
     packages:
-      - squashfs
+    - squashfs
     update: true
-
 sudo: required
-
 before_install:
-  - sudo apt-get install python3-setuptools
-  - sudo apt-get install libfuse2
-  - sudo wget https://files.renci.org/pub/irods/releases/4.1.12/ubuntu14/irods-icommands-4.1.12-ubuntu14-x86_64.deb
-  - sudo dpkg -i irods-icommands-4.1.12-ubuntu14-x86_64.deb
-  - sudo rm irods-icommands-4.1.12-ubuntu14-x86_64.deb
-  - sudo chmod +x scripts/wait-for-postgres.sh
-  - sudo chmod +x scripts/wait-for-it.sh
-  - sudo chmod +x scripts/configure-irods.sh
-  - >
-    export VERSION=3.5.2 &&
-    wget https://github.com/sylabs/singularity/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz &&
-    tar -xzf singularity-${VERSION}.tar.gz &&
-    cd singularity
-  - >
-    ./mconfig &&
-    make -C builddir &&
-    sudo make -C builddir install &&
-    cd ..
+- sudo apt-get install python3-setuptools
+- sudo apt-get install libfuse2
+- sudo wget https://files.renci.org/pub/irods/releases/4.1.12/ubuntu14/irods-icommands-4.1.12-ubuntu14-x86_64.deb
+- sudo dpkg -i irods-icommands-4.1.12-ubuntu14-x86_64.deb
+- sudo rm irods-icommands-4.1.12-ubuntu14-x86_64.deb
+- sudo chmod +x scripts/wait-for-postgres.sh
+- sudo chmod +x scripts/wait-for-it.sh
+- sudo chmod +x scripts/configure-irods.sh
+- 'export VERSION=3.5.2 && wget https://github.com/sylabs/singularity/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz
+  && tar -xzf singularity-${VERSION}.tar.gz && cd singularity
 
+  '
+- "./mconfig && make -C builddir && sudo make -C builddir install && cd ..\n"
 install:
-  - sudo pip3 install -e .
-  - sudo pip3 install -U pytest
-
+- sudo pip3 install -e .
+- sudo pip3 install -U pytest
 script:
-  - ./scripts/bootstrap.sh
-  - docker-compose -f docker-compose.test.yml up -d
-  - docker-compose -f docker-compose.test.yml exec cluster pytest . -s
-  - docker-compose -f docker-compose.test.yml down
+- "./scripts/bootstrap.sh"
+- docker-compose -f docker-compose.test.yml up -d
+- docker-compose -f docker-compose.test.yml exec cluster pytest . -s
+- docker-compose -f docker-compose.test.yml down
+deploy:
+  provider: pypi
+  username: __token__
+  password:
+    secure: zfDmmLXF4/mWJDJVKiuW5u/Oa74oE8Jon9d+0/WK3ycShI81EzKCful6qq0FlekW9qtrWzYNu3hlA7QS7j2C92Bxm+/3N0ZUp/tHJcG60W8DrLpyYFIGvzbPitXGxl065f1BWm7HMQjq9E/QykS5e/8Nmk7+1qgy/dIHNibKN7D3XZvxSXPD1YmU5PirgtBVgMSzgoqJsaSnrlorJqyNANcYyR+Pr3+VugpAZxaUjHh5dr1NRtVPcPrAdB+5H4hw3qHPSX7BZkr8iOxEv9Qo6rORtILMaHEoYJ22MpuePsFi57/hz4yXudHH5SoM2MpFsHRIflWkrnrhzuAYBBPoD/iXmdAx82xfPfA/xclTa3E53DXVDY3yIaGYHRQ+5VeNTBC3EOa0yHLIWIZCl60NF2cowxEVhFBWDuKoTk/uRuIEIcWWHYJ8i4eZz9qnu9JQAyZ6dv6pN5A1S9nDZYuIgPyKpOFZbbIkb37g5vKbVqSZyNhjSzJpf+743uQqA2XPfv0T8+fu9BHzJmNwx8AYSR03kRwZmX5aeRWk+rKeD5vA9C0V3v7DGCnQ0vjmSOypP1oUAfW4O+3PtNdVnjVwpb2KB8qLY7Yjh71Nh0BBLnCvkE8ZK7gq2oNCnW0oFWcO0+0uKeWLaRIWWB6SQFvJ166CGfbQqHYHw2tNv1r7cWY=
