@@ -237,7 +237,7 @@ def workflow_with_file_output():
 
 
 def test_workflow_with_file_output(session, executor, workflow_with_file_output):
-    local_path = join(testdir, workflow_with_file_output.output['local_path'])
+    local_path = join(testdir, workflow_with_file_output.push_outputs_for['local_path'])
     collection = join(path, "testCollection")
 
     try:
@@ -282,7 +282,7 @@ def workflow_with_directory_output():
 
 
 def test_workflow_with_directory_output(session, executor, workflow_with_directory_output):
-    local_path = join(testdir, workflow_with_directory_output.output['local_path'])
+    local_path = join(testdir, workflow_with_directory_output.push_outputs_for['local_path'])
     output_1_path = join(local_path, 't1.txt')
     output_2_path = join(local_path, 't2.txt')
     collection = join(path, "testCollection")

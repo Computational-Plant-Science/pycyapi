@@ -2,9 +2,10 @@
 
 PlantIT workflow management CLI. Deploy PlantIT workflows on laptops, servers, or HPC/HTC clusters. 
 
-**This project is in alpha and is not yet stable.**
+**This project is in open alpha and is not yet stable.**
 
 ## Requirements
+
 
 - Python 3.6.9+
 - [Singularity](https://sylabs.io/docs/)
@@ -16,12 +17,6 @@ To install, clone the project with `git clone https://github.com/Computational-P
 ```
 pip3 install plantit-cli
 ```
-
-### Python Dependencies
-
-- [Dagster](https://docs.dagster.io/)
-- [Dask](https://dask.org/)
-- [Dask-Jobqueue](https://jobqueue.dask.org/en/latest/)
 
 ## Usage
 
@@ -50,7 +45,9 @@ Taking the elements one at a time:
 - `executor`: how to execute the pipeline (e.g., in-process or on an HPC/HTC resource manager)
 - `api_url`: the PlantIT API endpoint to relay run status updates
 
-Currently `in-process`, `pbs`, and `slurm`  executors are supported. If no executor is specified in the job definition file, the CLI will default to the `in-process` executor.
+### Executor
+
+The `executor` option specifies how to run the workflow on underlying computing resources. Currently `in-process`, `pbs`, and `slurm`  executors are supported. If no executor is specified in the job definition file, the CLI will default to the `in-process` executor.
 
 To use the PBS executor, add an `executor` section like the following:
 
@@ -79,64 +76,56 @@ executor:
     partition: debug
 ```
 
-### Inputs and Outputs
+### Input/Output
 
-Currently iRODS is the only supported data source. Amazon S3/Google Cloud Storage integrations are planned.
+The `plantit-cli` can automatically copy input files from iRODS onto the local (or network) file system, then push output files back to iRODS after your workflow runs. To direct `plantit-cli` to pull an input file or directory from iRODS, add an `input` section (the file or directory name will be substituted for `$INPUT` when the workflow's `command` is executed).
 
-To direct `plantit-cli` to pull an input file or directory from a remote data source, add an `input` section. The file or directory path will be substituted for `$INPUT` when the workflow's `command` is executed.
-
-To configure a single container to operate on a single file, use `file` for attribute `kind`. For example, to pull the file from an iRODS data store:
+To configure a workflow to pull a single file from iRODS and spawn a single container to process it, use `kind: file` and a file `path`:
 
 ```yaml
 input:
   kind: file
-  host: data.cyverse.org
-  irods_path: /iplant/home/your_username/your_collection/your_file
-  password: your_password
-  port: '1247'
-  username: your_username
-  zone: iplant
+  path: /iplant/home/username/directory/file
 ```
 
-To configure a single container to operate on a directory, use `kind: directory` and a directory path for `irods_path`. For example:
+To configure a workflow to pull the contents of a directory from iRODS and spawn a single container to process it, use `kind: directory` and a directory `path`:
 
 ```yaml
 input:
   kind: directory
-  host: data.cyverse.org
-  irods_path: /iplant/home/your_username/your_directory
-  password: your_password
-  port: '1247'
-  username: your_username
-  zone: iplant
+  path: /iplant/home/username/directory
 ```
 
-To configure multiple containers to operate in parallel on the files in a directory, use `kind: file` and a directory path for `irods_path`. For example:
+To configure a workflow to pull a directory from iRODS and spawn multiple containers to process files in parallel, use `kind: file` and a directory `path`:
 
 ```yaml
 input:
   kind: file
-  host: data.cyverse.org
-  irods_path: /iplant/home/your_username/your_directory
-  password: your_password
-  port: '1247'
-  username: your_username
-  zone: iplant
+  path: /iplant/home/username/directory
 ```
 
-To push a local file or directory to an iRODS data store (the local path will be substituted for `$OUTPUT` when the workflow's `command` is executed):
+To push a local file or the contents of a local directory to iRODS (the local path will be substituted for `$OUTPUT` when the workflow's `command` is executed):
 
 ```yaml
 output:
-  host: data.cyverse.org
-  # local_path: your_output_file    # path relative to `workdir`, the run's working directory
-  local_path: your_output_directory # "
-  irods_path: /iplant/home/your_username/your_collection
-  password: your_password
-  port: '1247'
-  username: your_username
-  zone: iplant
+  local_path: directory # relative to the workflow's working directory
+  irods_path: /iplant/home/username/collection
 ```
+
+#### Default iRODS connection configuration
+
+If `plantit-cli` detects a `~/.irods/irods_environment.json` file, it will by default connect to the iRODS instance specified therein.
+
+#### Overriding the default iRODS connection configuration
+
+To override `plantit-cli`'s default iRODS connection configuration, use the following named arguments:
+
+- `--irods_host`: the iRODS host (FQDN or IP address)
+- `--irods_port`: the iRODS port (usually 1247)
+- `--irods_username` the iRODS username
+- `--irods_password` the iRODS password
+
+Note that `plantit-cli` expects all of these together or none of them.
 
 ## Tests
 

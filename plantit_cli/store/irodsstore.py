@@ -9,27 +9,37 @@ from plantit_cli.store.store import Store
 from plantit_cli.store.util import *
 
 
+class IRODSOptions:
+    def __init__(self, host, port, username, password, zone):
+        self.host = host
+        self.port = port
+        self.username = username
+        self.password = password
+        self.zone = zone
+
+
 class IRODSStore(Store):
 
     @property
     def path(self):
         return self.__path
 
-    def __init__(self, path: str, host: str = None, port: int = None, user: str = None, password: str = None, zone: str = None):
+    def __init__(self, path: str, options: IRODSOptions = None):
         self.__path = path
-        self.host = host
-        self.port = port
-        self.user = user
-        self.password = password
-        self.zone = zone
+        if options is not None:
+            self.host = options.host
+            self.port = options.port
+            self.username = options.username
+            self.password = options.password
+            self.zone = options.zone
 
     def __session(self):
         if self.host is not None:
-            for arg in [self.port, self.user, self.password, self.zone]:
+            for arg in [self.port, self.username, self.password, self.zone]:
                 assert arg is not None
             return iRODSSession(host=self.host,
                                 port=self.port,
-                                user=self.user,
+                                user=self.username,
                                 password=self.password,
                                 zone=self.zone)
         else:

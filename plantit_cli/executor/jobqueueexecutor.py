@@ -6,13 +6,16 @@ from plantit_cli.dagster.solids import construct_pipeline_with_no_input, update_
 from plantit_cli.exceptions import PlantitException
 from plantit_cli.executor.executor import Executor
 from plantit_cli.run import Run
+from plantit_cli.store.irodsstore import IRODSOptions
 
 
 class JobQueueExecutor(Executor):
 
     name = None
 
-    def __init__(self, **kwargs):
+    def __init__(self, irods_options: IRODSOptions = None, **kwargs):
+        if irods_options is not None:
+            self.irods_options = irods_options
         self.name = kwargs["name"]
         self.kwargs = kwargs
 
@@ -51,10 +54,10 @@ class JobQueueExecutor(Executor):
                 raise ValueError(f"Queue type '{self.name}' not supported")
 
             if run.clone is not None and run.clone is not '':
-                Executor.clone(run)
+                self.clone_repo_for(run)
 
             if run.input:
-                dagster_pipeline = Executor.input(run)
+                dagster_pipeline = self.pull_inputs_for(run)
             else:
                 dagster_pipeline = construct_pipeline_with_no_input(run)
 
@@ -73,7 +76,7 @@ class JobQueueExecutor(Executor):
                     raise PlantitException(event.message)
 
             if run.output:
-                Executor.output(run)
+                self.push_outputs_for(run)
         except Exception:
             update_status(run, 2, f"Run '{run.identifier}' failed: {traceback.format_exc()}")
             return
