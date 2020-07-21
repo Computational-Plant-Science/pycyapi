@@ -19,8 +19,16 @@ def run(workflow, token, irods_host, irods_port, irods_username, irods_password,
     with open(workflow, 'r') as file:
         definition = yaml.safe_load(file)
         definition['token'] = token
-        executor = definition['executor']
-        del definition['executor']
+
+        if 'executor' in definition:
+            executor = definition['executor']
+            del definition['executor']
+        else:
+            executor = {'in-process'}
+
+        if 'api_url' not in definition:
+            definition['api_url'] = None
+
         irods_options = None if irods_host is None else IRODSOptions(irods_host,
                                                                      irods_port,
                                                                      irods_username,

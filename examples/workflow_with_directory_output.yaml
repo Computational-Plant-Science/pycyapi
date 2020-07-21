@@ -1,0 +1,10 @@
+identifier: workflow_with_directory_output
+workdir: /test
+image: docker://alpine
+command: echo "$MESSAGE" | tee "$OUTPUT/t1.txt" "$OUTPUT/t2.txt"
+params:
+  - key: MESSAGE
+    value: Hello, world!
+output:
+  kind: directory
+  irods_path: /tempZone/testCollection

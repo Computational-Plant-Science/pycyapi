@@ -1,0 +1,7 @@
+identifier: workflow_with_file_input
+workdir: /test
+image: docker://alpine
+command: cat "$INPUT" | tee "$INPUT.output"
+input:
+  kind: file
+  path: /tempZone/testCollection

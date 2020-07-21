@@ -102,8 +102,12 @@ COPY dockerfiles/cluster/qsub /usr/bin
 RUN wget https://files.renci.org/pub/irods/releases/4.1.12/ubuntu14/irods-icommands-4.1.12-ubuntu14-x86_64.deb
 RUN dpkg -i irods-icommands-4.1.12-ubuntu14-x86_64.deb
 RUN rm irods-icommands-4.1.12-ubuntu14-x86_64.deb
+
 COPY ./scripts/wait-for-it.sh /root/
 COPY ./scripts/configure-irods.sh /root/
+RUN mkdir /examples
+RUN mkdir /test
+COPY ./examples /examples
 RUN chmod +x /root/wait-for-it.sh
 RUN chmod +x /root/configure-irods.sh
 

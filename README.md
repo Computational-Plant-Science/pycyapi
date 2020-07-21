@@ -131,4 +131,10 @@ Note that `plantit-cli` expects all of these together or none of them.
 
 Before running tests, run `scripts/bootstrap.sh`.
 
-Unit tests can then be run with: `docker-compose -f docker-compose.test.yml run cluster /bin/bash /root/wait-for-it.sh irods:1247 -- pytest . -s`
+To run unit tests:
+
+```docker-compose -f docker-compose.test.yml run cluster /bin/bash /root/wait-for-it.sh irods:1247 -- pytest . -s```
+
+To run integration tests:
+
+```docker-compose -f docker-compose.test.yml run cluster /bin/bash /root/wait-for-it.sh irods:1247 -- chmod +x scripts/test-cli.sh && ./scripts/test-cli.sh```

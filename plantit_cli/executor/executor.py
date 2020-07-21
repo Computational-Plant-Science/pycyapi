@@ -58,6 +58,6 @@ class Executor(ABC):
 
     def push_output(self, run: Run):
         irods = self.__irods(run.output['irods_path'])
-        local_path = join(run.workdir, run.output['local_path'])
+        local_path = join(run.workdir, run.output['local_path']) if 'local_path' in run.output else run.workdir
         irods.push(local_path)
         update_status(run, 3, f"Pushed output(s) to '{run.output['irods_path']}': {local_path}")

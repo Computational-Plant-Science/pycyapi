@@ -1,0 +1,11 @@
+identifier: workflow_with_file_output
+workdir: /test
+image: docker://alpine
+command: echo "$MESSAGE" >> "$OUTPUT"
+params:
+  - key: MESSAGE
+    value: Hello, world!
+output:
+  kind: file
+  local_path: output.txt
+  irods_path: /tempZone/testCollection
