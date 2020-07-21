@@ -26,22 +26,17 @@ class IRODSStore(Store):
 
     def __init__(self, path: str, options: IRODSOptions = None):
         self.__path = path
-        if options is not None:
-            self.host = options.host
-            self.port = options.port
-            self.username = options.username
-            self.password = options.password
-            self.zone = options.zone
+        self.options = options
 
     def __session(self):
-        if self.host is not None:
-            for arg in [self.port, self.username, self.password, self.zone]:
+        if self.options is not None:
+            for arg in [self.options.host, self.options.port, self.options.username, self.options.password, self.options.zone]:
                 assert arg is not None
-            return iRODSSession(host=self.host,
-                                port=self.port,
-                                user=self.username,
-                                password=self.password,
-                                zone=self.zone)
+            return iRODSSession(host=self.options.host,
+                                port=self.options.port,
+                                user=self.options.username,
+                                password=self.options.password,
+                                zone=self.options.zone)
         else:
             env_file = expanduser('~/.irods/irods_environment.json')
             ssl_context = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH,

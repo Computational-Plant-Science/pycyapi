@@ -6,7 +6,7 @@ from plantit_cli.dagster.solids import *
 from plantit_cli.exceptions import PlantitException
 from plantit_cli.executor.executor import Executor
 from plantit_cli.run import Run
-from plantit_cli.store.irodsstore import IRODSOptions
+from plantit_cli.store.irods import IRODSOptions
 
 
 class InProcessExecutor(Executor):
@@ -42,9 +42,9 @@ class InProcessExecutor(Executor):
                 self.clone_repo_for(run)
 
             if run.input:
-                dagster_pipeline = self.pull_inputs_for(run)
+                dagster_pipeline = self.pull_input_and_construct_pipeline(run)
             else:
-                dagster_pipeline = construct_pipeline_with_no_input(run)
+                dagster_pipeline = construct_pipeline_with_no_input_for(run)
 
             update_status(run, 3, f"Running '{run.image}' container(s).")
             for event in execute_pipeline_iterator(dagster_pipeline, run_config=self.__run_config(run)):
@@ -52,7 +52,7 @@ class InProcessExecutor(Executor):
                     raise PlantitException(event.message)
 
             if run.output:
-                self.push_outputs_for(run)
+                self.push_output(run)
         except Exception:
             update_status(run, 2, f"Run '{run.identifier}' failed: {traceback.format_exc()}")
             return

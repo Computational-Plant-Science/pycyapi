@@ -4,7 +4,7 @@ import yaml
 from plantit_cli.executor.inprocessexecutor import InProcessExecutor
 from plantit_cli.executor.jobqueueexecutor import JobQueueExecutor
 from plantit_cli.run import Run
-from plantit_cli.store.irodsstore import IRODSOptions
+from plantit_cli.store.irods import IRODSOptions
 
 
 @click.command()

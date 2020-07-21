@@ -44,7 +44,7 @@ def run_container(context, run: Run):
         update_status(run, 3, msg)
 
 
-def construct_pipeline_with_no_input(run: Run):
+def construct_pipeline_with_no_input_for(run: Run):
     @solid(output_defs=[OutputDefinition(Run, 'container', is_required=True)])
     def yield_definition(context):
         if run.params:

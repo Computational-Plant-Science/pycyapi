@@ -2,11 +2,11 @@ import traceback
 
 from dagster import execute_pipeline_iterator, DagsterInstance, DagsterEventType
 
-from plantit_cli.dagster.solids import construct_pipeline_with_no_input, update_status
+from plantit_cli.dagster.solids import construct_pipeline_with_no_input_for, update_status
 from plantit_cli.exceptions import PlantitException
 from plantit_cli.executor.executor import Executor
 from plantit_cli.run import Run
-from plantit_cli.store.irodsstore import IRODSOptions
+from plantit_cli.store.irods import IRODSOptions
 
 
 class JobQueueExecutor(Executor):
@@ -57,9 +57,9 @@ class JobQueueExecutor(Executor):
                 self.clone_repo_for(run)
 
             if run.input:
-                dagster_pipeline = self.pull_inputs_for(run)
+                dagster_pipeline = self.pull_input_and_construct_pipeline(run)
             else:
-                dagster_pipeline = construct_pipeline_with_no_input(run)
+                dagster_pipeline = construct_pipeline_with_no_input_for(run)
 
             run_config = self.__run_config(run)
             for k, v in self.kwargs.items():
@@ -76,7 +76,7 @@ class JobQueueExecutor(Executor):
                     raise PlantitException(event.message)
 
             if run.output:
-                self.push_outputs_for(run)
+                self.push_output(run)
         except Exception:
             update_status(run, 2, f"Run '{run.identifier}' failed: {traceback.format_exc()}")
             return

@@ -8,6 +8,7 @@ from irods.session import iRODSSession
 
 from plantit_cli.executor.inprocessexecutor import InProcessExecutor
 from plantit_cli.run import Run
+from plantit_cli.store.irods import IRODSOptions
 
 host = "irods"
 port = 1247
@@ -49,7 +50,11 @@ def session():
 
 @pytest.fixture
 def executor():
-    return InProcessExecutor()
+    return InProcessExecutor(IRODSOptions(host=host,
+                                          port=port,
+                                          username=user,
+                                          password=password,
+                                          zone=zone))
 
 
 @pytest.fixture
@@ -98,12 +103,7 @@ def workflow_with_file_input():
         command='cat "$INPUT" | tee "$INPUT.output"',
         input={
             'kind': 'file',
-            'host': host,
-            'port': port,
-            'username': user,
-            'password': password,
-            'zone': zone,
-            'irods_path': join(path, "testCollection"),
+            'path': join(path, "testCollection"),
         })
 
 
@@ -159,12 +159,7 @@ def workflow_with_directory_input():
         command='ls $INPUT | tee output.txt',
         input={
             'kind': 'directory',
-            'host': host,
-            'port': port,
-            'username': user,
-            'password': password,
-            'zone': zone,
-            'irods_path': join(path, "testCollection"),
+            'path': join(path, "testCollection"),
         })
 
 
@@ -226,18 +221,13 @@ def workflow_with_file_output():
         command='echo "Hello, world!" >> $OUTPUT',
         output={
             'kind': 'file',
-            'host': host,
-            'port': port,
-            'username': user,
-            'password': password,
-            'zone': zone,
             'irods_path': join(path, "testCollection"),
             'local_path': 'output.txt',
         })
 
 
 def test_workflow_with_file_output(session, executor, workflow_with_file_output):
-    local_path = join(testdir, workflow_with_file_output.push_outputs_for['local_path'])
+    local_path = join(testdir, workflow_with_file_output.output['local_path'])
     collection = join(path, "testCollection")
 
     try:
@@ -271,18 +261,13 @@ def workflow_with_directory_output():
         command='echo "Hello, world!" | tee $OUTPUT/t1.txt $OUTPUT/t2.txt',
         output={
             'kind': 'directory',
-            'host': host,
-            'port': port,
-            'username': user,
-            'password': password,
-            'zone': zone,
             'irods_path': join(path, "testCollection"),
             'local_path': '',
         })
 
 
 def test_workflow_with_directory_output(session, executor, workflow_with_directory_output):
-    local_path = join(testdir, workflow_with_directory_output.push_outputs_for['local_path'])
+    local_path = join(testdir, workflow_with_directory_output.output['local_path'])
     output_1_path = join(local_path, 't1.txt')
     output_2_path = join(local_path, 't2.txt')
     collection = join(path, "testCollection")
@@ -326,20 +311,10 @@ def workflow_with_file_input_and_file_output():
         command='cat $INPUT | tee $OUTPUT',
         input={
             'kind': 'file',
-            'host': host,
-            'port': port,
-            'username': user,
-            'password': password,
-            'zone': zone,
-            'irods_path': join(path, "testCollection"),
+            'path': join(path, "testCollection"),
         },
         output={
             'kind': 'file',
-            'host': host,
-            'port': port,
-            'username': user,
-            'password': password,
-            'zone': zone,
             'irods_path': join(path, "testCollection"),
             'local_path': join(testdir, 'output.txt'),
         }
@@ -359,20 +334,10 @@ def workflow_with_directory_input_and_file_output():
         command='ls $INPUT | tee $OUTPUT',
         input={
             'kind': 'directory',
-            'host': host,
-            'port': port,
-            'username': user,
-            'password': password,
-            'zone': zone,
-            'irods_path': join(path, "testCollection"),
+            'path': join(path, "testCollection"),
         },
         output={
             'kind': 'file',
-            'host': host,
-            'port': port,
-            'username': user,
-            'password': password,
-            'zone': zone,
             'irods_path': join(path, "testCollection"),
             'local_path': join(testdir, 'output.txt'),
         }
@@ -392,21 +357,10 @@ def workflow_with_directory_input_and_directory_output():
         command='cp -r $INPUT $OUTPUT',
         input={
             'kind': 'directory',
-            'host': host,
-            'port': port,
-            'username': user,
-            'password': password,
-            'zone': zone,
             'irods_path': join(path, "testCollection"),
         },
         output={
             'kind': 'directory',
-            'host': host,
-            'port': port,
-            'username': user,
-            'password': password,
-            'zone': zone,
             'irods_path': join(path, "testCollection"),
             'local_path': 'input',
         })
-
