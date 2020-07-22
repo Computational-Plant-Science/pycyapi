@@ -50,9 +50,14 @@ script:
 - docker-compose -f docker-compose.test.yml exec cluster chmod +x scripts/test-cli.sh
 - docker-compose -f docker-compose.test.yml exec cluster /root/wait-for-it.sh irods:1247 -- ./scripts/test-cli.sh
 - docker-compose -f docker-compose.test.yml down
-deploy:
-  skip_cleanup: true
-  provider: pypi
-  username: __token__
-  password:
-    secure: zfDmmLXF4/mWJDJVKiuW5u/Oa74oE8Jon9d+0/WK3ycShI81EzKCful6qq0FlekW9qtrWzYNu3hlA7QS7j2C92Bxm+/3N0ZUp/tHJcG60W8DrLpyYFIGvzbPitXGxl065f1BWm7HMQjq9E/QykS5e/8Nmk7+1qgy/dIHNibKN7D3XZvxSXPD1YmU5PirgtBVgMSzgoqJsaSnrlorJqyNANcYyR+Pr3+VugpAZxaUjHh5dr1NRtVPcPrAdB+5H4hw3qHPSX7BZkr8iOxEv9Qo6rORtILMaHEoYJ22MpuePsFi57/hz4yXudHH5SoM2MpFsHRIflWkrnrhzuAYBBPoD/iXmdAx82xfPfA/xclTa3E53DXVDY3yIaGYHRQ+5VeNTBC3EOa0yHLIWIZCl60NF2cowxEVhFBWDuKoTk/uRuIEIcWWHYJ8i4eZz9qnu9JQAyZ6dv6pN5A1S9nDZYuIgPyKpOFZbbIkb37g5vKbVqSZyNhjSzJpf+743uQqA2XPfv0T8+fu9BHzJmNwx8AYSR03kRwZmX5aeRWk+rKeD5vA9C0V3v7DGCnQ0vjmSOypP1oUAfW4O+3PtNdVnjVwpb2KB8qLY7Yjh71Nh0BBLnCvkE8ZK7gq2oNCnW0oFWcO0+0uKeWLaRIWWB6SQFvJ166CGfbQqHYHw2tNv1r7cWY=
+after_script:
+  - python3 -m pip install --user --upgrade setuptools wheel
+  - python3 -m pip install --user --upgrade twine
+  - python3 setup.py sdist bdist_wheel
+  - python3 -m twine upload dist/* -u $PYPI_USERNAME -p $PYPI_PASSWORD
+# deploy:
+#   skip_cleanup: true
+#   provider: pypi
+#   username: __token__
+#   password:
+#     secure: zfDmmLXF4/mWJDJVKiuW5u/Oa74oE8Jon9d+0/WK3ycShI81EzKCful6qq0FlekW9qtrWzYNu3hlA7QS7j2C92Bxm+/3N0ZUp/tHJcG60W8DrLpyYFIGvzbPitXGxl065f1BWm7HMQjq9E/QykS5e/8Nmk7+1qgy/dIHNibKN7D3XZvxSXPD1YmU5PirgtBVgMSzgoqJsaSnrlorJqyNANcYyR+Pr3+VugpAZxaUjHh5dr1NRtVPcPrAdB+5H4hw3qHPSX7BZkr8iOxEv9Qo6rORtILMaHEoYJ22MpuePsFi57/hz4yXudHH5SoM2MpFsHRIflWkrnrhzuAYBBPoD/iXmdAx82xfPfA/xclTa3E53DXVDY3yIaGYHRQ+5VeNTBC3EOa0yHLIWIZCl60NF2cowxEVhFBWDuKoTk/uRuIEIcWWHYJ8i4eZz9qnu9JQAyZ6dv6pN5A1S9nDZYuIgPyKpOFZbbIkb37g5vKbVqSZyNhjSzJpf+743uQqA2XPfv0T8+fu9BHzJmNwx8AYSR03kRwZmX5aeRWk+rKeD5vA9C0V3v7DGCnQ0vjmSOypP1oUAfW4O+3PtNdVnjVwpb2KB8qLY7Yjh71Nh0BBLnCvkE8ZK7gq2oNCnW0oFWcO0+0uKeWLaRIWWB6SQFvJ166CGfbQqHYHw2tNv1r7cWY=
