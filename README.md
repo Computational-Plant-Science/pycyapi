@@ -120,10 +120,11 @@ If `plantit-cli` detects a `~/.irods/irods_environment.json` file, it will by de
 
 To override `plantit-cli`'s default iRODS connection configuration, use the following named arguments:
 
-- `--irods_host`: the iRODS host (FQDN or IP address)
-- `--irods_port`: the iRODS port (usually 1247)
-- `--irods_username` the iRODS username
-- `--irods_password` the iRODS password
+- `--irods_host`
+- `--irods_port`
+- `--irods_username`
+- `--irods_password`
+- `--irods_zone`
 
 Note that `plantit-cli` expects all of these together or none of them.
 
