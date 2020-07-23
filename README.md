@@ -1,4 +1,10 @@
-# PlantIT CLI [![Build Status](https://travis-ci.com/Computational-Plant-Science/plantit-cli.svg?branch=master)](https://travis-ci.com/Computational-Plant-Science/plantit-cli) [![Coverage Status](https://coveralls.io/repos/github/Computational-Plant-Science/plantit-cli/badge.svg)](https://coveralls.io/github/Computational-Plant-Science/plantit-cli)
+<p align="center">
+<img src="https://github.com/Computational-Plant-Science/plantit/blob/master/plantit/front_end/src/assets/logo.png?raw=true" />
+</p>
+
+# PlantIT CLI
+
+[![Build Status](https://travis-ci.com/Computational-Plant-Science/plantit-cli.svg?branch=master)](https://travis-ci.com/Computational-Plant-Science/plantit-cli) [![Coverage Status](https://coveralls.io/repos/github/Computational-Plant-Science/plantit-cli/badge.svg)](https://coveralls.io/github/Computational-Plant-Science/plantit-cli)
 
 Deploy workflows on laptops, servers, or HPC/HTC clusters.
 
