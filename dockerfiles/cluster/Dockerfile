@@ -147,6 +147,7 @@ RUN chmod +x scripts/configure-irods.sh \
     && chmod +x scripts/wait-for-it.sh \
     && chmod +x scripts/wait-for-postgres.sh \
     && pip3 install -e . \
+    && pip3 install coveralls \
     && pip3 install -U pytest
 
 SHELL ["/bin/bash", "-c"]

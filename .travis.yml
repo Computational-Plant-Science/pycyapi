@@ -42,7 +42,6 @@ before_install:
 - "./mconfig && make -C builddir && sudo make -C builddir install && cd ..\n"
 install:
 - sudo pip3 install -e .
-- sudo pip3 install coveralls
 - sudo pip3 install -U pytest
 script:
 - "./scripts/bootstrap.sh"
