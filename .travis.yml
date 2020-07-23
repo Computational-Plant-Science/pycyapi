@@ -46,9 +46,8 @@ install:
 script:
 - "./scripts/bootstrap.sh"
 - docker-compose -f docker-compose.test.yml up -d
-- docker-compose -f docker-compose.test.yml exec cluster pytest . -s
-# - docker-compose -f docker-compose.test.yml exec cluster chmod +x scripts/test-cli.sh
-# - docker-compose -f docker-compose.test.yml exec cluster /root/wait-for-it.sh irods:1247 -- ./scripts/test-cli.sh
+- docker-compose -f docker-compose.test.yml exec cluster coverage run --source=plantit_cli -m pytest . -s
+- docker-compose -f docker-compose.test.yml exec cluster coveralls
 - docker-compose -f docker-compose.test.yml down
 after_script:
   - python3 -m pip install --user --upgrade setuptools wheel
