@@ -63,26 +63,6 @@ RUN mkdir /opt/singularity; cd /opt/singularity \
     && make -C builddir \
     && make -C builddir install
 
-RUN wget https://sourceforge.net/projects/lmod/files/lua-5.1.4.9.tar.bz2 \
-    && tar xf lua-5.1.4.9.tar.bz2 \
-    && cd lua-5.1.4.9 \
-    && ./configure --prefix=/opt/apps/lua/5.1.4.9 \
-    && make; make install \
-    && cd /opt/apps/lua; ln -s 5.1.4.9 lua \
-    && ln -s /opt/apps/lua/lua/bin/lua /usr/local/bin \
-    && ln -s /opt/apps/lua/lua/bin/luac /usr/local/bin \
-    && export PATH=$PATH:/usr/local/bin/lua \
-    && export PATH=$PATH:/usr/local/bin/luac \
-    && cd
-
-RUN wget https://sourceforge.net/projects/lmod/files/Lmod-8.2.tar.bz2 \
-    && tar xf Lmod-8.2.tar.bz2 \
-    && cd Lmod-8.2 \
-    && ./configure --prefix=/opt/apps --with-fastTCLInterp=no \
-    && make install \
-    && ln -s /opt/apps/lmod/lmod/init/profile /etc/profile.d/z00_lmod.sh \
-    && ln -s /opt/apps/lmod/lmod/init/cshrc /etc/profile.d/z00_lmod.csh
-
 RUN mkdir /var/run/sshd
 RUN echo 'root:root' | chpasswd
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
