@@ -10,6 +10,21 @@ Deploy workflows on laptops, servers, or HPC/HTC clusters.
 
 **This project is in open alpha and is not yet stable.**
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Contents**
+
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Executor](#executor)
+  - [Input/Output](#inputoutput)
+    - [Default iRODS connection configuration](#default-irods-connection-configuration)
+    - [Overriding the default iRODS connection configuration](#overriding-the-default-irods-connection-configuration)
+- [Tests](#tests)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ## Requirements
 
 
