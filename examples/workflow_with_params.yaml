@@ -6,4 +6,4 @@ params:
   - key: MESSAGE
     value: Hello, world!
   - key: MESSAGE_FILE
-    value: message.txt
+    value: /test/message.txt

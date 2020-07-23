@@ -7,4 +7,5 @@ params:
     value: Hello, world!
 output:
   kind: directory
+  local_path: ''
   irods_path: /tempZone/testCollection

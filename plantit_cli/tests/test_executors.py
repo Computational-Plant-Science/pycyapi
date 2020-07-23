@@ -1,80 +1,14 @@
 import os
-import shutil
 import tempfile
-from os.path import join, isfile, islink, isdir
+from os.path import join, isfile
 
-import pytest
-from irods.session import iRODSSession
+from plantit_cli.tests.utils import clear_dir, check_hello
 
-from plantit_cli.executor.inprocessexecutor import InProcessExecutor
-from plantit_cli.run import Run
-from plantit_cli.store.irods import IRODSOptions
-
-host = "irods"
-port = 1247
-user = "rods"
-password = "rods"
 zone = "tempZone"
 path = f"/{zone}"
 message = "Message!"
 testdir = '/test'
 tempdir = tempfile.gettempdir()
-
-
-def clear_dir(dir):
-    for file in os.listdir(dir):
-        p = os.path.join(dir, file)
-        if isfile(p) or islink(p):
-            os.remove(p)
-        elif isdir(p):
-            shutil.rmtree(p)
-
-
-def check_hello(file, name):
-    assert isfile(file)
-    with open(file) as file:
-        lines = file.readlines()
-        assert len(lines) == 1
-        line = lines[0]
-        assert f"Hello, {name}!" in line
-
-
-@pytest.fixture
-def session():
-    return iRODSSession(host=host,
-                        port=port,
-                        user=user,
-                        password=password,
-                        zone=zone)
-
-
-@pytest.fixture
-def executor():
-    return InProcessExecutor(IRODSOptions(host=host,
-                                          port=port,
-                                          username=user,
-                                          password=password,
-                                          zone=zone))
-
-
-@pytest.fixture
-def workflow_with_params():
-    return Run(
-        identifier='workflow_with_params',
-        api_url='',
-        workdir=testdir,
-        image="docker://alpine:latest",
-        command='echo "$MESSAGE" >> $MESSAGE_FILE',
-        params=[
-            {
-                'key': 'MESSAGE',
-                'value': message
-            },
-            {
-                'key': 'MESSAGE_FILE',
-                'value': join(testdir, 'message.txt')
-            },
-        ])
 
 
 def test_workflow_with_params(executor, workflow_with_params):
@@ -91,20 +25,6 @@ def test_workflow_with_params(executor, workflow_with_params):
             assert lines[0] == f"{message}\n"
     finally:
         clear_dir(testdir)
-
-
-@pytest.fixture
-def workflow_with_file_input():
-    return Run(
-        identifier='workflow_with_file_input',
-        api_url='',
-        workdir=testdir,
-        image="docker://alpine:latest",
-        command='cat "$INPUT" | tee "$INPUT.output"',
-        input={
-            'kind': 'file',
-            'path': join(path, "testCollection"),
-        })
 
 
 def test_workflow_with_file_input(session, executor, workflow_with_file_input):
@@ -147,20 +67,6 @@ def test_workflow_with_file_input(session, executor, workflow_with_file_input):
     finally:
         clear_dir(testdir)
         session.collections.remove(collection, force=True)
-
-
-@pytest.fixture
-def workflow_with_directory_input():
-    return Run(
-        identifier='workflow_with_directory_input',
-        api_url='',
-        workdir=testdir,
-        image="docker://alpine:latest",
-        command='ls $INPUT | tee output.txt',
-        input={
-            'kind': 'directory',
-            'path': join(path, "testCollection"),
-        })
 
 
 def test_workflow_with_directory_input(session, executor, workflow_with_directory_input):
@@ -211,21 +117,6 @@ def test_workflow_with_directory_input(session, executor, workflow_with_director
         session.collections.remove(collection, force=True)
 
 
-@pytest.fixture
-def workflow_with_file_output():
-    return Run(
-        identifier='workflow_with_file_output',
-        api_url='',
-        workdir=testdir,
-        image="docker://alpine:latest",
-        command='echo "Hello, world!" >> $OUTPUT',
-        output={
-            'kind': 'file',
-            'irods_path': join(path, "testCollection"),
-            'local_path': 'output.txt',
-        })
-
-
 def test_workflow_with_file_output(session, executor, workflow_with_file_output):
     local_path = join(testdir, workflow_with_file_output.output['local_path'])
     collection = join(path, "testCollection")
@@ -249,21 +140,6 @@ def test_workflow_with_file_output(session, executor, workflow_with_file_output)
     finally:
         clear_dir(testdir)
         session.collections.remove(collection, force=True)
-
-
-@pytest.fixture
-def workflow_with_directory_output():
-    return Run(
-        identifier='workflow_with_directory_output',
-        api_url='',
-        workdir=testdir,
-        image="docker://alpine:latest",
-        command='echo "Hello, world!" | tee $OUTPUT/t1.txt $OUTPUT/t2.txt',
-        output={
-            'kind': 'directory',
-            'irods_path': join(path, "testCollection"),
-            'local_path': '',
-        })
 
 
 def test_workflow_with_directory_output(session, executor, workflow_with_directory_output):
@@ -299,68 +175,3 @@ def test_workflow_with_directory_output(session, executor, workflow_with_directo
     finally:
         clear_dir(testdir)
         session.collections.remove(collection, force=True)
-
-
-@pytest.fixture
-def workflow_with_file_input_and_file_output():
-    return Run(
-        identifier='workflow_with_file_input_and_file_output',
-        api_url='',
-        workdir=testdir,
-        image="docker://alpine:latest",
-        command='cat $INPUT | tee $OUTPUT',
-        input={
-            'kind': 'file',
-            'path': join(path, "testCollection"),
-        },
-        output={
-            'kind': 'file',
-            'irods_path': join(path, "testCollection"),
-            'local_path': join(testdir, 'output.txt'),
-        }
-    )
-
-
-# TODO
-
-
-@pytest.fixture
-def workflow_with_directory_input_and_file_output():
-    return Run(
-        identifier='workflow_with_directory_input_and_file_output',
-        api_url='',
-        workdir=testdir,
-        image="docker://alpine:latest",
-        command='ls $INPUT | tee $OUTPUT',
-        input={
-            'kind': 'directory',
-            'path': join(path, "testCollection"),
-        },
-        output={
-            'kind': 'file',
-            'irods_path': join(path, "testCollection"),
-            'local_path': join(testdir, 'output.txt'),
-        }
-    )
-
-
-# TODO
-
-
-@pytest.fixture
-def workflow_with_directory_input_and_directory_output():
-    return Run(
-        identifier='workflow_with_directory_input_and_directory_output',
-        api_url='',
-        workdir=testdir,
-        image="docker://alpine:latest",
-        command='cp -r $INPUT $OUTPUT',
-        input={
-            'kind': 'directory',
-            'irods_path': join(path, "testCollection"),
-        },
-        output={
-            'kind': 'directory',
-            'irods_path': join(path, "testCollection"),
-            'local_path': 'input',
-        })
