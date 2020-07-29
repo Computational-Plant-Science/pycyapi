@@ -48,7 +48,7 @@ def construct_pipeline_with_no_input_for(run: Run):
     @solid(output_defs=[OutputDefinition(Run, 'container', is_required=True)])
     def yield_definition(context):
         if run.params:
-            params = run.params
+            params = run.params.copy()
         else:
             params = []
 
@@ -80,7 +80,7 @@ def construct_pipeline_with_input_directory(run: Run, directory: str):
     @solid(output_defs=[OutputDefinition(Run, f"container_for_{just_name(directory)}", is_required=True)])
     def yield_definition(context):
         if run.params:
-            params = run.params
+            params = run.params.copy()
         else:
             params = []
 
@@ -124,15 +124,17 @@ def construct_pipeline_with_input_files(run: Run, files: [str] = []):
     def yield_definitions(context):
         for file in files:
             if run.params:
-                params = run.params
+                params = run.params.copy()
             else:
                 params = []
 
             if run.input:
                 params += [{'key': 'INPUT', 'value': file}]
 
-            if run.output:
-                params += [{'key': 'OUTPUT', 'value': join(run.workdir, run.output['local_path'])}]
+            output = {}
+            if output:
+                output = run.output.copy()
+                params += [{'key': 'OUTPUT', 'value': join(run.workdir, output['local_path'])}]
 
             yield Output(Run(
                 identifier=run.identifier,
@@ -143,7 +145,7 @@ def construct_pipeline_with_input_files(run: Run, files: [str] = []):
                 command=run.command,
                 params=params,
                 input=run.input,
-                output=run.output
+                output=output
             ), f"container_for_{just_name(file)}")
 
     @solid(output_defs=[OutputDefinition(Run, 'container', is_required=True)])
