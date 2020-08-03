@@ -79,5 +79,5 @@ class InProcessExecutor(Executor):
                 if run.output:
                     self.push_output(run)
         except Exception:
-            update_status(run, 2, f"Run '{run.identifier}' failed: {traceback.format_exc()}")
+            update_status(run, 3, f"Run '{run.identifier}' failed: {traceback.format_exc()}")
             return

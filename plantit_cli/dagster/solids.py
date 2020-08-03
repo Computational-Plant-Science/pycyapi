@@ -59,7 +59,6 @@ def execute_container(run: Run):
         msg = ret.stdout.decode('utf-8') + ret.stderr.decode('utf-8')
         update_status(run, 3, msg)
         msg = f"Successfully ran container with command: '{cmd}'"
-        update_status(run, 3, msg)
     return msg
 
 
