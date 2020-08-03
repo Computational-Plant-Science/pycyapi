@@ -44,6 +44,25 @@ def run_container(context, run: Run):
         update_status(run, 3, msg)
 
 
+def execute_container(run: Run):
+    cmd = f"singularity exec --home {run.workdir} {run.image} {run.command}"
+    for param in sorted(run.params, key=lambda p: len(p['key']), reverse=True):
+        cmd = cmd.replace(f"${param['key'].upper()}", param['value'])
+    msg = f"Running container with command: '{cmd}'"
+    update_status(run, 3, msg)
+    ret = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    if ret.returncode != 0:
+        msg = f"Non-zero exit code from container: {ret.stderr.decode('utf-8') if ret.stderr else ret.stdout.decode('utf-8') if ret.stdout else 'Unknown error'}"
+        update_status(run, 2, msg)
+        raise PlantitException(msg)
+    else:
+        msg = ret.stdout.decode('utf-8') + ret.stderr.decode('utf-8')
+        update_status(run, 3, msg)
+        msg = f"Successfully ran container with command: '{cmd}'"
+        update_status(run, 3, msg)
+    return msg
+
+
 def construct_pipeline_with_no_input_for(run: Run):
     @solid(output_defs=[OutputDefinition(Run, 'container', is_required=True)])
     def yield_definition(context):

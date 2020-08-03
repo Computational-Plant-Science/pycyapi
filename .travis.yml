@@ -50,7 +50,7 @@ script:
 - docker-compose -f docker-compose.test.yml exec -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN cluster coveralls
 - docker-compose -f docker-compose.test.yml down
 after_script:
-  - python3 -m pip install --user --upgrade setuptools wheel
-  - python3 -m pip install --user --upgrade twine
-  - sudo python3 setup.py sdist bdist_wheel
-  - sudo python3 -m twine upload dist/* -u $PYPI_USERNAME -p $PYPI_PASSWORD
+- python3 -m pip install --user --upgrade setuptools wheel
+- python3 -m pip install --user --upgrade twine
+- sudo python3 setup.py sdist bdist_wheel
+- sudo python3 -m twine upload dist/* -u $PYPI_USERNAME -p $PYPI_PASSWORD

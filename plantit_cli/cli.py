@@ -39,11 +39,9 @@ def run(workflow, token, irods_host, irods_port, irods_username, irods_password,
             InProcessExecutor(irods_options).execute(Run(**workflow_def))
         elif 'pbs' in executor_def:
             executor_def = dict(executor_def['pbs'])
-            executor_def['name'] = 'pbs'
-            JobQueueExecutor(irods_options, **executor_def).execute(Run(**workflow_def))
-        elif 'slurm' in executor_def['name']:
+            JobQueueExecutor('pbs', irods_options, **executor_def).execute(Run(**workflow_def))
+        elif 'slurm' in executor_def:
             executor_def = dict(executor_def['slurm'])
-            executor_def['name'] = 'slurm'
-            JobQueueExecutor(irods_options, **executor_def).execute(Run(**workflow_def))
+            JobQueueExecutor('slurm', irods_options, **executor_def).execute(Run(**workflow_def))
         else:
             raise ValueError(f"Unrecognized executor (supported: 'in-process', 'pbs', 'slurm')")

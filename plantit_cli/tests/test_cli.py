@@ -34,6 +34,25 @@ def test_workflow_with_params():
         clear_dir(testdir)
 
 
+# def test_workflow_with_params_slurm():
+#     try:
+#         # run the workflow
+#         os.environ['LC_ALL'] = 'C.UTF-8'
+#         os.environ['LANG'] = 'C.UTF-8'
+#         result = runner.invoke(run, ['examples/workflow_with_params_slurm.yaml'])
+#         assert result.exit_code == 0
+#
+#         # check local message file
+#         file = join(testdir, 'message.txt')
+#         assert isfile(file)
+#         with open(file) as file:
+#             lines = file.readlines()
+#             assert len(lines) == 1
+#             assert lines[0] == f"{message}\n"
+#     finally:
+#         clear_dir(testdir)
+
+
 def test_workflow_with_file_input(session):
     local_file_1 = tempfile.NamedTemporaryFile()
     local_file_2 = tempfile.NamedTemporaryFile()
