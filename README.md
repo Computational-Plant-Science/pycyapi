@@ -52,7 +52,7 @@ params:
 - key: message
   value: Hello, plant person!
 executor:
-  in-process:
+  local:
 api_url: http://plantit/apis/v1/runs/a42033c3-9ba1-4d99-83ed-3fdce08c706e/update_target_status/
 ```
 
@@ -63,12 +63,12 @@ Taking the elements one at a time:
 - `workdir`: where to execute the workflow
 - `command`: the command(s) to run inside the container
 - `params`: parameters substituted when `command` runs
-- `executor`: how to execute the pipeline (e.g., in-process or on an HPC/HTC resource manager)
+- `executor`: how to execute the pipeline (e.g., locally or on an HPC/HTC resource manager)
 - `api_url`: the PlantIT API endpoint to relay run status updates
 
 ### Executor
 
-The `executor` option specifies how to run the workflow on underlying computing resources. Currently `in-process`, `pbs`, and `slurm`  executors are supported. If no executor is specified in the job definition file, the CLI will default to the `in-process` executor.
+The `executor` option specifies how to run the workflow on underlying computing resources. Currently `local`, `pbs`, and `slurm`  executors are supported. If no executor is specified in the job definition file, the CLI will default to the `local` executor.
 
 To use the PBS executor, add an `executor` section like the following:
 

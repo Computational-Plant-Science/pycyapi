@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='plantit-cli',
-    version='0.0.25',
+    version='0.0.26',
     description='Deploy workflows on laptops, servers, or HPC/HTC clusters.',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -23,7 +23,6 @@ setuptools.setup(
         ]
     },
     python_requires='>=3.6.9',
-    install_requires=['requests', 'python-irodsclient', 'dask', 'dask-jobqueue', 'dagster', 'dagster-dask',
-                      'pyaml', 'click'],
+    install_requires=['requests', 'python-irodsclient', 'dask', 'dask-jobqueue', 'pyaml', 'click'],
     setup_requires=['wheel'],
     tests_require=['pytest', 'coveralls'])

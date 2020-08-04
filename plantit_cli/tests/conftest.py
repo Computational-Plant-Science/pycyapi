@@ -4,7 +4,7 @@ from os.path import join
 import pytest
 from irods.session import iRODSSession
 
-from plantit_cli.executor.inprocessexecutor import InProcessExecutor
+from plantit_cli.executor.local import InProcessExecutor
 from plantit_cli.run import Run
 from plantit_cli.store.irods import IRODSOptions
 

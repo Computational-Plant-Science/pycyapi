@@ -1,8 +1,8 @@
 import click
 import yaml
 
-from plantit_cli.executor.inprocessexecutor import InProcessExecutor
-from plantit_cli.executor.jobqueueexecutor import JobQueueExecutor
+from plantit_cli.executor.local import InProcessExecutor
+from plantit_cli.executor.jobqueue import JobQueueExecutor
 from plantit_cli.run import Run
 from plantit_cli.store.irods import IRODSOptions
 
@@ -33,9 +33,9 @@ def run(workflow, token, irods_host, irods_port, irods_username, irods_password,
             executor_def = workflow_def['executor']
             del workflow_def['executor']
         else:
-            executor_def = {'in-process'}
+            executor_def = {'local'}
 
-        if 'in-process' in executor_def:
+        if 'local' in executor_def:
             InProcessExecutor(irods_options).execute(Run(**workflow_def))
         elif 'pbs' in executor_def:
             executor_def = dict(executor_def['pbs'])
@@ -44,4 +44,4 @@ def run(workflow, token, irods_host, irods_port, irods_username, irods_password,
             executor_def = dict(executor_def['slurm'])
             JobQueueExecutor('slurm', irods_options, **executor_def).execute(Run(**workflow_def))
         else:
-            raise ValueError(f"Unrecognized executor (supported: 'in-process', 'pbs', 'slurm')")
+            raise ValueError(f"Unrecognized executor (supported: 'local', 'pbs', 'slurm')")
