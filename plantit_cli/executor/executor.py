@@ -33,7 +33,7 @@ class Executor(ABC):
         else:
             update_status(run, 3, f"Cloned repository '{run.clone}'.")
 
-    def pull_input(self, run: Run) -> [str]:
+    def pull_input(self, run: Run) -> str:
         irods = self.__irods(run.input['path'])
         directory = join(run.workdir, 'input')
         os.makedirs(directory, exist_ok=True)
