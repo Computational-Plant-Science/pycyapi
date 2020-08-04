@@ -1,7 +1,3 @@
-from dagster import usable_as_dagster_type
-
-
-@usable_as_dagster_type
 class Run(object):
     def __init__(self,
                  identifier: str,
