@@ -4,4 +4,4 @@ image: docker://alpine
 command: cat "$INPUT" | tee "$INPUT.output"
 input:
   kind: file
-  path: /tempZone/testCollection
+  path: /iplant/home/wbonelli/analyses/

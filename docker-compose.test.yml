@@ -1,21 +1,9 @@
 version: '3.7'
-
 services:
-
   cluster:
-    depends_on:
-      - irods
     build:
       context: .
       dockerfile: dockerfiles/cluster/Dockerfile
     volumes:
       - .:/opt/plantit-cluster/
-    environment:
-      - DAGSTER_HOME=/opt/plantit-cluster/
     privileged: true
-
-  irods:
-    image: mjstealey/irods-provider-postgres:4.2.3
-    ports:
-      - "5432:5432"
-      - "1247:1247"

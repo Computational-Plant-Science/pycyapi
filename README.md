@@ -99,9 +99,9 @@ executor:
 
 ### Input/Output
 
-The `plantit-cli` can automatically copy input files from iRODS onto the local (or network) file system, then push output files back to iRODS after your workflow runs. To direct `plantit-cli` to pull an input file or directory from iRODS, add an `input` section (the file or directory name will be substituted for `$INPUT` when the workflow's `command` is executed).
+The `plantit-cli` can automatically copy input files from the CyVerse Data Store onto the local (or network) file system, then push output files back to the Data Store after your workflow runs. To direct `plantit-cli` to pull an input file or directory, add an `input` section (the file or directory name will be substituted for `$INPUT` when the workflow's `command` is executed).
 
-To configure a workflow to pull a single file from iRODS and spawn a single container to process it, use `kind: file` and a file `path`:
+To configure a workflow to pull a single file from the Data Store and spawn a single container to process it, use `kind: file` and a file `path`:
 
 ```yaml
 input:
@@ -109,7 +109,7 @@ input:
   path: /iplant/home/username/directory/file
 ```
 
-To configure a workflow to pull the contents of a directory from iRODS and spawn a single container to process it, use `kind: directory` and a directory `path`:
+To configure a workflow to pull the contents of a directory from the Data Store and spawn a single container to process it, use `kind: directory` and a directory `path`:
 
 ```yaml
 input:
@@ -117,7 +117,7 @@ input:
   path: /iplant/home/username/directory
 ```
 
-To configure a workflow to pull a directory from iRODS and spawn multiple containers to process files in parallel, use `kind: file` and a directory `path`:
+To configure a workflow to pull a directory from the Data Store and spawn multiple containers to process files in parallel, use `kind: file` and a directory `path`:
 
 ```yaml
 input:
@@ -125,7 +125,7 @@ input:
   path: /iplant/home/username/directory
 ```
 
-To push a local file or the contents of a local directory to iRODS (the local path will be substituted for `$OUTPUT` when the workflow's `command` is executed):
+To push a local file or the contents of a local directory to the Data Store (the local path will be substituted for `$OUTPUT` when the workflow's `command` is executed):
 
 ```yaml
 output:
@@ -133,24 +133,16 @@ output:
   irods_path: /iplant/home/username/collection
 ```
 
-#### Default iRODS connection configuration
+#### Authenticating against the Terrain API
 
-If `plantit-cli` detects a `~/.irods/irods_environment.json` file, it will by default connect to the iRODS instance specified therein.
+The CLI uses the Terrain API to query and access data in the CyVerse Data Store and expects a `--cyverse_token` flag.
 
-#### Overriding the default iRODS connection configuration
+## Examples
 
-To override `plantit-cli`'s default iRODS connection configuration, use the following named arguments:
-
-- `--irods_host`
-- `--irods_port`
-- `--irods_username`
-- `--irods_password`
-- `--irods_zone`
-
-Note that `plantit-cli` expects all of these together or none of them.
+Example configuration files can be found in `examples/`.
 
 ## Tests
 
 Before running tests, run `scripts/bootstrap.sh`. Then run:
 
-```docker-compose -f docker-compose.test.yml run cluster /bin/bash /root/wait-for-it.sh irods:1247 -- pytest . -s```
+```docker-compose -f docker-compose.test.yml run cluster /bin/bash -- pytest . -s```

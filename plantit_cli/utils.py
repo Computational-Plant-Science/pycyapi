@@ -21,7 +21,7 @@ def update_status(run: Run, state: int, description: str):
     if run.api_url:
         requests.post(run.api_url,
                       data=status,
-                      headers={"Authorization": f"Token {run.token}"})
+                      headers={"Authorization": f"Token {run.plantit_token}"})
 
 
 def execute_container(run: Run):
@@ -56,7 +56,7 @@ def execute_workflow_with_no_input(run: Run, client: Client):
 
     future = client.submit(execute_container, Run(
         identifier=run.identifier,
-        token=run.token,
+        plantit_token=run.plantit_token,
         api_url=run.api_url,
         workdir=run.workdir,
         image=run.image,
@@ -87,7 +87,7 @@ def execute_workflow_with_directory_input(run: Run, client: Client, input_direct
 
     future = client.submit(execute_container, Run(
         identifier=run.identifier,
-        token=run.token,
+        plantit_token=run.plantit_token,
         api_url=run.api_url,
         workdir=run.workdir,
         image=run.image,
@@ -122,7 +122,7 @@ def execute_workflow_with_file_input(run: Run, client: Client, input_directory: 
 
         future = client.submit(execute_container, Run(
             identifier=run.identifier,
-            token=run.token,
+            plantit_token=run.plantit_token,
             api_url=run.api_url,
             workdir=run.workdir,
             image=run.image,

@@ -6,7 +6,8 @@ class Run(object):
                  image: str,
                  command: str = None,
                  clone: str = None,
-                 token: str = None,
+                 plantit_token: str = None,
+                 cyverse_token: str = None,
                  params: list = None,
                  input: dict = None,
                  output: dict = None):
@@ -16,7 +17,8 @@ class Run(object):
         self._image = image
         self._command = command
         self._clone = clone
-        self._token = token
+        self._plantit_token = plantit_token
+        self._cyverse_token = cyverse_token
         self._params = params
         self._input = input
         self._output = output
@@ -46,8 +48,12 @@ class Run(object):
         return self._command
 
     @property
-    def token(self):
-        return self._token
+    def plantit_token(self):
+        return self._plantit_token
+
+    @property
+    def cyverse_token(self):
+        return self._cyverse_token
 
     @property
     def params(self):

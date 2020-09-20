@@ -25,9 +25,7 @@ else
 fi
 
 echo "Configuring mock IRODS..."
-$compose up -d irods
 $compose up -d cluster
-$compose exec cluster /bin/bash /root/wait-for-it.sh irods:1247 -- /root/configure-irods.sh
 
 echo "Stopping containers..."
 $compose stop

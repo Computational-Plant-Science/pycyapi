@@ -8,4 +8,4 @@ params:
 output:
   kind: file
   local_path: output.txt
-  irods_path: /tempZone/testCollection
+  irods_path: /iplant/home/wbonelli/test/

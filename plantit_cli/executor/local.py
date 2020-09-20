@@ -4,7 +4,6 @@ from dask.distributed import Client
 
 from plantit_cli.executor.executor import Executor
 from plantit_cli.run import Run
-from plantit_cli.store.irods import IRODSOptions
 from plantit_cli.utils import update_status, execute_workflow_with_directory_input, execute_workflow_with_file_input, \
     execute_workflow_with_no_input
 
@@ -12,9 +11,8 @@ from plantit_cli.utils import update_status, execute_workflow_with_directory_inp
 class InProcessExecutor(Executor):
     name = "local"
 
-    def __init__(self, irods_options: IRODSOptions = None):
-        if irods_options is not None:
-            self.irods_options = irods_options
+    def __init__(self, token: str):
+        self.token = token
 
     def execute(self, run: Run):
         update_status(run, 3, f"Starting run '{run.identifier}' with '{self.name}' executor.")
