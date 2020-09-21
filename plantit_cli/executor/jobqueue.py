@@ -35,9 +35,9 @@ class JobQueueExecutor(Executor):
 
                 if run.input:
                     input_directory = self.pull_input(run)
-                    if run.input['kind'] == 'directory':
+                    if run.input['kind'].lower() == 'directory':
                         execute_workflow_with_directory_input(run, client, input_directory)
-                    elif run.input['kind'] == 'file':
+                    elif run.input['kind'].lower() == 'file':
                         execute_workflow_with_file_input(run, client, input_directory)
                     else:
                         raise ValueError(f"Value of 'input.kind' must be either 'file' or 'directory'")
