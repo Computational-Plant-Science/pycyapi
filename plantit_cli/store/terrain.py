@@ -46,7 +46,7 @@ class TerrainStore(Store):
             raise FileNotFoundError(f"Local path '{local_path}' does not exist")
         elif is_local_dir:
             paths = list_files(local_path)
-            print(f"Preparing to uplload {paths} files")
+            print(f"Preparing to upload {paths} files")
             for path in paths:
                 print(f"Uploading {path} to {self.__path}")
                 response = requests.post(f"https://de.cyverse.org/terrain/secured/fileio/upload?dest={self.__path}", headers={'Authorization': f"Bearer {self.__token}"}, files={'file': open(path, 'rb')})
