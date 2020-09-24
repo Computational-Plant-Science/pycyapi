@@ -34,7 +34,8 @@ class TerrainStore(Collection):
                               headers={'Authorization': f"Bearer {self.__token}"}) as response:
                 if response.status_code == 401:
                     raise RuntimeError('CyVerse authentication cyverse_token expired or invalid')
-                with open(f"{path}/{path.split('/')[-1]}", 'wb') as file:
+                # with open(f"{path}/{path.split('/')[-1]}", 'wb') as file:
+                with open(path, 'wb') as file:
                     for chunk in response.iter_content(chunk_size=8192):
                         # If you have chunk encoded response uncomment if
                         # and set chunk_size parameter to None.
