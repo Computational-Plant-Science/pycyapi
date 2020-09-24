@@ -24,7 +24,7 @@ class TerrainStore(Collection):
         if response.status_code == 401:
             raise RuntimeError('CyVerse authentication cyverse_token expired or invalid')
         content = response.json()
-        files = [file['from_path'] for file in content['files']]
+        files = [file['path'] for file in content['files']]
         return files
 
     def pull(self, to_path, pattern=None):
@@ -48,7 +48,7 @@ class TerrainStore(Collection):
         is_local_file = isfile(from_path)
         is_local_dir = isdir(from_path)
         if not (is_local_dir or is_local_file):
-            raise FileNotFoundError(f"Local from_path '{from_path}' does not exist")
+            raise FileNotFoundError(f"Local path '{from_path}' does not exist")
         elif is_local_dir:
             from_paths = [p for p in list_files(from_path) if pattern in p] if pattern is not None else list_files(from_path)
             print(f"Preparing to push {len(from_paths)} files")
