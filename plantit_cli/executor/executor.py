@@ -5,7 +5,7 @@ from os.path import join
 
 from plantit_cli.exceptions import PlantitException
 from plantit_cli.run import Run
-from plantit_cli.store.terrain import TerrainStore
+from plantit_cli.collection.terrain import TerrainStore
 from plantit_cli.utils import update_status
 
 

@@ -1,5 +1,5 @@
 #import tempfile
-#from os.path import join
+#from os.from_path import join
 #
 #import pytest
 #from irods.session import iRODSSession
@@ -13,7 +13,7 @@
 #user = "rods"
 #password = "rods"
 #zone = "tempZone"
-#path = f"/{zone}"
+#from_path = f"/{zone}"
 #message = "Message!"
 #testdir = '/test'
 #tempdir = tempfile.gettempdir()
@@ -80,7 +80,7 @@
 #        command='cat "$INPUT" | tee "$INPUT.output"',
 #        input={
 #            'kind': 'file',
-#            'path': join(path, "testCollection"),
+#            'from_path': join(from_path, "testCollection"),
 #        })
 #
 #
@@ -94,7 +94,7 @@
 #        command='ls $INPUT | tee output.txt',
 #        input={
 #            'kind': 'directory',
-#            'path': join(path, "testCollection"),
+#            'from_path': join(from_path, "testCollection"),
 #        })
 #
 #
@@ -108,8 +108,8 @@
 #        command='echo "Hello, world!" >> $OUTPUT',
 #        output={
 #            'kind': 'file',
-#            'irods_path': join(path, "testCollection"),
-#            'path': 'output.txt',
+#            'irods_path': join(from_path, "testCollection"),
+#            'from_path': 'output.txt',
 #        })
 #
 #
@@ -123,8 +123,8 @@
 #        command='echo "Hello, world!" | tee $OUTPUT/t1.txt $OUTPUT/t2.txt',
 #        output={
 #            'kind': 'directory',
-#            'irods_path': join(path, "testCollection"),
-#            'path': '',
+#            'irods_path': join(from_path, "testCollection"),
+#            'from_path': '',
 #        })
 #
 #
@@ -138,12 +138,12 @@
 #        command='cat $INPUT | tee $OUTPUT',
 #        input={
 #            'kind': 'file',
-#            'path': join(path, "testCollection"),
+#            'from_path': join(from_path, "testCollection"),
 #        },
 #        output={
 #            'kind': 'file',
-#            'irods_path': join(path, "testCollection"),
-#            'path': join(testdir, 'output.txt'),
+#            'irods_path': join(from_path, "testCollection"),
+#            'from_path': join(testdir, 'output.txt'),
 #        })
 #
 #
@@ -157,12 +157,12 @@
 #        command='ls $INPUT | tee $OUTPUT',
 #        input={
 #            'kind': 'directory',
-#            'path': join(path, "testCollection"),
+#            'from_path': join(from_path, "testCollection"),
 #        },
 #        output={
 #            'kind': 'file',
-#            'irods_path': join(path, "testCollection"),
-#            'path': join(testdir, 'output.txt'),
+#            'irods_path': join(from_path, "testCollection"),
+#            'from_path': join(testdir, 'output.txt'),
 #        })
 #
 #
@@ -176,10 +176,10 @@
 #        command='cp -r $INPUT $OUTPUT',
 #        input={
 #            'kind': 'directory',
-#            'irods_path': join(path, "testCollection"),
+#            'irods_path': join(from_path, "testCollection"),
 #        },
 #        output={
 #            'kind': 'directory',
-#            'irods_path': join(path, "testCollection"),
-#            'path': 'input',
+#            'irods_path': join(from_path, "testCollection"),
+#            'from_path': 'input',
 #        })

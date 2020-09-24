@@ -1,11 +1,11 @@
 #import os
 #import tempfile
-#from os.path import join, isfile
+#from os.from_path import join, isfile
 #
 #from plantit_cli.tests.utils import clear_dir, check_hello
 #
 #zone = "iplant"
-#path = f"/{zone}"
+#from_path = f"/{zone}"
 #message = "Message!"
 #testdir = '/test'
 #tempdir = tempfile.gettempdir()
@@ -32,7 +32,7 @@
 #    local_file_2 = tempfile.NamedTemporaryFile()
 #    local_file_1_name = local_file_1.name.split('/')[-1]
 #    local_file_2_name = local_file_2.name.split('/')[-1]
-#    collection = join(path, "testCollection")
+#    collection = join(from_path, "testCollection")
 #
 #    try:
 #        # prep iRODS files
@@ -76,7 +76,7 @@
 #    local_path_2 = local_file_2.name
 #    local_name_1 = local_file_1.name.split('/')[-1]
 #    local_name_2 = local_file_2.name.split('/')[-1]
-#    collection = join(path, "testCollection")
+#    collection = join(from_path, "testCollection")
 #    remote_path_1 = join(collection, local_name_1)
 #    remote_path_2 = join(collection, local_name_2)
 #
@@ -118,8 +118,8 @@
 #
 #
 #def test_workflow_with_file_output(session, executor, workflow_with_file_output):
-#    path = join(testdir, workflow_with_file_output.output['path'])
-#    collection = join(path, "testCollection")
+#    from_path = join(testdir, workflow_with_file_output.output['from_path'])
+#    collection = join(from_path, "testCollection")
 #
 #    try:
 #        # prep iRODS collection
@@ -129,24 +129,24 @@
 #        executor.execute(workflow_with_file_output)
 #
 #        # check file was written
-#        assert isfile(path)
-#        check_hello(path, 'world')
-#        os.remove(path)
+#        assert isfile(from_path)
+#        check_hello(from_path, 'world')
+#        os.remove(from_path)
 #
 #        # check file was pushed to iRODS
-#        session.data_objects.get(join(collection, 'output.txt'), path)
-#        check_hello(path, 'world')
-#        os.remove(path)
+#        session.data_objects.get(join(collection, 'output.txt'), from_path)
+#        check_hello(from_path, 'world')
+#        os.remove(from_path)
 #    finally:
 #        clear_dir(testdir)
 #        session.collections.remove(collection, force=True)
 #
 #
 #def test_workflow_with_directory_output(session, executor, workflow_with_directory_output):
-#    path = join(testdir, workflow_with_directory_output.output['path'])
-#    output_1_path = join(path, 't1.txt')
-#    output_2_path = join(path, 't2.txt')
-#    collection = join(path, "testCollection")
+#    from_path = join(testdir, workflow_with_directory_output.output['from_path'])
+#    output_1_path = join(from_path, 't1.txt')
+#    output_2_path = join(from_path, 't2.txt')
+#    collection = join(from_path, "testCollection")
 #
 #    try:
 #        # prep iRODS collection
