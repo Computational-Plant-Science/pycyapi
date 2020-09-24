@@ -28,22 +28,22 @@ class Executor(ABC):
         ret = subprocess.run(f"git clone {run.clone}", stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                              shell=True)
         if ret.returncode != 0:
-            raise PlantitException(f"Failed to clone repository '{run.clone}'.")
+            raise PlantitException(f"Failed to clone repository '{run.clone}'")
         else:
-            update_status(run, 3, f"Cloned repository '{run.clone}'.")
+            update_status(run, 3, f"Cloned repository '{run.clone}'")
 
     def pull_input(self, run: Run) -> str:
-        store = self.__store(run.input['path'])
+        store = self.__store(run.input['from'])
         directory = join(run.workdir, 'input')
         os.makedirs(directory, exist_ok=True)
-        store.pull(directory)
+        store.pull(directory, run.input['pattern'])
         files = [os.path.abspath(join(directory, file)) for file in os.listdir(directory)]
         file_count = len(files)
-        update_status(run, 3, f"Pulled {file_count} input(s) from '{run.input['path']}': {files}")
+        update_status(run, 3, f"Pulled {file_count} input(s) from '{run.input['from']}' to '{directory}': {files}")
         return directory
 
     def push_output(self, run: Run):
-        store = self.__store(run.output['irods_path'])
-        local_path = join(run.workdir, run.output['local_path']) if 'local_path' in run.output else run.workdir
-        store.push(local_path)
-        update_status(run, 3, f"Pushed output(s) to '{run.output['irods_path']}': {local_path}")
+        store = self.__store(run.output['to'])
+        local_path = join(run.workdir, run.output['from']) if 'from' in run.output else run.workdir
+        store.push(local_path, run.input['pattern'])
+        update_status(run, 3, f"Pushed output(s) from '{run.output['from']}' to '{run.output['to']}'")

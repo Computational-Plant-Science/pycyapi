@@ -118,7 +118,7 @@
 #
 #
 #def test_workflow_with_file_output(session, executor, workflow_with_file_output):
-#    local_path = join(testdir, workflow_with_file_output.output['local_path'])
+#    path = join(testdir, workflow_with_file_output.output['path'])
 #    collection = join(path, "testCollection")
 #
 #    try:
@@ -129,23 +129,23 @@
 #        executor.execute(workflow_with_file_output)
 #
 #        # check file was written
-#        assert isfile(local_path)
-#        check_hello(local_path, 'world')
-#        os.remove(local_path)
+#        assert isfile(path)
+#        check_hello(path, 'world')
+#        os.remove(path)
 #
 #        # check file was pushed to iRODS
-#        session.data_objects.get(join(collection, 'output.txt'), local_path)
-#        check_hello(local_path, 'world')
-#        os.remove(local_path)
+#        session.data_objects.get(join(collection, 'output.txt'), path)
+#        check_hello(path, 'world')
+#        os.remove(path)
 #    finally:
 #        clear_dir(testdir)
 #        session.collections.remove(collection, force=True)
 #
 #
 #def test_workflow_with_directory_output(session, executor, workflow_with_directory_output):
-#    local_path = join(testdir, workflow_with_directory_output.output['local_path'])
-#    output_1_path = join(local_path, 't1.txt')
-#    output_2_path = join(local_path, 't2.txt')
+#    path = join(testdir, workflow_with_directory_output.output['path'])
+#    output_1_path = join(path, 't1.txt')
+#    output_2_path = join(path, 't2.txt')
 #    collection = join(path, "testCollection")
 #
 #    try:

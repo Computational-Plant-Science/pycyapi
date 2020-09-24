@@ -109,7 +109,7 @@
 #        output={
 #            'kind': 'file',
 #            'irods_path': join(path, "testCollection"),
-#            'local_path': 'output.txt',
+#            'path': 'output.txt',
 #        })
 #
 #
@@ -124,7 +124,7 @@
 #        output={
 #            'kind': 'directory',
 #            'irods_path': join(path, "testCollection"),
-#            'local_path': '',
+#            'path': '',
 #        })
 #
 #
@@ -143,7 +143,7 @@
 #        output={
 #            'kind': 'file',
 #            'irods_path': join(path, "testCollection"),
-#            'local_path': join(testdir, 'output.txt'),
+#            'path': join(testdir, 'output.txt'),
 #        })
 #
 #
@@ -162,7 +162,7 @@
 #        output={
 #            'kind': 'file',
 #            'irods_path': join(path, "testCollection"),
-#            'local_path': join(testdir, 'output.txt'),
+#            'path': join(testdir, 'output.txt'),
 #        })
 #
 #
@@ -181,5 +181,5 @@
 #        output={
 #            'kind': 'directory',
 #            'irods_path': join(path, "testCollection"),
-#            'local_path': 'input',
+#            'path': 'input',
 #        })

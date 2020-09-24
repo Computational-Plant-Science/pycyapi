@@ -37,12 +37,12 @@
 #
 #def test_list(session, store):
 #    local_file = tempfile.NamedTemporaryFile()
-#    local_path = local_file.name
+#    path = local_file.name
 #    remote_path = join(path, local_file.name.split('/')[-1])
 #
 #    try:
 #        session.collections.create(path)
-#        session.data_objects.put(local_path, remote_path)
+#        session.data_objects.put(path, remote_path)
 #        local_file.close()
 #
 #        listed = store.list()
@@ -55,21 +55,21 @@
 #
 #def test_pull(session, store):
 #    local_file = tempfile.NamedTemporaryFile()
-#    local_path = local_file.name
+#    path = local_file.name
 #    remote_path = join(path, local_file.name.split('/')[-1])
 #
 #    try:
 #        session.collections.create(path)
-#        with open(local_path, 'w') as file:
+#        with open(path, 'w') as file:
 #            file.write(data)
 #
-#        session.data_objects.put(local_path, remote_path)
+#        session.data_objects.put(path, remote_path)
 #        local_file.close()
 #
 #        store.pull(local_dir)
-#        assert isfile(local_path)
+#        assert isfile(path)
 #
-#        with open(local_path) as file:
+#        with open(path) as file:
 #            lines = file.readlines()
 #            assert len(lines) == 1
 #            assert lines[0] == data
@@ -79,21 +79,21 @@
 #
 #def test_push(session, store):
 #    local_file = tempfile.NamedTemporaryFile()
-#    local_path = local_file.name
+#    path = local_file.name
 #    remote_path = join(path, local_file.name.split('/')[-1])
 #
 #    try:
 #        session.collections.create(path)
-#        with open(local_path, 'w') as file:
+#        with open(path, 'w') as file:
 #            file.write(data)
 #
-#        store.push(local_path)
+#        store.push(path)
 #        local_file.close()
 #
 #        session.data_objects.get(remote_path, local_dir)
-#        assert isfile(local_path)
+#        assert isfile(path)
 #
-#        with open(local_path) as file:
+#        with open(path) as file:
 #            lines = file.readlines()
 #            assert len(lines) == 1
 #            assert lines[0] == data

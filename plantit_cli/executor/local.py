@@ -15,7 +15,7 @@ class InProcessExecutor(Executor):
         self.token = token
 
     def execute(self, run: Run):
-        update_status(run, 3, f"Starting run '{run.identifier}' with '{self.name}' executor.")
+        update_status(run, 3, f"Starting run '{run.identifier}' with '{self.name}' executor")
         try:
             with Client() as client:
                 if run.clone is not None and run.clone is not '':

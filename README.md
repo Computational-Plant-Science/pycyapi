@@ -101,36 +101,37 @@ executor:
 
 The `plantit-cli` can automatically copy input files from the CyVerse Data Store onto the local (or network) file system, then push output files back to the Data Store after your workflow runs. To direct `plantit-cli` to pull an input file or directory, add an `input` section (the file or directory name will be substituted for `$INPUT` when the workflow's `command` is executed).
 
-To configure a workflow to pull a single file from the Data Store and spawn a single container to process it, use `kind: file` and a file `path`:
+To configure a workflow to pull a single file from the Data Store and spawn a single container to process it, use `kind: file` and `from: <file path>`:
 
 ```yaml
 input:
   kind: file
-  path: /iplant/home/username/directory/file
+  from: /iplant/home/username/directory/file
 ```
 
-To configure a workflow to pull the contents of a directory from the Data Store and spawn a single container to process it, use `kind: directory` and a directory `path`:
+To configure a workflow to pull the contents of a directory from the Data Store and spawn a single container to process it, use `kind: directory` and `from: <directory path>`:
 
 ```yaml
 input:
   kind: directory
-  path: /iplant/home/username/directory
+  from: /iplant/home/username/directory
 ```
 
-To configure a workflow to pull a directory from the Data Store and spawn multiple containers to process files in parallel, use `kind: file` and a directory `path`:
+To configure a workflow to pull a directory from the Data Store and spawn multiple containers to process files in parallel, use `kind: file` and `from: <directory path>`:
 
 ```yaml
 input:
   kind: file
-  path: /iplant/home/username/directory
+  from: /iplant/home/username/directory
 ```
 
-To push a local file or the contents of a local directory to the Data Store (the local path will be substituted for `$OUTPUT` when the workflow's `command` is executed):
+To configure a flow to push files matching a pattern to the Data Store after container execution (the local path will be substituted for `$OUTPUT` when the workflow's `command` is executed):
 
 ```yaml
 output:
-  local_path: directory # relative to the workflow's working directory
-  irods_path: /iplant/home/username/collection
+  pattern: xslx
+  from: directory # relative to the workflow's working directory
+  to: /iplant/home/username/collection
 ```
 
 #### Authenticating against the Terrain API

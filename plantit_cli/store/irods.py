@@ -5,7 +5,7 @@ from typing import List
 
 from irods.session import iRODSSession
 
-from plantit_cli.store.store import Store
+from plantit_cli.store.collection import Collection
 from plantit_cli.store.util import *
 
 
@@ -18,7 +18,7 @@ class IRODSOptions:
         self.zone = zone
 
 
-class IRODSStore(Store):
+class IRODSStore(Collection):
 
     @property
     def path(self):
@@ -57,48 +57,50 @@ class IRODSStore(Store):
         else:
             raise FileNotFoundError(f"iRODS path '{self.path}' does not exist")
 
-    def pull(self, local_path):
-        Path(local_path).mkdir(parents=True, exist_ok=True)  # create local directory if it does not exist
+    def pull(self, path, pattern):
+        raise NotImplementedError()
+        Path(path).mkdir(parents=True, exist_ok=True)  # create local directory if it does not exist
         session = self.__session()
 
         is_remote_file = session.data_objects.exists(self.path)
         is_remote_dir = session.collections.exists(self.path)
-        is_local_file = isfile(local_path)
-        is_local_dir = isdir(local_path)
+        is_local_file = isfile(path)
+        is_local_dir = isdir(path)
 
         if not (is_remote_dir or is_remote_file):
             raise FileNotFoundError(f"iRODS path '{self.path}' does not exist")
         elif not (is_local_dir or is_local_file):
-            raise FileNotFoundError(f"Local path '{local_path}' does not exist")
+            raise FileNotFoundError(f"Local path '{path}' does not exist")
         elif is_remote_dir and is_local_dir:
             for file in session.collections.get(self.path).data_objects:
-                session.data_objects.get(file.path, join(local_path, file.path.split('/')[-1]))
+                session.data_objects.get(file.path, join(path, file.path.split('/')[-1]))
         elif is_remote_file and is_local_file:
-            session.data_objects.get(self.path, local_path)
+            session.data_objects.get(self.path, path)
         elif is_remote_file and is_local_dir:
-            session.data_objects.get(self.path, join(local_path, self.path.split('/')[-1]))
+            session.data_objects.get(self.path, join(path, self.path.split('/')[-1]))
         else:
             raise ValueError(
-                f"Cannot overwrite local file '{local_path}' with contents of remote directory '{self.path}' (specify "
+                f"Cannot overwrite local file '{path}' with contents of remote directory '{self.path}' (specify "
                 f"a local directory instead)")
 
         session.cleanup()
 
-    def push(self, local_path):
+    def push(self, path, pattern):
+        raise NotImplementedError()
         session = self.__session()
 
-        is_local_file = isfile(local_path)
-        is_local_dir = isdir(local_path)
+        is_local_file = isfile(path)
+        is_local_dir = isdir(path)
 
         if not (is_local_dir or is_local_file):
-            raise FileNotFoundError(f"Local path '{local_path}' does not exist")
+            raise FileNotFoundError(f"Local path '{path}' does not exist")
         elif is_local_dir:
-            for file in list_files(local_path):
+            for file in list_files(path):
                 session.data_objects.put(file, join(self.path, file.split('/')[-1]))
         elif is_local_file:
-            session.data_objects.put(local_path, join(self.path, local_path.split('/')[-1]))
+            session.data_objects.put(path, join(self.path, path.split('/')[-1]))
         else:
             raise ValueError(
-                f"Cannot overwrite iRODS object '{self.path}' with contents of local directory '{local_path}' (specify a remote directory instead)")
+                f"Cannot overwrite iRODS object '{self.path}' with contents of local directory '{path}' (specify a remote directory instead)")
 
         session.cleanup()
