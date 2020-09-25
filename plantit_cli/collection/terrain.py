@@ -31,13 +31,14 @@ class TerrainStore(Collection):
         from_paths = [p for p in self.list() if pattern in p] if pattern is not None else self.list()
         print(f"Preparing to pull {len(from_paths)} files")
         for from_path in from_paths:
-            print(f"Pulling '{from_path}' to '{to_path}'")
+            full_to_path = f"{to_path}/{from_path.split('.')[-1]}"
+            print(f"Pulling '{from_path}' to '{full_to_path}'")
             with requests.get(f"https://de.cyverse.org/terrain/secured/fileio/download?path={from_path}",
                               headers={'Authorization': f"Bearer {self.__token}"}) as response:
                 if response.status_code == 401:
                     raise RuntimeError('CyVerse authentication cyverse_token expired or invalid')
                 # with open(f"{from_path}/{from_path.split('/')[-1]}", 'wb') as file:
-                with open(f"{to_path}/{from_path.split('.')[-1]}", 'wb') as file:
+                with open(full_to_path, 'wb') as file:
                     for chunk in response.iter_content(chunk_size=8192):
                         # If you have chunk encoded response uncomment if
                         # and set chunk_size parameter to None.
