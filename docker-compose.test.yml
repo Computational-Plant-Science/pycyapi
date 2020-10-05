@@ -4,6 +4,9 @@ services:
     build:
       context: .
       dockerfile: dockerfiles/cluster/Dockerfile
+    environment:
+      - CYVERSE_USERNAME=${CYVERSE_USERNAME}
+      - CYVERSE_PASSWORD=${CYVERSE_PASSWORD}
     volumes:
       - .:/opt/plantit-cluster/
     privileged: true

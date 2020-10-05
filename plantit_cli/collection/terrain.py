@@ -5,6 +5,7 @@ import requests
 
 from plantit_cli.collection.collection import Collection
 from plantit_cli.collection.util import list_files
+from plantit_cli.utils import update_status
 
 
 class TerrainStore(Collection):
@@ -53,7 +54,7 @@ class TerrainStore(Collection):
         elif is_local_dir:
             from_paths = [p for p in list_files(from_path) if pattern in p] if pattern is not None else list_files(from_path)
             print(f"Preparing to push {len(from_paths)} files")
-            for from_path in [p for p in from_paths if pattern in p]:
+            for from_path in [str(p) for p in from_paths]:
                 print(f"Pushing '{from_path}' to '{self.__path}'")
                 response = requests.post(f"https://de.cyverse.org/terrain/secured/fileio/upload?dest={self.__path}",
                                          headers={'Authorization': f"Bearer {self.__token}"},
@@ -63,7 +64,7 @@ class TerrainStore(Collection):
                 if response.status_code == 500:
                     raise RuntimeError(f'Internal server error')
         elif is_local_file:
-            print(f"Uploading {from_path} to {self.__path}")
+            print(f"Pushing {from_path} to {self.__path}")
             response = requests.post(f"https://de.cyverse.org/terrain/secured/fileio/upload?dest={self.__path}",
                                      headers={'Authorization': f"Bearer {self.__token}"},
                                      files={'file': open(from_path, 'rb')})
@@ -73,4 +74,4 @@ class TerrainStore(Collection):
                 raise RuntimeError(f'Internal server error')
         else:
             raise ValueError(
-                f"Cannot overwrite iRODS object '{self.path}' with contents of local directory '{from_path}' (specify a remote directory instead)")
+                f"Cannot overwrite object '{self.path}' with contents of local directory '{from_path}' (specify a remote directory instead)")

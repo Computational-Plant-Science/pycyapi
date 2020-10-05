@@ -1,9 +1,9 @@
 class Run(object):
     def __init__(self,
                  identifier: str,
-                 api_url: str,
                  workdir: str,
                  image: str,
+                 api_url: str = None,
                  command: str = None,
                  clone: str = None,
                  plantit_token: str = None,
@@ -12,9 +12,9 @@ class Run(object):
                  input: dict = None,
                  output: dict = None):
         self._identifier = identifier
-        self._api_url = api_url
         self._workdir = workdir
         self._image = image
+        self._api_url = api_url
         self._command = command
         self._clone = clone
         self._plantit_token = plantit_token

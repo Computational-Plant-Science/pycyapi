@@ -16,6 +16,16 @@ shift "$(( OPTIND - 1 ))"
 echo "Bringing containers down..."
 $compose down
 
+env_file=".env"
+echo "Checking for environment variable file '$env_file'..."
+if [ ! -f $env_file ]; then
+  echo "Environment variable file '$env_file' does not exist. Creating it..."
+  chmod +x scripts/create-env-file.sh
+  ./scripts/create-env-file.sh
+else
+  echo "Environment variable file '$env_file' already exists. Continuing..."
+fi
+
 if [[ "$nocache" -eq 0 ]]; then
   echo "Building containers..."
   $compose build "$@"

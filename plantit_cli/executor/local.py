@@ -22,6 +22,7 @@ class InProcessExecutor(Executor):
                     self.clone_repo(run)
 
                 if run.input:
+                    print(f"Pulling inputs for run '{run.identifier}'")
                     input_directory = self.pull_input(run)
                     if run.input['kind'].lower() == 'directory':
                         execute_workflow_with_directory_input(run, client, input_directory)
@@ -30,9 +31,11 @@ class InProcessExecutor(Executor):
                     else:
                         raise ValueError(f"Value of 'input.kind' must be either 'file' or 'directory'")
                 else:
+                    print(f"Executing flow for run '{run.identifier}'")
                     execute_workflow_with_no_input(run, client)
 
                 if run.output:
+                    print(f"Pushing outputs for run '{run.identifier}'")
                     self.push_output(run)
         except Exception:
             update_status(run, 3, f"Run '{run.identifier}' failed: {traceback.format_exc()}")

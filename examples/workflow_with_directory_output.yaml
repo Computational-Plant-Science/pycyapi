@@ -6,6 +6,6 @@ params:
   - key: MESSAGE
     value: Hello, world!
 output:
-  kind: directory
-  local_path: ''
-  irods_path: /tempZone/testCollection
+  kind: Directory
+  from: /test
+  to: /iplant/home/wbonelli/testCollection

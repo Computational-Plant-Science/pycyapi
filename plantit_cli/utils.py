@@ -49,8 +49,7 @@ def execute_workflow_with_no_input(run: Run, client: Client):
         params = []
 
     if run.output:
-        output_path = join(run.workdir, run.output['from']) if run.output[
-                                                                         'from'] is not '' else run.workdir
+        output_path = join(run.workdir, run.output['from']) if 'from' in run.output else run.workdir
         params += [{'key': 'OUTPUT', 'value': output_path}]
 
     future = client.submit(execute_container, Run(

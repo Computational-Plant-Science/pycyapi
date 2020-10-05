@@ -37,13 +37,11 @@ class Executor(ABC):
         directory = join(run.workdir, 'input')
         os.makedirs(directory, exist_ok=True)
         store.pull(directory, run.input['pattern'] if 'pattern' in run.input else None)
-        files = [os.path.abspath(join(directory, file)) for file in os.listdir(directory)]
-        file_count = len(files)
-        update_status(run, 3, f"Pulled {file_count} input(s) from '{run.input['from']}' to '{directory}': {files}")
+        update_status(run, 3, f"Pulled input(s)")
         return directory
 
     def push_output(self, run: Run):
         store = self.__store(run.output['to'])
         local_path = join(run.workdir, run.output['from']) if 'from' in run.output else run.workdir
         store.push(local_path, run.output['pattern'] if 'pattern' in run.output else None)
-        update_status(run, 3, f"Pushed output(s) from '{run.output['from']}' to '{run.output['to']}'")
+        update_status(run, 3, f"Pushed output(s)")

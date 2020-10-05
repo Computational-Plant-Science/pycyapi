@@ -44,14 +44,14 @@ pip3 install plantit-cli
 To run a workflow defined in `workflow.yaml`, use `plantit workflow.yaml --token <PlantIT API authentication token>`. The YAML schema should look something like this:
 
 ```yaml
-identifier: a42033c3-9ba1-4d99-83ed-3fdce08c706e
-image: docker://alpine
-workdir: /your/working/directory
-command: echo $MESSAGE
+identifier: a42033c3-9ba1-4d99-83ed-3fdce08c706e # required
+image: docker://alpine # required
+workdir: /your/working/directory # required
+command: echo $MESSAGE # required
 params:
 - key: message
   value: Hello, plant person!
-executor:
+executor: # defaults to 'local' if not specified
   local:
 api_url: http://plantit/apis/v1/runs/a42033c3-9ba1-4d99-83ed-3fdce08c706e/update_target_status/
 ```
@@ -144,6 +144,6 @@ Example configuration files can be found in `examples/`.
 
 ## Tests
 
-Before running tests, run `scripts/bootstrap.sh`. Then run:
+Before running tests, run `scripts/bootstrap.sh`. Then:
 
-```docker-compose -f docker-compose.test.yml run cluster /bin/bash -- pytest . -s```
+```docker-compose -f docker-compose.test.yml run cluster python3 -m pytest . -s```
