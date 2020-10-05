@@ -5,10 +5,9 @@ import requests
 
 from plantit_cli.collection.collection import Collection
 from plantit_cli.collection.util import list_files
-from plantit_cli.utils import update_status
 
 
-class TerrainStore(Collection):
+class Terrain(Collection):
 
     @property
     def path(self):
@@ -19,6 +18,13 @@ class TerrainStore(Collection):
         self.__token = token
 
     def list(self) -> List[str]:
+        """
+        Lists files in the collection.
+
+        Returns:
+            A list of all files in the collection.
+        """
+
         response = requests.get(
             f"https://de.cyverse.org/terrain/secured/filesystem/paged-directory?limit=1000&path={self.__path}",
             headers={'Authorization': f"Bearer {self.__token}"})
@@ -29,10 +35,19 @@ class TerrainStore(Collection):
         return files
 
     def pull(self, to_path, pattern=None):
+        """
+        Pulls all files in the collection matching a given pattern to the local path.
+
+        Args:
+            to_path: The local path.
+            pattern: The file pattern.
+        """
+
+        print(f"Searching for ")
         from_paths = [p for p in self.list() if pattern in p] if pattern is not None else self.list()
         print(f"Preparing to pull {len(from_paths)} files")
         for from_path in from_paths:
-            full_to_path = f"{to_path}/{from_path.split('.')[-1]}"
+            full_to_path = f"{to_path}/{from_path.split('/')[-1]}"
             print(f"Pulling '{from_path}' to '{full_to_path}'")
             with requests.get(f"https://de.cyverse.org/terrain/secured/fileio/download?path={from_path}",
                               headers={'Authorization': f"Bearer {self.__token}"}) as response:
@@ -47,6 +62,14 @@ class TerrainStore(Collection):
                         file.write(chunk)
 
     def push(self, from_path, pattern=None):
+        """
+        Pushes all files matching a given pattern from the local path to the collection.
+
+        Args:
+            from_path: The local path.
+            pattern: The file pattern.
+        """
+
         is_local_file = isfile(from_path)
         is_local_dir = isdir(from_path)
         if not (is_local_dir or is_local_file):

@@ -4,7 +4,7 @@
 #import pytest
 #from irods.session import iRODSSession
 #
-#from plantit_cli.store.irods import IRODSStore, IRODSOptions
+#from plantit_cli.store.irods import IRODS, IRODSOptions
 #
 #host = "irods"
 #port = 1247
@@ -27,7 +27,7 @@
 #
 #@pytest.fixture
 #def store():
-#    return IRODSStore(from_path=from_path,
+#    return IRODS(from_path=from_path,
 #                      options=IRODSOptions(host=host,
 #                                           port=port,
 #                                           username=user,

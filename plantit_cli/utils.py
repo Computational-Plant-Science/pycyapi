@@ -100,10 +100,11 @@ def execute_workflow_with_directory_input(run: Run, client: Client, input_direct
 
 def execute_workflow_with_file_input(run: Run, client: Client, input_directory: str):
     files = os.listdir(input_directory)
+    print(files)
     futures = []
 
     update_status(run, 3,
-                  f"Running {len(files)} '{run.image}' container(s) on {len(files)} files in input directory '{input_directory}'.")
+                  f"Running {len(files)} '{run.image}' container(s) on {len(files)} file(s) in input directory '{input_directory}'.")
 
     for file in files:
         if run.params:

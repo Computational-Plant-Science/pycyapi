@@ -4,38 +4,39 @@ from typing import List
 
 class Collection(ABC):
     """
-    A remote file/object store.
+    Models a folder or directory within a hierarchical file store.
     """
 
     @abstractmethod
     def list(self) -> List[str]:
         """
-        Lists the object(s) in the collection.
+        Lists files in the collection.
 
-        Returns: The object(s) in the collection.
-
+        Returns:
+            A list of all files in the collection.
         """
         pass
 
     @abstractmethod
     def pull(self, to_path, pattern):
         """
-        Pulls file(s) matching a pattern from the collection to the given path on the file system.
+        Pulls files in the collection matching a given pattern to the local path.
 
         Args:
-            to_path: The file system path.
-            pattern: The file pattern (e.g., extension).
+            to_path: The local path.
+            pattern: The file pattern.
         """
         pass
 
     @abstractmethod
     def push(self, from_path, pattern):
         """
-        Pushes files(s) matching a pattern from the given path on the file system to the collection.
+        Pushes files matching a given pattern from the local path to the collection.
 
         Args:
-            from_path: The file system path.
-            pattern: The file pattern (e.g., extension).
+            from_path: The local path.
+            pattern: The file pattern.
         """
+
         pass
 

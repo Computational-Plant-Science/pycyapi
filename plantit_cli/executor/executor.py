@@ -5,7 +5,7 @@ from os.path import join
 
 from plantit_cli.exceptions import PlantitException
 from plantit_cli.run import Run
-from plantit_cli.collection.terrain import TerrainStore
+from plantit_cli.collection.terrain import Terrain
 from plantit_cli.utils import update_status
 
 
@@ -22,7 +22,7 @@ class Executor(ABC):
         pass
 
     def __store(self, path):
-        return TerrainStore(path=path, token=self.token)
+        return Terrain(path=path, token=self.token)
 
     def clone_repo(self, run: Run):
         ret = subprocess.run(f"git clone {run.clone}", stdout=subprocess.PIPE, stderr=subprocess.PIPE,

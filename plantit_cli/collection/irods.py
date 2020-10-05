@@ -18,7 +18,7 @@ class IRODSOptions:
         self.zone = zone
 
 
-class IRODSStore(Collection):
+class IRODS(Collection):
 
     @property
     def path(self):
@@ -46,6 +46,13 @@ class IRODSStore(Collection):
             return iRODSSession(irods_env_file=env_file, **{'ssl_context': ssl_context})
 
     def list(self) -> List[str]:
+        """
+        Lists files in the collection.
+
+        Returns:
+            A list of all files in the collection.
+        """
+
         session = self.__session()
 
         print(self.path)
@@ -58,7 +65,14 @@ class IRODSStore(Collection):
             raise FileNotFoundError(f"iRODS path '{self.path}' does not exist")
 
     def pull(self, to_path, pattern):
-        raise NotImplementedError()
+        """
+        Pulls all files in the collection matching a given pattern to the local path.
+
+        Args:
+            to_path: The local path.
+            pattern: The file pattern.
+        """
+
         Path(to_path).mkdir(parents=True, exist_ok=True)  # create local directory if it does not exist
         session = self.__session()
 
@@ -68,7 +82,7 @@ class IRODSStore(Collection):
         is_local_dir = isdir(to_path)
 
         if not (is_remote_dir or is_remote_file):
-            raise FileNotFoundError(f"iRODS path '{self.path}' does not exist")
+            raise FileNotFoundError(f"Remote path '{self.path}' does not exist")
         elif not (is_local_dir or is_local_file):
             raise FileNotFoundError(f"Local path '{to_path}' does not exist")
         elif is_remote_dir and is_local_dir:
@@ -86,7 +100,14 @@ class IRODSStore(Collection):
         session.cleanup()
 
     def push(self, from_path, pattern):
-        raise NotImplementedError()
+        """
+        Pushes all files matching a given pattern from the local path to the collection.
+
+        Args:
+            from_path: The local path.
+            pattern: The file pattern.
+        """
+
         session = self.__session()
 
         is_local_file = isfile(from_path)
@@ -101,6 +122,6 @@ class IRODSStore(Collection):
             session.data_objects.put(from_path, join(self.path, from_path.split('/')[-1]))
         else:
             raise ValueError(
-                f"Cannot overwrite iRODS object '{self.path}' with contents of local directory '{from_path}' (specify a remote directory instead)")
+                f"Cannot overwrite remote file '{self.path}' with contents of local directory '{from_path}' (specify a remote directory instead)")
 
         session.cleanup()
