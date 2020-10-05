@@ -19,8 +19,8 @@ Deploy workflows on laptops, servers, or HPC/HTC clusters.
 - [Usage](#usage)
   - [Executor](#executor)
   - [Input/Output](#inputoutput)
-    - [Default iRODS connection configuration](#default-irods-connection-configuration)
-    - [Overriding the default iRODS connection configuration](#overriding-the-default-irods-connection-configuration)
+    - [Authenticating against the Terrain API](#authenticating-against-the-terrain-api)
+- [Examples](#examples)
 - [Tests](#tests)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
