@@ -64,7 +64,7 @@ def execute_workflow_with_no_input(run: Run, client: Client):
         output=run.output
     ))
 
-    update_status(run, 2, future.result())
+    update_status(run, 3, future.result())
 
 
 def execute_workflow_with_directory_input(run: Run, client: Client, input_directory: str):
@@ -95,7 +95,7 @@ def execute_workflow_with_directory_input(run: Run, client: Client, input_direct
         output=run.output
     ))
 
-    update_status(run, 2, future.result())
+    update_status(run, 3, future.result())
 
 
 def execute_workflow_with_file_input(run: Run, client: Client, input_directory: str):
@@ -134,4 +134,4 @@ def execute_workflow_with_file_input(run: Run, client: Client, input_directory: 
         futures.append(future)
 
     for future in dask.distributed.as_completed(futures):
-        update_status(run, 2, future.result())
+        update_status(run, 3, future.result())
