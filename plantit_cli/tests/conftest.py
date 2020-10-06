@@ -15,14 +15,27 @@ tempdir = tempfile.gettempdir()
 
 @pytest.fixture()
 def remote_base_path():
-    return f"/iplant/home/{os.environ.get('CYVERSE_USERNAME')}"
+    cyverse_username = os.environ.get('CYVERSE_USERNAME', None)
+
+    if cyverse_username is None:
+        raise ValueError("Missing environment variable 'CYVERSE_USERNAME'")
+
+    return f"/iplant/home/{cyverse_username}"
 
 
 @pytest.fixture()
 def token(remote_base_path):
+    cyverse_username = os.environ.get('CYVERSE_USERNAME', None)
+    cyverse_password = os.environ.get('CYVERSE_PASSWORD', None)
+
+    if cyverse_username is None:
+        raise ValueError("Missing environment variable 'CYVERSE_USERNAME'")
+    if cyverse_password is None:
+        raise ValueError("Missing environment variable 'CYVERSE_PASSWORD'")
+
     return requests.get(
         'https://de.cyverse.org/terrain/token/cas',
-        auth=(os.environ.get('CYVERSE_USERNAME'), os.environ.get('CYVERSE_PASSWORD'))).json()['access_token']
+        auth=(cyverse_username,cyverse_password)).json()['access_token']
 
 
 @pytest.fixture
