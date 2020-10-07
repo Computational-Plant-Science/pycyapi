@@ -82,6 +82,7 @@ class Terrain(Collection):
                 response = requests.post(f"https://de.cyverse.org/terrain/secured/fileio/upload?dest={self.__path}",
                                          headers={'Authorization': f"Bearer {self.__token}"},
                                          files={'file': open(from_path, 'rb')})
+                print(self.__token)
                 if response.status_code == 401:
                     raise RuntimeError('CyVerse authentication cyverse_token expired or invalid')
                 if response.status_code == 500:
