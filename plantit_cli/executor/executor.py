@@ -21,8 +21,8 @@ class Executor(ABC):
     def execute(self, run: Run):
         pass
 
-    def __store(self, path):
-        return Terrain(path=path, token=self.token)
+    def __store(self, run: Run):
+        return Terrain(run=run)
 
     def clone_repo(self, run: Run):
         ret = subprocess.run(f"git clone {run.clone}", stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -33,7 +33,7 @@ class Executor(ABC):
             update_status(run, 3, f"Cloned repository '{run.clone}'")
 
     def pull_input(self, run: Run) -> str:
-        store = self.__store(run.input['from'])
+        store = self.__store(run)
         directory = join(run.workdir, 'input')
         os.makedirs(directory, exist_ok=True)
         store.pull(directory, run.input['pattern'] if 'pattern' in run.input else None)
@@ -41,7 +41,7 @@ class Executor(ABC):
         return directory
 
     def push_output(self, run: Run):
-        store = self.__store(run.output['to'])
+        store = self.__store(run)
         local_path = join(run.workdir, run.output['from']) if 'from' in run.output else run.workdir
-        store.push(local_path, run.output['pattern'] if 'pattern' in run.output else None)
+        store.push(local_path, (run.output['pattern'] if run.output['pattern'] != '' else None) if 'pattern' in run.output else None)
         update_status(run, 3, f"Pushed output(s)")

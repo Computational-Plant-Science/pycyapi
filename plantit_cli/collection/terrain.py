@@ -5,17 +5,17 @@ import requests
 
 from plantit_cli.collection.collection import Collection
 from plantit_cli.collection.util import list_files
+from plantit_cli.run import Run
 
 
 class Terrain(Collection):
 
     @property
-    def path(self):
-        return self.__path
+    def run(self):
+        return self.__run
 
-    def __init__(self, path: str, token: str):
-        self.__path = path
-        self.__token = token
+    def __init__(self, run: Run):
+        self.__run = run
 
     def list(self) -> List[str]:
         """
@@ -26,8 +26,8 @@ class Terrain(Collection):
         """
 
         response = requests.get(
-            f"https://de.cyverse.org/terrain/secured/filesystem/paged-directory?limit=1000&path={self.__path}",
-            headers={'Authorization': f"Bearer {self.__token}"})
+            f"https://de.cyverse.org/terrain/secured/filesystem/paged-directory?limit=1000&path={self.__run.input['from']}",
+            headers={'Authorization': f"Bearer {self.__run.cyverse_token}"})
         if response.status_code == 401:
             raise RuntimeError('CyVerse authentication cyverse_token expired or invalid')
         content = response.json()
@@ -43,14 +43,13 @@ class Terrain(Collection):
             pattern: The file pattern.
         """
 
-        print(f"Searching for ")
         from_paths = [p for p in self.list() if pattern in p] if pattern is not None else self.list()
         print(f"Preparing to pull {len(from_paths)} files")
         for from_path in from_paths:
             full_to_path = f"{to_path}/{from_path.split('/')[-1]}"
             print(f"Pulling '{from_path}' to '{full_to_path}'")
             with requests.get(f"https://de.cyverse.org/terrain/secured/fileio/download?path={from_path}",
-                              headers={'Authorization': f"Bearer {self.__token}"}) as response:
+                              headers={'Authorization': f"Bearer {self.__run.cyverse_token}"}) as response:
                 if response.status_code == 401:
                     raise RuntimeError('CyVerse authentication cyverse_token expired or invalid')
                 # with open(f"{from_path}/{from_path.split('/')[-1]}", 'wb') as file:
