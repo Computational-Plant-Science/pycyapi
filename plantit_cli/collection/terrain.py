@@ -77,19 +77,18 @@ class Terrain(Collection):
             from_paths = [p for p in list_files(from_path) if pattern in p] if pattern is not None else list_files(from_path)
             print(f"Preparing to push {len(from_paths)} files")
             for from_path in [str(p) for p in from_paths]:
-                print(f"Pushing '{from_path}' to '{self.__path}'")
-                response = requests.post(f"https://de.cyverse.org/terrain/secured/fileio/upload?dest={self.__path}",
-                                         headers={'Authorization': f"Bearer {self.__token}"},
+                print(f"Pushing '{from_path}' to '{self.__run.output['to']}'")
+                response = requests.post(f"https://de.cyverse.org/terrain/secured/fileio/upload?dest={self.__run.output['to']}",
+                                         headers={'Authorization': f"Bearer {self.__run.cyverse_token}"},
                                          files={'file': open(from_path, 'rb')})
-                print(self.__token)
                 if response.status_code == 401:
                     raise RuntimeError('CyVerse authentication cyverse_token expired or invalid')
                 if response.status_code == 500:
                     raise RuntimeError(f'Internal server error')
         elif is_local_file:
-            print(f"Pushing {from_path} to {self.__path}")
-            response = requests.post(f"https://de.cyverse.org/terrain/secured/fileio/upload?dest={self.__path}",
-                                     headers={'Authorization': f"Bearer {self.__token}"},
+            print(f"Pushing {from_path} to {self.__run.output['to']}")
+            response = requests.post(f"https://de.cyverse.org/terrain/secured/fileio/upload?dest={self.__run.output['to']}",
+                                     headers={'Authorization': f"Bearer {self.__run.cyverse_token}"},
                                      files={'file': open(from_path, 'rb')})
             if response.status_code == 401:
                 raise RuntimeError('CyVerse authentication cyverse_token expired or invalid')
@@ -97,4 +96,4 @@ class Terrain(Collection):
                 raise RuntimeError(f'Internal server error')
         else:
             raise ValueError(
-                f"Cannot overwrite object '{self.path}' with contents of local directory '{from_path}' (specify a remote directory instead)")
+                f"Cannot overwrite object '{self.__run.output['to']}' with contents of local directory '{from_path}' (specify a remote directory instead)")
