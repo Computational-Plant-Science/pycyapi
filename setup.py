@@ -23,6 +23,6 @@ setuptools.setup(
         ]
     },
     python_requires='>=3.6.9',
-    install_requires=['requests', 'python-irodsclient', 'dask', 'dask-jobqueue', 'pyaml', 'click'],
+    install_requires=['requests', 'python-irodsclient', 'dask', 'pyaml', 'click'],
     setup_requires=['wheel'],
     tests_require=['pytest', 'coveralls'])
