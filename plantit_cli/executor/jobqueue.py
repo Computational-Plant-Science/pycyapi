@@ -19,12 +19,8 @@ class JobQueueExecutor(Executor):
     def execute(self, run: Run):
         update_status(run, 3, f"Starting run '{run.identifier}' with '{self.name}' executor.")
         try:
-            # TODO support for more queueing systems? HTCondor, what else?
-            if self.name == 'pbs':
-                from dask_jobqueue import PBSCluster
-                cluster = PBSCluster(**self.kwargs)
-            elif self.name == 'slurm':
-                from dask_jobqueue import SLURMCluster
+            if self.name == 'slurm':
+                from plantit_cli.dask_jobqueue.slurm import SLURMCluster
                 cluster = SLURMCluster(**self.kwargs)
             else:
                 raise ValueError(f"Queue type '{self.name}' not supported")

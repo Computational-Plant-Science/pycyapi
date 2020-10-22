@@ -68,20 +68,7 @@ Taking the elements one at a time:
 
 ### Executor
 
-The `executor` option specifies how to run the workflow on underlying computing resources. Currently `local`, `pbs`, and `slurm`  executors are supported. If no executor is specified in the job definition file, the CLI will default to the `local` executor.
-
-To use the PBS executor, add an `executor` section like the following:
-
-```yaml
-executor:
-  pbs:
-    cores: 1
-    memory: 1GB
-    walltime: '00:10:00'
-    processes: 1
-    local_directory: "/your/scratch/directory"
-    n_workers: 1
-```
+The `executor` option specifies how to run the workflow on underlying computing resources. Currently `local` and `slurm`  executors are supported. If no executor is specified in the job definition file, the CLI will default to the `local` executor.
 
 To use the SLURM executor:
 
@@ -92,9 +79,9 @@ executor:
     memory: 1GB
     walltime: '00:10:00'
     processes: 1
-    local_directory: "/your/scratch/directory"
+    local_directory: "/your/local/directory"
     n_workers: 1
-    partition: debug
+    partition: normal
 ```
 
 ### Input/Output
@@ -146,4 +133,4 @@ Example configuration files can be found in `examples/`.
 
 Before running tests, run `scripts/bootstrap.sh`. Then:
 
-```docker-compose -f docker-compose.test.yml run cluster python3 -m pytest . -s```
+```docker-compose -f docker-compose.test.yml exec sandbox python3 -m pytest . -s```

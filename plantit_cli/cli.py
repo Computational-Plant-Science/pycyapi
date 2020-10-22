@@ -3,7 +3,7 @@ import json
 import click
 import yaml
 
-from plantit_cli.executor.local import InProcessExecutor
+from plantit_cli.executor.local import LocalExecutor
 from plantit_cli.executor.jobqueue import JobQueueExecutor
 from plantit_cli.run import Run
 
@@ -28,7 +28,7 @@ def run(workflow, plantit_token, cyverse_token):
             executor_def = {'local'}
 
         if 'local' in executor_def:
-            InProcessExecutor(cyverse_token).execute(Run(**workflow_def))
+            LocalExecutor(cyverse_token).execute(Run(**workflow_def))
         elif 'pbs' in executor_def:
             executor_def = dict(executor_def['pbs'])
             JobQueueExecutor('pbs', cyverse_token, **executor_def).execute(Run(**workflow_def))

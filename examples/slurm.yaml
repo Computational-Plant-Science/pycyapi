@@ -1,18 +1,17 @@
-identifier: workflow_with_params
-workdir: /test
+identifier: slurm
+workdir: /opt/plantit-cli/runs
 image: docker://alpine
-command: echo "$MESSAGE" >> "$MESSAGE_FILE"
+command: echo "$MESSAGE" >> "$FILE"
 params:
   - key: MESSAGE
     value: Hello, world!
-  - key: MESSAGE_FILE
-    value: /test/message.txt
+  - key: FILE
+    value: message.txt
 executor:
   slurm:
     cores: 1
     memory: 1GB
     walltime: '00:10:00'
     processes: 1
-    local_directory: "/test"
     n_workers: 1
     partition: debug

@@ -1,5 +1,5 @@
-identifier: workflow_with_directory_output
-workdir: /test
+identifier: directory_output
+workdir: /opt/plantit-cli/runs
 image: docker://alpine
 command: echo "$MESSAGE" | tee "$OUTPUT/t1.txt" "$OUTPUT/t2.txt"
 params:
@@ -7,5 +7,6 @@ params:
     value: Hello, world!
 output:
   kind: Directory
-  from: /test
+  from: .
+  pattern: .txt
   to: /iplant/home/wbonelli/testCollection

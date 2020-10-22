@@ -40,7 +40,7 @@ class SLURMJob(Job):
         if job_cpu is None:
             job_cpu = dask.config.get("jobqueue.%s.job-cpu" % self.config_name)
         if job_mem is None:
-            job_mem = dask.config.get("jobqueue.%s.job-mem" % self.config_name)
+            job_mem = None
         if job_extra is None:
             job_extra = dask.config.get("jobqueue.%s.job-extra" % self.config_name)
 
@@ -71,13 +71,16 @@ class SLURMJob(Job):
         # Memory
         memory = job_mem
         if job_mem is None:
-            memory = slurm_format_bytes_ceil(self.worker_memory)
+            pass
+            # memory = slurm_format_bytes_ceil(self.worker_memory)
         if memory is not None:
             header_lines.append("#SBATCH --mem=%s" % memory)
 
         if walltime is not None:
             header_lines.append("#SBATCH -t %s" % walltime)
         header_lines.extend(["#SBATCH %s" % arg for arg in job_extra])
+
+        print(header_lines)
 
         # Declare class attribute that shall be overridden
         self.job_header = "\n".join(header_lines)

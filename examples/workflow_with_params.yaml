@@ -1,9 +1,0 @@
-identifier: workflow_with_params
-workdir: /test
-image: docker://alpine
-command: echo "$MESSAGE" >> "$MESSAGE_FILE"
-params:
-  - key: MESSAGE
-    value: Hello, world!
-  - key: MESSAGE_FILE
-    value: /test/message.txt

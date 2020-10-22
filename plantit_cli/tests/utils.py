@@ -24,7 +24,7 @@ def check_hello(file, name):
         assert f"Hello, {name}!" in line
 
 
-DEFAULT_SLEEP = 60
+DEFAULT_SLEEP = 30
 
 
 def create_collection(path, token, sleep=DEFAULT_SLEEP):

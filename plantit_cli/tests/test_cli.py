@@ -10,7 +10,7 @@ from plantit_cli.tests.utils import clear_dir, check_hello
 
 from_path = f"/iplant/home/{os.environ.get('CYVERSE_USERNAME')}"
 message = "Hello, world!"
-testdir = '/test'
+testdir = '/opt/plantit-cli/runs'
 tempdir = tempfile.gettempdir()
 runner = CliRunner()
 
@@ -18,8 +18,8 @@ runner = CliRunner()
 def test_workflow_with_params():
     try:
         # run the workflow
-        os.environ['LC_ALL'] = 'C.UTF-8'
-        os.environ['LANG'] = 'C.UTF-8'
+        os.environ['LC_ALL'] = 'en_US.utf8'
+        os.environ['LANG'] = 'en_US.utf8'
         result = runner.invoke(run, ['examples/workflow_with_params.yaml'])
         assert result.exit_code == 0
 

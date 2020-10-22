@@ -1,5 +1,5 @@
-identifier: workflow_with_file_output
-workdir: /test
+identifier: file_output
+workdir: /opt/plantit-cli/runs
 image: docker://alpine
 command: echo "$MESSAGE" >> "$OUTPUT"
 params:

@@ -4,15 +4,24 @@ from os.path import join, isfile
 
 from plantit_cli.collection.collection import Collection
 from plantit_cli.collection.terrain import Terrain
+from plantit_cli.run import Run
 from plantit_cli.tests.utils import clear_dir, delete_collection, upload_file, create_collection
 
 message = "Message!"
-testdir = '/test'
+testdir = '/opt/plantit-cli/runs'
 tempdir = tempfile.gettempdir()
 
-
-def _collection(remote_path, token) -> Collection:
-    return Terrain(remote_path, token)
+def _run(remote_base_path, token):
+    return Run(
+        identifier='workflow_with_directory_input',
+        workdir=testdir,
+        image="docker://alpine:latest",
+        command='ls $INPUT | tee $INPUT.output',
+        input={
+            'kind': 'directory',
+            'from': join(remote_base_path, "testCollection"),
+        },
+        cyverse_token=token)
 
 
 def test_list(remote_base_path, token):
@@ -21,7 +30,7 @@ def test_list(remote_base_path, token):
     file1_path = join(testdir, file1_name)
     file2_path = join(testdir, file2_name)
     remote_path = join(remote_base_path, "testCollection")
-    collection = _collection(remote_path, token)
+    collection = Terrain(_run(remote_base_path, token))
 
     try:
         # prep CyVerse collection
@@ -53,7 +62,7 @@ def test_pull(remote_base_path, token):
     file1_path = join(testdir, file1_name)
     file2_path = join(testdir, file2_name)
     remote_path = join(remote_base_path, "testCollection")
-    collection = _collection(remote_path, token)
+    collection = Terrain(_run(remote_base_path, token))
 
     try:
         # prep CyVerse collection

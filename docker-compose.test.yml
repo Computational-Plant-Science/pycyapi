@@ -1,12 +1,77 @@
 version: '3.7'
 services:
-  cluster:
-    build:
-      context: .
-      dockerfile: dockerfiles/cluster/Dockerfile
+  mysql:
+    image: mysql:5.7
+    hostname: mysql
+    environment:
+      - MYSQL_RANDOM_ROOT_PASSWORD="yes"
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - var_lib_mysql:/var/lib/mysql
+    expose:
+      - "3306"
+  slurmctld:
+    image: computationalplantscience/plantit-sandbox
+    command: ["slurmctld"]
+    hostname: slurmctld
+    privileged: true
     environment:
       - CYVERSE_USERNAME=${CYVERSE_USERNAME}
       - CYVERSE_PASSWORD=${CYVERSE_PASSWORD}
     volumes:
-      - .:/opt/plantit-cluster/
-    privileged: true
+      - .:/opt/plantit-cli/
+      - ./config/dask/:/root/.config/dask/
+      - etc_munge:/etc/munge
+      - etc_slurm:/etc/slurm
+      - slurm_jobdir:/data
+      - var_log_slurm:/var/log/slurm
+    expose:
+      - "6817"
+    depends_on:
+      - slurmdbd
+  slurmdbd:
+    image: giovtorres/slurm-docker-cluster
+    hostname: slurmdbd
+    command: ["slurmdbd"]
+    volumes:
+      - etc_munge:/etc/munge
+      - etc_slurm:/etc/slurm
+      - var_log_slurm:/var/log/slurm
+    expose:
+      - "6819"
+    depends_on:
+      - mysql
+  c1:
+    image: giovtorres/slurm-docker-cluster
+    hostname: c1
+    command: ["slurmd"]
+    volumes:
+      - etc_munge:/etc/munge
+      - etc_slurm:/etc/slurm
+      - slurm_jobdir:/data
+      - var_log_slurm:/var/log/slurm
+    expose:
+      - "6818"
+    depends_on:
+      - slurmctld
+  c2:
+    image: giovtorres/slurm-docker-cluster
+    hostname: c2
+    command: ["slurmd"]
+    volumes:
+      - etc_munge:/etc/munge
+      - etc_slurm:/etc/slurm
+      - slurm_jobdir:/data
+      - var_log_slurm:/var/log/slurm
+    expose:
+      - "6818"
+    depends_on:
+      - slurmctld
+volumes:
+  etc_munge:
+  etc_slurm:
+  slurm_jobdir:
+  var_lib_mysql:
+  var_log_slurm:

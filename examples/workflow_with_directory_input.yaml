@@ -1,7 +1,0 @@
-identifier: workflow_with_directory_input
-workdir: /test
-image: docker://alpine
-command: ls $INPUT | tee output.txt
-input:
-  kind: directory
-  path: /tempZone/testCollection

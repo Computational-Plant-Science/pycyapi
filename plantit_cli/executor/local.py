@@ -8,7 +8,7 @@ from plantit_cli.utils import update_status, execute_workflow_with_directory_inp
     execute_workflow_with_no_input
 
 
-class InProcessExecutor(Executor):
+class LocalExecutor(Executor):
     name = "local"
 
     def __init__(self, token: str):

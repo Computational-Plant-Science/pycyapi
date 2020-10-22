@@ -32,9 +32,6 @@ before_install:
 - sudo wget https://files.renci.org/pub/irods/releases/4.1.12/ubuntu14/irods-icommands-4.1.12-ubuntu14-x86_64.deb
 - sudo dpkg -i irods-icommands-4.1.12-ubuntu14-x86_64.deb
 - sudo rm irods-icommands-4.1.12-ubuntu14-x86_64.deb
-- sudo chmod +x scripts/wait-for-postgres.sh
-- sudo chmod +x scripts/wait-for-it.sh
-- sudo chmod +x scripts/configure-irods.sh
 - 'export VERSION=3.5.2 && wget https://github.com/sylabs/singularity/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz
   && tar -xzf singularity-${VERSION}.tar.gz && cd singularity
 

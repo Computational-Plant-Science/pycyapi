@@ -163,13 +163,13 @@ class Job(ProcessInterface, abc.ABC):
         if cores is None:
             cores = dask.config.get("jobqueue.%s.cores" % self.config_name)
         if memory is None:
-            memory = dask.config.get("jobqueue.%s.memory" % self.config_name)
+            memory = None
 
-        if cores is None or memory is None:
+        if cores is None:
             job_class_name = self.__class__.__name__
             cluster_class_name = job_class_name.replace("Job", "Cluster")
             raise ValueError(
-                "You must specify how much cores and memory per job you want to use, for example:\n"
+                "You must specify how many cores per job you want to use, for example:\n"
                 "cluster = {}(cores={}, memory={!r})".format(
                     cluster_class_name, cores or 8, memory or "24GB"
                 )
@@ -311,6 +311,7 @@ class Job(ProcessInterface, abc.ABC):
 
     @property
     def worker_process_memory(self):
+        if self.worker_memory is None: return None
         mem = format_bytes(self.worker_memory / self.worker_processes)
         mem = mem.replace(" ", "")
         return mem
@@ -583,7 +584,9 @@ class JobQueueCluster(SpecCluster):
         return self._dummy_job.job_header
 
     def job_script(self):
-        return self._dummy_job.job_script()
+        script = self._dummy_job.job_script()
+        print(script)
+        return script
 
     @property
     def job_name(self):

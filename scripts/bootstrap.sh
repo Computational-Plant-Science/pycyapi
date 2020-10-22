@@ -3,10 +3,12 @@
 echo "Bootstrapping ${PWD##*/} development environment..."
 compose="docker-compose -f docker-compose.test.yml"
 nocache=0
+quiet=0
 
-while getopts 'n' opt; do
+while getopts 'nq' opt; do
     case $opt in
         n) nocache=1 ;;
+        q) quiet=1 ;;
         *) echo 'Error in command line parsing' >&2
            exit 1
     esac
@@ -27,15 +29,22 @@ else
 fi
 
 if [[ "$nocache" -eq 0 ]]; then
-  echo "Building containers..."
-  $compose build "$@"
+  if [[ "$quiet" -eq 0 ]]; then
+    echo "Building containers..."
+    docker build -t computationalplantscience/plantit-sandbox -f dockerfiles/sandbox/Dockerfile .
+  else
+    echo "Building containers quietly..."
+    docker build -t computationalplantscience/plantit-sandbox -q -f dockerfiles/sandbox/Dockerfile .
+  fi
 else
-  echo "Building containers with option '--no-cache'..."
-  $compose build "$@" --no-cache
+  if [[ "$quiet" -eq 0 ]]; then
+    echo "Building containers with cache disabled..."
+    docker build -t computationalplantscience/plantit-sandbox --no-cache -f dockerfiles/sandbox/Dockerfile .
+  else
+    echo "Building containers quietly with cache disabled..."
+    docker build -t computationalplantscience/plantit-sandbox -q --no-cache -f dockerfiles/sandbox/Dockerfile .
+  fi
 fi
 
-echo "Configuring mock IRODS..."
-$compose up -d cluster
-
-echo "Stopping containers..."
-$compose stop
+echo "Pulling 3rd-party images and bringing containers up..."
+$compose up -d --quiet-pull
