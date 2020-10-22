@@ -29,11 +29,8 @@ def run(workflow, plantit_token, cyverse_token):
 
         if 'local' in executor_def:
             LocalExecutor(cyverse_token).execute(Run(**workflow_def))
-        elif 'pbs' in executor_def:
-            executor_def = dict(executor_def['pbs'])
-            JobQueueExecutor('pbs', cyverse_token, **executor_def).execute(Run(**workflow_def))
-        elif 'slurm' in executor_def:
+        elif 'jobqueue' in executor_def and 'slurm' in executor_def['jobqueue']:
             executor_def = dict(executor_def['slurm'])
             JobQueueExecutor('slurm', cyverse_token, **executor_def).execute(Run(**workflow_def))
         else:
-            raise ValueError(f"Unrecognized executor (supported: 'local', 'pbs', 'slurm')")
+            raise ValueError(f"Unrecognized executor (supported: 'local', 'jobqueue')")
