@@ -15,6 +15,7 @@ services:
   slurmctld:
     image: computationalplantscience/plantit-sandbox
     command: ["slurmctld"]
+    working_dir: /opt/plantit-cli/runs
     hostname: slurmctld
     privileged: true
     environment:
@@ -46,6 +47,7 @@ services:
   c1:
     image: computationalplantscience/plantit-sandbox
     hostname: c1
+    working_dir: /opt/plantit-cli/runs
     command: ["slurmd"]
     privileged: true
     volumes:
@@ -62,6 +64,7 @@ services:
     image: computationalplantscience/plantit-sandbox
     hostname: c2
     command: ["slurmd"]
+    working_dir: /opt/plantit-cli/runs
     privileged: true
     volumes:
       - etc_munge:/etc/munge
