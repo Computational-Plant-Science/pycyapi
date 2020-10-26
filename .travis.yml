@@ -43,8 +43,8 @@ install:
 script:
 - "./scripts/bootstrap.sh"
 - docker-compose -f docker-compose.test.yml up -d
-- docker-compose -f docker-compose.test.yml exec -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN cluster coverage run --source=plantit_cli -m pytest . -s
-- docker-compose -f docker-compose.test.yml exec -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN cluster coveralls
+- docker-compose -f docker-compose.test.yml exec -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN slurmctld coverage run --source=plantit_cli -m pytest /opt/plantit-cli -s
+- docker-compose -f docker-compose.test.yml exec -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN slurmctld coveralls
 - docker-compose -f docker-compose.test.yml down
 after_script:
 - python3 -m pip install --user --upgrade setuptools wheel
