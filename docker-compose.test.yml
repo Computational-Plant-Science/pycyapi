@@ -21,6 +21,7 @@ services:
     environment:
       - CYVERSE_USERNAME=${CYVERSE_USERNAME}
       - CYVERSE_PASSWORD=${CYVERSE_PASSWORD}
+      - COVERALLS_REPO_TOKEN=${COVERALLS_REPO_TOKEN}
     volumes:
       - .:/opt/plantit-cli/
       - ./config/dask/:/root/.config/dask/
