@@ -10,28 +10,28 @@ from plantit_cli.tests.utils import clear_dir, check_hello
 
 from_path = f"/iplant/home/{os.environ.get('CYVERSE_USERNAME')}"
 message = "Hello, world!"
-testdir = '/opt/plantit-cli/runs'
+testdir = '/opt/plantit-cli/runs/'
 tempdir = tempfile.gettempdir()
 runner = CliRunner()
 
 
-def test_workflow_with_params():
-    try:
-        # run the workflow
-        os.environ['LC_ALL'] = 'en_US.utf8'
-        os.environ['LANG'] = 'en_US.utf8'
-        result = runner.invoke(run, ['examples/workflow_with_params.yaml'])
-        assert result.exit_code == 0
-
-        # check local message file
-        file = join(testdir, 'message.txt')
-        assert isfile(file)
-        with open(file) as file:
-            lines = file.readlines()
-            assert len(lines) == 1
-            assert lines[0] == f"{message}\n"
-    finally:
-        clear_dir(testdir)
+# def test_workflow_with_params():
+#     try:
+#         # run the workflow
+#         os.environ['LC_ALL'] = 'en_US.utf8'
+#         os.environ['LANG'] = 'en_US.utf8'
+#         result = runner.invoke(run, ['examples/params.yaml'])
+#         assert result.exit_code == 0
+#
+#         # check local message file
+#         file = join(testdir, 'message.txt')
+#         assert isfile(file)
+#         with open(file) as file:
+#             lines = file.readlines()
+#             assert len(lines) == 1
+#             assert lines[0] == f"{message}\n"
+#     finally:
+#         clear_dir(testdir)
 
 
 # def test_workflow_with_params_slurm():

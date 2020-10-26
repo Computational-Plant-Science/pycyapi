@@ -6,7 +6,7 @@ from plantit_cli.tests.utils import clear_dir, check_hello, create_collection, u
     list_files
 
 message = "Message!"
-testdir = '/opt/plantit-cli/runs'
+testdir = '/opt/plantit-cli/runs/'
 tempdir = tempfile.gettempdir()
 
 
@@ -26,20 +26,20 @@ def test_local_run_with_params(local_executor, run_with_params):
         clear_dir(testdir)
 
 
-# def test_slurm_run_with_params(slurm_executor, run_with_params):
-#     try:
-#         # run the run
-#         slurm_executor.execute(run_with_params)
-#
-#         # check local message file
-#         file = join(testdir, 'message.txt')
-#         assert isfile(file)
-#         with open(file) as file:
-#             lines = file.readlines()
-#             assert len(lines) == 1
-#             assert lines[0] == f"{message}\n"
-#     finally:
-#         clear_dir(testdir)
+def test_slurm_run_with_params(slurm_executor, run_with_params):
+    try:
+        # run the run
+        slurm_executor.execute(run_with_params)
+
+        # check local message file
+        file = join(testdir, 'message.txt')
+        assert isfile(file)
+        with open(file) as file:
+            lines = file.readlines()
+            assert len(lines) == 1
+            assert lines[0] == f"{message}\n"
+    finally:
+        clear_dir(testdir)
 
 
 def test_local_run_with_file_input(local_executor, remote_base_path, token, run_with_file_input):

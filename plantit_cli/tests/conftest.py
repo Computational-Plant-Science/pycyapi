@@ -9,7 +9,7 @@ from plantit_cli.executor.local import LocalExecutor
 from plantit_cli.collection.terrain import *
 
 message = "Message!"
-testdir = '/opt/plantit-cli/runs'
+testdir = '/opt/plantit-cli/runs/'
 tempdir = tempfile.gettempdir()
 
 
@@ -84,7 +84,6 @@ def run_with_params():
     # return Run(**definition)
     return Run(
         identifier='run_with_params',
-        api_url='',
         workdir=testdir,
         image="docker://alpine:latest",
         command='echo "$MESSAGE" >> $MESSAGE_FILE',

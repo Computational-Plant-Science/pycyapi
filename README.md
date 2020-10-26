@@ -41,60 +41,69 @@ pip3 install plantit-cli
 
 ## Usage
 
-To run a workflow defined in `workflow.yaml`, use `plantit workflow.yaml --token <PlantIT API authentication token>`. The YAML schema should look something like this:
+To run `hello_world.yaml`, use `plantit hello_world.yaml`. The YAML schema should look something like this:
 
 ```yaml
 identifier: a42033c3-9ba1-4d99-83ed-3fdce08c706e # required
-image: docker://alpine # required
-workdir: /your/working/directory # required
-command: echo $MESSAGE # required
-params:
+image: docker://alpine                           # required
+workdir: /your/working/directory                 # required
+command: echo $MESSAGE                           # required
+params:                                          # optional
 - key: message
   value: Hello, plant person!
-executor: # defaults to 'local' if not specified
-  local:
-api_url: http://plantit/apis/v1/runs/a42033c3-9ba1-4d99-83ed-3fdce08c706e/update_target_status/
+executor:                                        # optional (supported: 'local', 'jobqueue')
+  local:                                         # defaults to 'local' if not specified
 ```
 
 Taking the elements one at a time:
 
-- `identifier`: the workflow run identifier (GUID)
+- `identifier`: the workflow run identifier (e.g., a GUID)
 - `image`: the Docker or Singularity container image
 - `workdir`: where to execute the workflow
 - `command`: the command(s) to run inside the container
 - `params`: parameters substituted when `command` runs
 - `executor`: how to execute the pipeline (e.g., locally or on an HPC/HTC resource manager)
-- `api_url`: the PlantIT API endpoint to relay run status updates
 
 ### Executor
 
-The `executor` option specifies how to run the workflow on underlying computing resources. Currently `local` and `slurm`  executors are supported. If no executor is specified in the job definition file, the CLI will default to the `local` executor.
+The `executor` option specifies how to run the workflow on underlying computing resources. Currently `local` and `jobqueue`  executors are supported. If no executor is specified in the definition file, the CLI will default to the `local` executor.
 
-To use the SLURM executor:
+To use the SLURM executor, substitute a config like:
 
 ```yaml
 executor:
-  slurm:
-    cores: 1
-    memory: 1GB
-    walltime: '00:10:00'
-    processes: 1
-    local_directory: "/your/local/directory"
-    n_workers: 1
-    partition: normal
+  jobqueue:
+    slurm:
+      cores: 1
+      memory: 1GB
+      walltime: '00:10:00'
+      processes: 1
+      local_directory: "/your/local/directory"
+      n_workers: 1
+      partition: normal
 ```
 
 ### Input/Output
 
-The `plantit-cli` can automatically copy input files from the CyVerse Data Store onto the local (or network) file system, then push output files back to the Data Store after your workflow runs. To direct `plantit-cli` to pull an input file or directory, add an `input` section (the file or directory name will be substituted for `$INPUT` when the workflow's `command` is executed).
+The CLI can automatically copy files from the CyVerse Data Store to the local (or network) file system, then push output back to the Data Store after your run. To direct the CLI to pull a file or directory, add an `input` section (the file or directory name will be substituted for `$INPUT` when the run's `command` is invoked).
 
-To configure a workflow to pull a single file from the Data Store and spawn a single container to process it, use `kind: file` and `from: <file path>`:
+Runs involving file IO fall into 3 categories:
+
+- pull a file from the Data Store and spawn a single container to process it
+- pull a directory from the Data Store and spawn a single container to process it
+- pull a directory from the Data Store and spawn multiple containers to process files in parallel
+
+#### 1 File, 1 Container
+
+To configure the CLI to pull a file from the Data Store and spawn a single container to process it, use `kind: file` and `from: <file path>`:
 
 ```yaml
 input:
   kind: file
   from: /iplant/home/username/directory/file
 ```
+
+#### 1 Directory, 1 Container
 
 To configure a workflow to pull the contents of a directory from the Data Store and spawn a single container to process it, use `kind: directory` and `from: <directory path>`:
 
@@ -103,6 +112,8 @@ input:
   kind: directory
   from: /iplant/home/username/directory
 ```
+
+#### 1 Directory, 1+ (Parallel) Container(s)
 
 To configure a workflow to pull a directory from the Data Store and spawn multiple containers to process files in parallel, use `kind: file` and `from: <directory path>`:
 
@@ -123,14 +134,38 @@ output:
 
 #### Authenticating against the Terrain API
 
-The CLI uses the Terrain API to query and access data in the CyVerse Data Store and expects a `--cyverse_token` flag.
+Runs specifying inputs and outputs must provide the `--cyverse_token` flag, since the CLI uses the Terrain API to query and access data in the CyVerse Data Store. For instance, to run `some_definition.yaml`:
+
+```shell script
+plantit some_definition.yaml --cyverse_token 'eyJhbGciOiJSUzI1N...'
+```
+
+A CyVerse access token can be obtained with a `GET` request to the Terrain API (providing your CyVerse username/password for basic auth):
+
+```shell script
+GET https://de.cyverse.org/terrain/token/cas
+```
 
 ## Examples
 
-Example configuration files can be found in `examples/`.
+Some sample definition files can be found in `examples/`.
 
 ## Tests
 
-Before running tests, run `scripts/bootstrap.sh`. Then:
+Before running tests...
+ 
+ 1) create an environment file `.env` in the project root, e.g.:
+ 
+```
+CYVERSE_USERNAME=your_cyverse_username
+CYVERSE_PASSWORD=your_cyverse_password
+MYSQL_DATABASE=slurm_acct_db
+MYSQL_USER=slurm
+MYSQL_PASSWORD=password
+```
+ 
+ 2) run `scripts/bootstrap.sh` (this will pull/build images for a small `docker-compose` SLURM cluster test environment), then run:
 
-```docker-compose -f docker-compose.test.yml exec sandbox python3 -m pytest . -s```
+```docker-compose -f docker-compose.test.yml exec slurmctld python3 -m pytest /opt/plantit-cli -s```
+
+Tests invoking the Terrain API may take some time to run; they're rigged with a delay to allow writes to propagate from Terrain to the CyVerse Data Store (some pass/fail non-determinism occurs otherwise).

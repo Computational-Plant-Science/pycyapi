@@ -44,27 +44,31 @@ services:
     depends_on:
       - mysql
   c1:
-    image: giovtorres/slurm-docker-cluster
+    image: computationalplantscience/plantit-sandbox
     hostname: c1
     command: ["slurmd"]
+    privileged: true
     volumes:
       - etc_munge:/etc/munge
       - etc_slurm:/etc/slurm
       - slurm_jobdir:/data
       - var_log_slurm:/var/log/slurm
+      - .:/opt/plantit-cli/
     expose:
       - "6818"
     depends_on:
       - slurmctld
   c2:
-    image: giovtorres/slurm-docker-cluster
+    image: computationalplantscience/plantit-sandbox
     hostname: c2
     command: ["slurmd"]
+    privileged: true
     volumes:
       - etc_munge:/etc/munge
       - etc_slurm:/etc/slurm
       - slurm_jobdir:/data
       - var_log_slurm:/var/log/slurm
+      - .:/opt/plantit-cli/
     expose:
       - "6818"
     depends_on:

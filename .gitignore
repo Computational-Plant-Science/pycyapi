@@ -138,3 +138,4 @@ storage/
 *.out
 dask.yaml
 run_config.yaml
+runs/*
