@@ -1,10 +1,7 @@
-import json
-
 import click
 import yaml
 
-from plantit_cli.executor.local import LocalExecutor
-from plantit_cli.executor.jobqueue import JobQueueExecutor
+from plantit_cli.executor.executor import Executor
 from plantit_cli.run import Run
 
 
@@ -21,16 +18,4 @@ def run(workflow, plantit_token, cyverse_token):
         if 'api_url' not in workflow_def:
             workflow_def['api_url'] = None
 
-        if 'executor' in workflow_def:
-            executor_def = workflow_def['executor']
-            del workflow_def['executor']
-        else:
-            executor_def = {'local'}
-
-        if 'local' in executor_def:
-            LocalExecutor(cyverse_token).execute(Run(**workflow_def))
-        elif 'jobqueue' in executor_def and 'slurm' in executor_def['jobqueue']:
-            executor_def = dict(executor_def['jobqueue']['slurm'])
-            JobQueueExecutor('slurm', cyverse_token, **executor_def).execute(Run(**workflow_def))
-        else:
-            raise ValueError(f"Unrecognized executor (supported: 'local', 'jobqueue')")
+        Executor().execute(Run(**workflow_def))

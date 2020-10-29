@@ -4,9 +4,8 @@ from os.path import join
 
 import pytest
 
-from plantit_cli.executor.jobqueue import JobQueueExecutor
-from plantit_cli.executor.local import LocalExecutor
 from plantit_cli.collection.terrain import *
+from plantit_cli.executor.executor import Executor
 
 message = "Message!"
 testdir = '/opt/plantit-cli/runs/'
@@ -45,32 +44,20 @@ def token():
     if cyverse_password is None:
         raise ValueError("Missing environment variable 'CYVERSE_PASSWORD'")
 
-    # print(cyverse_username)
-    # print(cyverse_password)
-
     if Token.get() is None:
         Token(requests.get(
             'https://de.cyverse.org/terrain/token/cas',
             auth=(cyverse_username, cyverse_password)).json()['access_token'])
 
-    print(Token.get())
     return Token.get()
 
 
 @pytest.fixture
-def local_executor(token):
-    return LocalExecutor(token)
-
-
-@pytest.fixture
-def slurm_executor(token):
-    return JobQueueExecutor('slurm', token, cores=1, memory='1GB', walltime='00:10:00', processes=1, n_workers=1, queue='normal')
+def executor():
+    return Executor()
 
 
 def prep(definition):
-    if 'executor' in definition:
-        del definition['executor']
-
     if 'api_url' not in definition:
         definition['api_url'] = None
 
@@ -79,9 +66,6 @@ def prep(definition):
 
 @pytest.fixture
 def run_with_params():
-    # definition = yaml.safe_load('examples/run_with_params.yaml')
-    # definition = prep(definition)
-    # return Run(**definition)
     return Run(
         identifier='run_with_params',
         workdir=testdir,

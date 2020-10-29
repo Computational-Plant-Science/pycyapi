@@ -7,8 +7,8 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='plantit-cli',
-    version='0.0.58',
-    description='Deploy workflows on laptops, servers, or HPC/HTC clusters.',
+    version='0.0.60',
+    description='Deploy PlantIT workflows on laptops, servers, or HPC/HTC clusters.',
     long_description=long_description,
     long_description_content_type="text/markdown",
     author='Computational Plant Science Lab',
@@ -23,6 +23,6 @@ setuptools.setup(
         ]
     },
     python_requires='>=3.6.8',
-    install_requires=['requests', 'python-irodsclient', 'dask', 'pyaml', 'click'],
+    install_requires=['requests', 'pyaml', 'click'],
     setup_requires=['wheel'],
     tests_require=['pytest', 'coveralls'])

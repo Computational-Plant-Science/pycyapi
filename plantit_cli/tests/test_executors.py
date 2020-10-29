@@ -10,10 +10,10 @@ testdir = '/opt/plantit-cli/runs/'
 tempdir = tempfile.gettempdir()
 
 
-def test_local_run_with_params(local_executor, run_with_params):
+def test_run_with_params(executor, run_with_params):
     try:
         # run the run
-        local_executor.execute(run_with_params)
+        executor.execute(run_with_params)
 
         # check local message file
         file = join(testdir, 'message.txt')
@@ -26,23 +26,7 @@ def test_local_run_with_params(local_executor, run_with_params):
         clear_dir(testdir)
 
 
-def test_slurm_run_with_params(slurm_executor, run_with_params):
-    try:
-        # run the run
-        slurm_executor.execute(run_with_params)
-
-        # check local message file
-        file = join(testdir, 'message.txt')
-        assert isfile(file)
-        with open(file) as file:
-            lines = file.readlines()
-            assert len(lines) == 1
-            assert lines[0] == f"{message}\n"
-    finally:
-        clear_dir(testdir)
-
-
-def test_local_run_with_file_input(local_executor, remote_base_path, token, run_with_file_input):
+def test_run_with_file_input(executor, remote_base_path, token, run_with_file_input):
     file1_name = 'f1.txt'
     file2_name = 'f2.txt'
     file1_path = join(testdir, file1_name)
@@ -61,7 +45,7 @@ def test_local_run_with_file_input(local_executor, remote_base_path, token, run_
         upload_file(file2_path, remote_path, token)
 
         # expect 2 containers, 1 for each input file
-        local_executor.execute(run_with_file_input)
+        executor.execute(run_with_file_input)
 
         # check files were pulled
         input_1 = join(testdir, 'input', file1_name)
@@ -83,52 +67,6 @@ def test_local_run_with_file_input(local_executor, remote_base_path, token, run_
         delete_collection(remote_path, token)
 
 
-def test_slurm_run_with_file_input(slurm_executor, remote_base_path, token, run_with_file_input):
-    file1_name = 'f1.txt'
-    file2_name = 'f2.txt'
-    file1_path = join(testdir, file1_name)
-    file2_path = join(testdir, file2_name)
-    remote_path = join(remote_base_path, "testCollection")
-
-    try:
-        # prep CyVerse collection
-        create_collection(remote_path, token)
-
-        # prep files
-        with open(file1_path, "w") as file1, open(file2_path, "w") as file2:
-            file1.write('Hello, 1!')
-            file2.write('Hello, 2!')
-        upload_file(file1_path, remote_path, token)
-        upload_file(file2_path, remote_path, token)
-
-        # expect 2 containers, 1 for each input file
-        slurm_executor.execute(run_with_file_input)
-
-        # check files were pulled
-        input_1 = join(testdir, 'input', file1_name)
-        input_2 = join(testdir, 'input', file2_name)
-        check_hello(input_1, 1)
-        check_hello(input_2, 2)
-        os.remove(input_1)
-        os.remove(input_2)
-
-        # check local output files were written
-        output_1 = f"{input_1}.output"
-        output_2 = f"{input_2}.output"
-        check_hello(output_1, 1)
-        check_hello(output_2, 2)
-        os.remove(output_1)
-        os.remove(output_2)
-    finally:
-        clear_dir(testdir)
-        delete_collection(remote_path, token)
-
-
-
-#
-#
-#
-#
 # def test_run_with_directory_input(session, executor, run_with_directory_input):
 #    local_file_1 = tempfile.NamedTemporaryFile()
 #    local_file_2 = tempfile.NamedTemporaryFile()
@@ -175,11 +113,9 @@ def test_slurm_run_with_file_input(slurm_executor, remote_base_path, token, run_
 #    finally:
 #        clear_dir(testdir)
 #        session.collections.remove(collection, force=True)
-#
-#
 
 
-def test_local_run_with_file_output(local_executor, remote_base_path, token, run_with_file_output):
+def test_local_run_with_file_output(executor, remote_base_path, token, run_with_file_output):
     local_output_path = join(testdir, run_with_file_output.output['from'])
     remote_path = join(remote_base_path, "testCollection")
 
@@ -188,7 +124,7 @@ def test_local_run_with_file_output(local_executor, remote_base_path, token, run
         create_collection(remote_path, token)
 
         # run
-        local_executor.execute(run_with_file_output)
+        executor.execute(run_with_file_output)
 
         # check files were written locally
         assert isfile(local_output_path)
@@ -203,31 +139,7 @@ def test_local_run_with_file_output(local_executor, remote_base_path, token, run
         delete_collection(remote_path, token)
 
 
-def test_slurm_run_with_file_output(slurm_executor, remote_base_path, token, run_with_file_output):
-    local_output_path = join(testdir, run_with_file_output.output['from'])
-    remote_path = join(remote_base_path, "testCollection")
-
-    try:
-        # prep CyVerse collection
-        create_collection(remote_path, token)
-
-        # run
-        slurm_executor.execute(run_with_file_output)
-
-        # check files were written locally
-        assert isfile(local_output_path)
-        check_hello(local_output_path, 'world')
-        # os.remove(local_output_file)
-
-        # check file was pushed to CyVerse
-        files = list_files(remote_path, token)
-        assert join(remote_path, 'output.txt') in [file['path'] for file in files]
-    finally:
-        clear_dir(testdir)
-        delete_collection(remote_path, token)
-
-
-def test_local_run_with_directory_output(local_executor, remote_base_path, token, run_with_directory_output):
+def test_local_run_with_directory_output(executor, remote_base_path, token, run_with_directory_output):
     local_output_path = join(testdir, run_with_directory_output.output['from'])
     local_output_file_1 = join(local_output_path, 't1.txt')
     local_output_file_2 = join(local_output_path, 't2.txt')
@@ -238,37 +150,7 @@ def test_local_run_with_directory_output(local_executor, remote_base_path, token
         create_collection(remote_path, token)
 
         # run
-        local_executor.execute(run_with_directory_output)
-
-        # check files were written locally
-        assert isfile(local_output_file_1)
-        assert isfile(local_output_file_2)
-        check_hello(local_output_file_1, 'world')
-        check_hello(local_output_file_2, 'world')
-        os.remove(local_output_file_1)
-        os.remove(local_output_file_2)
-
-        # check files were pushed to CyVerse
-        files = list_files(remote_path, token)
-        assert join(remote_path, 't1.txt') in [file['path'] for file in files]
-        assert join(remote_path, 't2.txt') in [file['path'] for file in files]
-    finally:
-        clear_dir(testdir)
-        delete_collection(remote_path, token)
-
-
-def test_slurm_run_with_directory_output(slurm_executor, remote_base_path, token, run_with_directory_output):
-    local_output_path = join(testdir, run_with_directory_output.output['from'])
-    local_output_file_1 = join(local_output_path, 't1.txt')
-    local_output_file_2 = join(local_output_path, 't2.txt')
-    remote_path = join(remote_base_path, "testCollection")
-
-    try:
-        # prep CyVerse collection
-        create_collection(remote_path, token)
-
-        # run
-        slurm_executor.execute(run_with_directory_output)
+        executor.execute(run_with_directory_output)
 
         # check files were written locally
         assert isfile(local_output_file_1)
