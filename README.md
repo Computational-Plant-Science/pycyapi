@@ -17,9 +17,8 @@ Deploy workflows on laptops, servers, or HPC/HTC clusters.
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)
-  - [Executor](#executor)
   - [Input/Output](#inputoutput)
-    - [Authenticating against the Terrain API](#authenticating-against-the-terrain-api)
+  - [Authenticating against the Terrain API](#authenticating-against-the-terrain-api)
 - [Examples](#examples)
 - [Tests](#tests)
 
@@ -51,8 +50,6 @@ command: echo $MESSAGE                           # required
 params:                                          # optional
 - key: message
   value: Hello, plant person!
-executor:                                        # optional (supported: 'local', 'jobqueue')
-  local:                                         # defaults to 'local' if not specified
 ```
 
 Taking the elements one at a time:
@@ -62,26 +59,6 @@ Taking the elements one at a time:
 - `workdir`: where to execute the workflow
 - `command`: the command(s) to run inside the container
 - `params`: parameters substituted when `command` runs
-- `executor`: how to execute the pipeline (e.g., locally or on an HPC/HTC resource manager)
-
-### Executor
-
-The `executor` option specifies how to run the workflow on underlying computing resources. Currently `local` and `jobqueue`  executors are supported. If no executor is specified in the definition file, the CLI will default to the `local` executor.
-
-To use the SLURM executor, substitute a config like:
-
-```yaml
-executor:
-  jobqueue:
-    slurm:
-      cores: 1
-      memory: 1GB
-      walltime: '00:10:00'
-      processes: 1
-      local_directory: "/your/local/directory"
-      n_workers: 1
-      partition: normal
-```
 
 ### Input/Output
 
@@ -95,7 +72,7 @@ Runs involving file IO fall into 3 categories:
 
 #### 1 File, 1 Container
 
-To configure the CLI to pull a file from the Data Store and spawn a single container to process it, use `kind: file` and `from: <file path>`:
+To pull a file from the Data Store and spawn a single container to process it, use `kind: file` and `from: <file path>`:
 
 ```yaml
 input:
@@ -105,7 +82,7 @@ input:
 
 #### 1 Directory, 1 Container
 
-To configure a workflow to pull the contents of a directory from the Data Store and spawn a single container to process it, use `kind: directory` and `from: <directory path>`:
+To pull the contents of a directory from the Data Store and spawn a single container to process it, use `kind: directory` and `from: <directory path>`:
 
 ```yaml
 input:
@@ -113,9 +90,9 @@ input:
   from: /iplant/home/username/directory
 ```
 
-#### 1 Directory, 1+ (Parallel) Container(s)
+#### 1 Directory, 1+ Container(s)
 
-To configure a workflow to pull a directory from the Data Store and spawn multiple containers to process files in parallel, use `kind: file` and `from: <directory path>`:
+To pull a directory from the Data Store and spawn a container for each file, use `kind: file` and `from: <directory path>`:
 
 ```yaml
 input:
@@ -123,7 +100,7 @@ input:
   from: /iplant/home/username/directory
 ```
 
-To configure a flow to push files matching a pattern to the Data Store after container execution (the local path will be substituted for `$OUTPUT` when the workflow's `command` is executed):
+To push files matching a pattern to the Data Store after container execution (the local path will be substituted for `$OUTPUT` when the workflow's `command` is executed):
 
 ```yaml
 output:
@@ -132,7 +109,7 @@ output:
   to: /iplant/home/username/collection
 ```
 
-#### Authenticating against the Terrain API
+### Authenticating against the Terrain API
 
 Runs specifying inputs and outputs must provide the `--cyverse_token` flag, since the CLI uses the Terrain API to query and access data in the CyVerse Data Store. For instance, to run `some_definition.yaml`:
 
