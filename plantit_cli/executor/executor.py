@@ -60,7 +60,8 @@ class Executor(ABC):
                 print(f"Pushing outputs for '{run.identifier}'...")
                 self.__push_output(run)
 
-            update_status(run, 1, f"Run '{run.identifier}' completed.")
         except Exception:
             update_status(run, 2, f"Run '{run.identifier}' failed: {traceback.format_exc()}")
             return
+
+        update_status(run, 1, f"Run '{run.identifier}' completed.")
