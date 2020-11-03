@@ -17,4 +17,7 @@ fi
 cat <<EOT >>".env"
 CYVERSE_USERNAME=$cyverse_username
 CYVERSE_PASSWORD=$cyverse_password
+MYSQL_DATABASE=slurm_acct_db
+MYSQL_USER=slurm
+MYSQL_PASSWORD=password
 EOT
