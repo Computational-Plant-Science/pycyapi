@@ -5,6 +5,8 @@ FROM giovtorres/slurm-docker-cluster
 RUN set -ex \
     && yum -y update \
     && yum -y install \
+    autoconf \
+    automake \
     build-essential \
     libssl-dev \
     uuid-dev \

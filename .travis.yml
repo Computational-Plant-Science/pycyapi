@@ -29,9 +29,6 @@ sudo: required
 before_install:
 - sudo apt-get install python3-setuptools
 - sudo apt-get install libfuse2
-- sudo wget https://files.renci.org/pub/irods/releases/4.1.12/ubuntu14/irods-icommands-4.1.12-ubuntu14-x86_64.deb
-- sudo dpkg -i irods-icommands-4.1.12-ubuntu14-x86_64.deb
-- sudo rm irods-icommands-4.1.12-ubuntu14-x86_64.deb
 - 'export VERSION=3.5.2 && wget https://github.com/sylabs/singularity/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz
   && tar -xzf singularity-${VERSION}.tar.gz && cd singularity
 
@@ -43,8 +40,8 @@ install:
 script:
 - "./scripts/bootstrap.sh"
 - docker-compose -f docker-compose.test.yml up -d
-- docker-compose -f docker-compose.test.yml exec slurmctld coverage run --source=plantit_cli -m pytest /opt/plantit-cli -s
-- docker-compose -f docker-compose.test.yml exec slurmctld coveralls
+- docker-compose -f docker-compose.test.yml exec -T slurmctld coverage run --source=plantit_cli -m pytest /opt/plantit-cli -s
+- docker-compose -f docker-compose.test.yml exec -T slurmctld coveralls
 - docker-compose -f docker-compose.test.yml down
 after_script:
 - python3 -m pip install --user --upgrade setuptools wheel

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Bootstrapping ${PWD##*/} development environment..."
+echo "Bootstrapping ${PWD##*/} test environment..."
 compose="docker-compose -f docker-compose.test.yml"
 nocache=0
 quiet=0

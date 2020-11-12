@@ -24,15 +24,17 @@ def remote_base_path():
 
 token = None
 
+
 class Token:
-   __token = None
+    __token = None
 
-   @staticmethod
-   def get():
-      return Token.__token
+    @staticmethod
+    def get():
+        return Token.__token
 
-   def __init__(self, token):
-     Token.__token = token
+    def __init__(self, token):
+        Token.__token = token
+
 
 @pytest.fixture()
 def token():

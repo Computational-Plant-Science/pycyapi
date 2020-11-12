@@ -1,4 +1,5 @@
 import os
+import copy
 import subprocess
 from os.path import join
 
@@ -41,7 +42,7 @@ def __run_container(run: Run):
     return msg
 
 
-def run_container_no_input(run: Run):
+def container(run: Run):
     if run.params:
         params = run.params.copy()
     else:
@@ -69,7 +70,7 @@ def run_container_no_input(run: Run):
     update_status(run, 3, result)
 
 
-def run_container_directory_input(run: Run, input_directory: str):
+def container_for_directory(run: Run, input_directory: str):
     if run.params:
         params = run.params.copy()
     else:
@@ -99,7 +100,7 @@ def run_container_directory_input(run: Run, input_directory: str):
     update_status(run, 3, result)
 
 
-def run_container_file_input(run: Run, input_directory: str):
+def containers_for_files(run: Run, input_directory: str):
     files = os.listdir(input_directory)
 
     update_status(run, 3,
@@ -107,7 +108,7 @@ def run_container_file_input(run: Run, input_directory: str):
 
     for file in files:
         if run.params:
-            params = run.params.copy()
+            params = copy.deepcopy(run.params)
         else:
             params = []
 
@@ -115,10 +116,10 @@ def run_container_file_input(run: Run, input_directory: str):
         params += [{'key': 'INPUT', 'value': join(input_directory, file)}]
 
         if run.output:
-            output = run.output.copy()
+            output = copy.deepcopy(run.output.copy)
             params += [{'key': 'OUTPUT', 'value': join(run.workdir, output['from'])}]
 
-        run = Run(
+        result = __run_container(Run(
             identifier=run.identifier,
             plantit_token=run.plantit_token,
             api_url=run.api_url,
@@ -127,7 +128,6 @@ def run_container_file_input(run: Run, input_directory: str):
             command=run.command,
             params=params,
             input=run.input,
-            output=output)
-        result = __run_container(run)
+            output=output))
 
         update_status(run, 3, result)
