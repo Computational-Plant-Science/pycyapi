@@ -4,7 +4,7 @@
 
 # PlantIT CLI
 
-[![PyPI version](https://badge.fury.io/py/plantit-cli.svg)](https://badge.fury.io/py/plantit-cli) [![Build Status](https://travis-ci.com/Computational-Plant-Science/plantit-cli.svg?branch=master)](https://travis-ci.com/Computational-Plant-Science/plantit-cli) [![Coverage Status](https://coveralls.io/repos/github/Computational-Plant-Science/plantit-cli/badge.svg)](https://coveralls.io/github/Computational-Plant-Science/plantit-cli)
+[![PyPI version](https://badge.fury.io/py/plantit-cli.svg)](https://badge.fury.io/py/plantit-cli) [![Build Status](https://travis-ci.com/Computational-Plant-Science/plantit-cli.svg?branch=master)](https://travis-ci.com/Computational-Plant-Science/plantit-cli) [![Coverage Status](https://coveralls.io/repos/github/Computational-Plant-Science/plantit-cli/badge.png?branch=master)](https://coveralls.io/github/Computational-Plant-Science/plantit-cli) 
 
 Deploy workflows on laptops, servers, or HPC/HTC clusters.
 
@@ -60,7 +60,7 @@ Runs involving inputs and outputs fall into 3 categories:
 
 - pull a file from the Data Store and spawn a single container to process it
 - pull a directory from the Data Store and spawn a single container to process it
-- pull a directory from the Data Store and spawn multiple containers to process files in parallel
+- pull a directory from the Data Store and spawn multiple containers, one for each file
 
 To pull a file or directory, add an `input` section (the file or directory name will be substituted for `$INPUT` when `command` is invoked).
 
@@ -105,13 +105,13 @@ output:
 
 ### Authenticating with the Terrain API
 
-The CLI uses the Terrain API to access the CyVerse Data Store. Runs with inputs and outputs must provide the `--cyverse_token` flag. For instance, to run `hello_world.yaml`:
+The CLI uses the Terrain API to access the CyVerse Data Store. Runs with inputs and outputs must provide a `--cyverse_token` argument. For instance, to run `hello_world.yaml`:
 
 ```shell script
 plantit hello_world.yaml --cyverse_token 'eyJhbGciOiJSUzI1N...'
 ```
 
-A CyVerse access token can be obtained from the Terrain API with a `GET` request (provide your CyVerse username/password for basic auth):
+A CyVerse access token can be obtained from the Terrain API with a `GET` request (providing username/password for basic auth):
 
 ```shell script
 GET https://de.cyverse.org/terrain/token/cas

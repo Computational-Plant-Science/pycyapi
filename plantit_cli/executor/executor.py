@@ -62,7 +62,9 @@ class Executor(ABC):
             if run.output:
                 print(f"Pushing output(s)...")
                 self.__push_output(run)
-
-            update_status(run, 1, f"'{run.identifier}' completed.")
+                update_status(run, 1, f"'{run.identifier}' completed.")
+            else:
+                update_status(run, 1, f"'{run.identifier}' completed.")
         except Exception:
             update_status(run, 2, f"'{run.identifier}' failed: {traceback.format_exc()}")
+            return
