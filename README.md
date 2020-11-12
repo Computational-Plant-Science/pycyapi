@@ -43,32 +43,26 @@ pip3 install plantit-cli
 To run `hello_world.yaml`, use `plantit hello_world.yaml`. The YAML schema should look something like this:
 
 ```yaml
-identifier: a42033c3-9ba1-4d99-83ed-3fdce08c706e # required
-image: docker://alpine                           # required
-workdir: /your/working/directory                 # required
-command: echo $MESSAGE                           # required
-params:                                          # optional
+identifier: a42033c3-9ba1-4d99-83ed-3fdce08c706e # run identifier (required)
+image: docker://alpine                           # Docker or Singularity image (required)
+workdir: /your/working/directory                 # working directory (required)
+command: echo $MESSAGE                           # command to run in container (required)
+params:                                          # parameters substituted when `command` is run (optional)
 - key: message
   value: Hello, plant person!
 ```
 
-Taking the elements one at a time:
-
-- `identifier`: the workflow run identifier (e.g., a GUID)
-- `image`: the Docker or Singularity container image
-- `workdir`: where to execute the workflow
-- `command`: the command(s) to run inside the container
-- `params`: parameters substituted when `command` runs
-
 ### Input/Output
 
-The CLI can automatically copy files from the CyVerse Data Store to the local (or network) file system, then push output back to the Data Store after your run. To direct the CLI to pull a file or directory, add an `input` section (the file or directory name will be substituted for `$INPUT` when the run's `command` is invoked).
+The CLI can automatically copy files from the CyVerse Data Store to the local (or network) file system before your code runs, then push output files back to the Data Store afterwards.
 
-Runs involving file IO fall into 3 categories:
+Runs involving inputs and outputs fall into 3 categories:
 
 - pull a file from the Data Store and spawn a single container to process it
 - pull a directory from the Data Store and spawn a single container to process it
 - pull a directory from the Data Store and spawn multiple containers to process files in parallel
+
+To pull a file or directory, add an `input` section (the file or directory name will be substituted for `$INPUT` when `command` is invoked).
 
 #### 1 File, 1 Container
 
@@ -100,24 +94,24 @@ input:
   from: /iplant/home/username/directory
 ```
 
-To push files matching a pattern to the Data Store after container execution (the local path will be substituted for `$OUTPUT` when the workflow's `command` is executed):
+To push files matching a pattern back to the Data Store after your container executes (the local path will be substituted for `$OUTPUT` when `command` runs):
 
 ```yaml
 output:
   pattern: xslx
-  from: directory # relative to the workflow's working directory
+  from: directory # relative to the working directory
   to: /iplant/home/username/collection
 ```
 
-### Authenticating against the Terrain API
+### Authenticating with the Terrain API
 
-Runs specifying inputs and outputs must provide the `--cyverse_token` flag, since the CLI uses the Terrain API to query and access data in the CyVerse Data Store. For instance, to run `some_definition.yaml`:
+The CLI uses the Terrain API to access the CyVerse Data Store. Runs with inputs and outputs must provide the `--cyverse_token` flag. For instance, to run `hello_world.yaml`:
 
 ```shell script
-plantit some_definition.yaml --cyverse_token 'eyJhbGciOiJSUzI1N...'
+plantit hello_world.yaml --cyverse_token 'eyJhbGciOiJSUzI1N...'
 ```
 
-A CyVerse access token can be obtained with a `GET` request to the Terrain API (providing your CyVerse username/password for basic auth):
+A CyVerse access token can be obtained from the Terrain API with a `GET` request (provide your CyVerse username/password for basic auth):
 
 ```shell script
 GET https://de.cyverse.org/terrain/token/cas
@@ -125,7 +119,7 @@ GET https://de.cyverse.org/terrain/token/cas
 
 ## Examples
 
-Some sample definition files can be found in `examples/`.
+Sample definition files can be found in `examples/`.
 
 ## Tests
 
