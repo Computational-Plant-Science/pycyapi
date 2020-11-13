@@ -43,6 +43,7 @@ class Executor(ABC):
 
     def execute(self, run: Run):
         update_status(run, 3, f"Starting '{run.identifier}'")
+
         try:
             if run.clone is not None and run.clone is not '':
                 Executor.__clone_repo(run)
@@ -62,9 +63,8 @@ class Executor(ABC):
             if run.output:
                 print(f"Pushing output(s)...")
                 self.__push_output(run)
-                update_status(run, 1, f"'{run.identifier}' completed.")
-            else:
-                update_status(run, 1, f"'{run.identifier}' completed.")
         except Exception:
             update_status(run, 2, f"'{run.identifier}' failed: {traceback.format_exc()}")
             return
+
+        update_status(run, 1, f"Completed '{run.identifier}'")

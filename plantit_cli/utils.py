@@ -54,7 +54,7 @@ def container(run: Run):
 
     update_status(run, 3, f"Running '{run.image}' container for '{run.identifier}'...")
 
-    run = Run(
+    result = __run_container(Run(
         identifier=run.identifier,
         plantit_token=run.plantit_token,
         api_url=run.api_url,
@@ -64,8 +64,7 @@ def container(run: Run):
         params=params,
         input=run.input,
         output=run.output
-    )
-    result = __run_container(run)
+    ))
 
     update_status(run, 3, result)
 
@@ -85,7 +84,7 @@ def container_for_directory(run: Run, input_directory: str):
     update_status(run, 3,
                   f"Running '{run.image}' container for '{run.identifier}' on input directory '{input_directory}'...")
 
-    run = Run(
+    result = __run_container(Run(
         identifier=run.identifier,
         plantit_token=run.plantit_token,
         api_url=run.api_url,
@@ -94,8 +93,7 @@ def container_for_directory(run: Run, input_directory: str):
         command=run.command,
         params=params,
         input=run.input,
-        output=run.output)
-    result = __run_container(run)
+        output=run.output))
 
     update_status(run, 3, result)
 
