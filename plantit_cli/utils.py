@@ -114,7 +114,7 @@ def containers_for_files(run: Run, input_directory: str):
         params += [{'key': 'INPUT', 'value': join(input_directory, file)}]
 
         if run.output:
-            output = copy.deepcopy(run.output.copy)
+            output = copy.deepcopy(run.output)
             params += [{'key': 'OUTPUT', 'value': join(run.workdir, output['from'])}]
 
         result = __run_container(Run(

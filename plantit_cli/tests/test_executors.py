@@ -115,7 +115,7 @@ def test_run_with_file_input(executor, remote_base_path, token, run_with_file_in
 #        session.collections.remove(collection, force=True)
 
 
-def test_local_run_with_file_output(executor, remote_base_path, token, run_with_file_output):
+def test_run_with_file_output(executor, remote_base_path, token, run_with_file_output):
     local_output_path = join(testdir, run_with_file_output.output['from'])
     remote_path = join(remote_base_path, "testCollection")
 
@@ -139,7 +139,7 @@ def test_local_run_with_file_output(executor, remote_base_path, token, run_with_
         delete_collection(remote_path, token)
 
 
-def test_local_run_with_directory_output(executor, remote_base_path, token, run_with_directory_output):
+def test_run_with_directory_output(executor, remote_base_path, token, run_with_directory_output):
     local_output_path = join(testdir, run_with_directory_output.output['from'])
     local_output_file_1 = join(local_output_path, 't1.txt')
     local_output_file_2 = join(local_output_path, 't2.txt')
@@ -164,6 +164,47 @@ def test_local_run_with_directory_output(executor, remote_base_path, token, run_
         files = list_files(remote_path, token)
         assert join(remote_path, 't1.txt') in [file['path'] for file in files]
         assert join(remote_path, 't2.txt') in [file['path'] for file in files]
+    finally:
+        clear_dir(testdir)
+        delete_collection(remote_path, token)
+
+
+def test_run_with_file_input_and_directory_output(executor, remote_base_path, token, run_with_file_input_and_directory_output):
+    input_file_1 = 'f1.txt'
+    input_file_2 = 'f2.txt'
+    input_file_1_path = join(testdir, input_file_1)
+    input_file_2_path = join(testdir, input_file_2)
+    local_output_path = join(testdir, run_with_file_input_and_directory_output.output['from'])
+    local_output_file_1 = join(local_output_path, f"{input_file_1}.output")
+    local_output_file_2 = join(local_output_path, f"{input_file_2}.output")
+    remote_path = join(remote_base_path, "testCollection")
+
+    try:
+        # prep CyVerse collection
+        create_collection(remote_path, token)
+
+        # prep files
+        with open(input_file_1_path, "w") as file1, open(input_file_2_path, "w") as file2:
+            file1.write('Hello, 1!')
+            file2.write('Hello, 2!')
+        upload_file(input_file_1_path, remote_path, token)
+        upload_file(input_file_2_path, remote_path, token)
+
+        # expect 2 containers, 1 for each input file
+        executor.execute(run_with_file_input_and_directory_output)
+
+        # check files were written locally
+        assert isfile(local_output_file_1)
+        assert isfile(local_output_file_2)
+        check_hello(local_output_file_1, '1')
+        check_hello(local_output_file_2, '2')
+        os.remove(local_output_file_1)
+        os.remove(local_output_file_2)
+
+        # check files were pushed to CyVerse
+        files = list_files(remote_path, token)
+        assert join(remote_path, 'f1.txt') in [file['path'] for file in files]
+        assert join(remote_path, 'f2.txt') in [file['path'] for file in files]
     finally:
         clear_dir(testdir)
         delete_collection(remote_path, token)

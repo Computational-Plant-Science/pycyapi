@@ -146,12 +146,12 @@ def run_with_directory_output(remote_base_path, token):
 
 
 @pytest.fixture
-def run_with_file_input_and_file_output(remote_base_path, token):
+def run_with_file_input_and_directory_output(remote_base_path, token):
     return Run(
         identifier='run_with_file_input_and_file_output',
         workdir=testdir,
         image="docker://alpine:latest",
-        command='cat $INPUT | tee $OUTPUT',
+        command='cat $INPUT | tee $INPUT.output',
         input={
             'kind': 'file',
             'from': join(remote_base_path, "testCollection"),
@@ -159,7 +159,8 @@ def run_with_file_input_and_file_output(remote_base_path, token):
         output={
             'kind': 'file',
             'to': join(remote_base_path, "testCollection"),
-            'from': join(testdir, 'output.txt'),
+            'from': 'input',
+            'pattern': 'output'
         },
         cyverse_token=token)
 
