@@ -60,21 +60,23 @@ class Terrain(Collection):
                         # if chunk:
                         file.write(chunk)
 
-    def push(self, from_path, pattern=None):
+    def push(self, from_path, pattern=None, exclude=None):
         """
         Pushes all files matching a given pattern from the local path to the collection.
 
         Args:
             from_path: The local path.
-            pattern: The file pattern.
+            pattern: File pattern(s) to include.
+            exclude: File pattern(s) to exclude.
         """
 
         is_local_file = isfile(from_path)
         is_local_dir = isdir(from_path)
+
         if not (is_local_dir or is_local_file):
             raise FileNotFoundError(f"Local path '{from_path}' does not exist")
         elif is_local_dir:
-            from_paths = [p for p in list_files(from_path) if pattern in p] if pattern is not None else list_files(from_path)
+            from_paths = list_files(from_path, pattern, exclude)
             print(f"Preparing to push {len(from_paths)} files")
             for from_path in [str(p) for p in from_paths]:
                 print(f"Pushing '{from_path}' to '{self.__run.output['to']}'")

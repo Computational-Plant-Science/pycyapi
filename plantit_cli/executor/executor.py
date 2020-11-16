@@ -36,8 +36,8 @@ class Executor(ABC):
 
     def __push_output(self, run: Run):
         self.__store(run).push(join(run.workdir, run.output['from']) if 'from' in run.output else run.workdir,
-                               (run.output['pattern'] if run.output[
-                                                             'pattern'] != '' else None) if 'pattern' in run.output else None)
+                               (run.output['pattern'] if run.output['pattern'] != '' else None) if 'pattern' in run.output else None,
+                               (run.output['exclude'] if run.output['exclude'] != '' else None) if 'exclude' in run.output else None)
 
         update_status(run, 3, f"Pushed output(s)")
 

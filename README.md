@@ -98,8 +98,11 @@ To push files matching a pattern back to the Data Store after your container exe
 
 ```yaml
 output:
-  pattern: xslx
-  from: directory # relative to the working directory
+  pattern: xslx     # optional, single value or list
+  exclude:          # optional, single value or list
+    - png
+    - jpg
+  from: directory   # relative to the working directory
   to: /iplant/home/username/collection
 ```
 

@@ -148,7 +148,7 @@ def run_with_directory_output(remote_base_path, token):
 @pytest.fixture
 def run_with_file_input_and_directory_output(remote_base_path, token):
     return Run(
-        identifier='run_with_file_input_and_file_output',
+        identifier='run_with_file_input_and_directory_output',
         workdir=testdir,
         image="docker://alpine:latest",
         command='cat $INPUT | tee $INPUT.output',
@@ -161,6 +161,25 @@ def run_with_file_input_and_directory_output(remote_base_path, token):
             'to': join(remote_base_path, "testCollection"),
             'from': 'input',
             'pattern': 'output'
+        },
+        cyverse_token=token)
+
+
+@pytest.fixture
+def run_with_directory_output_with_excludes(remote_base_path, token):
+    return Run(
+        identifier='run_with_directory_output_with_excludes',
+        workdir=testdir,
+        image="docker://alpine:latest",
+        command='touch excluded.output && touch included.output',
+        output={
+            'kind': 'file',
+            'to': join(remote_base_path, "testCollection"),
+            'from': '',
+            'pattern': 'output',
+            'exclude': [
+                'excluded.output'
+            ]
         },
         cyverse_token=token)
 

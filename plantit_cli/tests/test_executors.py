@@ -208,3 +208,31 @@ def test_run_with_file_input_and_directory_output(executor, remote_base_path, to
     finally:
         clear_dir(testdir)
         delete_collection(remote_path, token)
+
+
+def test_run_with_directory_output_with_excludes(executor, remote_base_path, token, run_with_directory_output_with_excludes):
+    local_output_path = join(testdir, run_with_directory_output_with_excludes.output['from'])
+    local_output_file_included = join(local_output_path, "included.output")
+    local_output_file_excluded = join(local_output_path, "excluded.output")
+    remote_path = join(remote_base_path, "testCollection")
+
+    try:
+        # prep CyVerse collection
+        create_collection(remote_path, token)
+
+        # expect 2 containers, 1 for each input file
+        executor.execute(run_with_directory_output_with_excludes)
+
+        # check files were written locally
+        assert isfile(local_output_file_included)
+        assert isfile(local_output_file_excluded)
+        os.remove(local_output_file_included)
+        os.remove(local_output_file_excluded)
+
+        # check files were pushed to CyVerse
+        files = list_files(remote_path, token)
+        assert len(files) == 1
+        assert join(remote_path, 'included.output') in [file['path'] for file in files]
+    finally:
+        clear_dir(testdir)
+        delete_collection(remote_path, token)

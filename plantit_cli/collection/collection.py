@@ -20,7 +20,7 @@ class Collection(ABC):
     @abstractmethod
     def pull(self, to_path, pattern):
         """
-        Pulls files in the collection matching a given pattern to the local path.
+        Pulls files in the collection to the local path.
 
         Args:
             to_path: The local path.
@@ -29,13 +29,14 @@ class Collection(ABC):
         pass
 
     @abstractmethod
-    def push(self, from_path, pattern):
+    def push(self, from_path, pattern, exclude):
         """
-        Pushes files matching a given pattern from the local path to the collection.
+        Pushes files from the local path to the collection.
 
         Args:
             from_path: The local path.
-            pattern: The file pattern.
+            pattern: File pattern(s) to include.
+            exclude: File pattern(s) to exclude.
         """
 
         pass
