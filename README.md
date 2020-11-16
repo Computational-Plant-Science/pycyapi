@@ -100,8 +100,8 @@ To push files matching a pattern back to the Data Store after your container exe
 output:
   pattern: xslx     # optional, single value or list
   exclude:          # optional, single value or list
-    - png
-    - jpg
+    - excluded.png
+    - excluded.jpg
   from: directory   # relative to the working directory
   to: /iplant/home/username/collection
 ```
