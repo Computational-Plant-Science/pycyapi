@@ -26,42 +26,31 @@ def test_run_with_params(executor, run_with_params):
         clear_dir(testdir)
 
 
-def test_run_with_file_input(executor, remote_base_path, token, run_with_file_input):
-    file1_name = 'f1.txt'
-    file2_name = 'f2.txt'
-    file1_path = join(testdir, file1_name)
-    file2_path = join(testdir, file2_name)
+def test_run_with_file_input(executor, remote_base_path, token, run_with_file_input, file_name_1):
+    local_path = join(testdir, file_name_1)
     remote_path = join(remote_base_path, "testCollection")
 
     try:
         # prep CyVerse collection
         create_collection(remote_path, token)
 
-        # prep files
-        with open(file1_path, "w") as file1, open(file2_path, "w") as file2:
+        # prep file
+        with open(local_path, "w") as file1:
             file1.write('Hello, 1!')
-            file2.write('Hello, 2!')
-        upload_file(file1_path, remote_path, token)
-        upload_file(file2_path, remote_path, token)
+        upload_file(local_path, remote_path, token)
 
-        # expect 2 containers, 1 for each input file
+        # expect 1 container
         executor.execute(run_with_file_input)
 
-        # check files were pulled
-        input_1 = join(testdir, 'input', file1_name)
-        input_2 = join(testdir, 'input', file2_name)
-        check_hello(input_1, 1)
-        check_hello(input_2, 2)
-        os.remove(input_1)
-        os.remove(input_2)
+        # check file was pulled
+        downloaded_path = join(testdir, 'input', file_name_1)
+        check_hello(downloaded_path, 1)
+        os.remove(downloaded_path)
 
-        # check local output files were written
-        output_1 = f"{input_1}.output"
-        output_2 = f"{input_2}.output"
+        # check local output file was written
+        output_1 = f"{downloaded_path}.output"
         check_hello(output_1, 1)
-        check_hello(output_2, 2)
         os.remove(output_1)
-        os.remove(output_2)
     finally:
         clear_dir(testdir)
         delete_collection(remote_path, token)
@@ -169,48 +158,41 @@ def test_run_with_directory_output(executor, remote_base_path, token, run_with_d
         delete_collection(remote_path, token)
 
 
-def test_run_with_file_input_and_directory_output(executor, remote_base_path, token, run_with_file_input_and_directory_output):
-    input_file_1 = 'f1.txt'
-    input_file_2 = 'f2.txt'
-    input_file_1_path = join(testdir, input_file_1)
-    input_file_2_path = join(testdir, input_file_2)
+def test_run_with_file_input_and_directory_output(executor, remote_base_path, token,
+                                                  run_with_file_input_and_directory_output,
+                                                  file_name_1):
+    local_input_file_path = join(testdir, file_name_1)
     local_output_path = join(testdir, run_with_file_input_and_directory_output.output['from'])
-    local_output_file_1 = join(local_output_path, f"{input_file_1}.output")
-    local_output_file_2 = join(local_output_path, f"{input_file_2}.output")
+    local_output_file_path = join(local_output_path, f"{file_name_1}.output")
     remote_path = join(remote_base_path, "testCollection")
 
     try:
         # prep CyVerse collection
         create_collection(remote_path, token)
 
-        # prep files
-        with open(input_file_1_path, "w") as file1, open(input_file_2_path, "w") as file2:
+        # prep file
+        with open(local_input_file_path, "w") as file1:
             file1.write('Hello, 1!')
-            file2.write('Hello, 2!')
-        upload_file(input_file_1_path, remote_path, token)
-        upload_file(input_file_2_path, remote_path, token)
+        upload_file(local_input_file_path, remote_path, token)
 
-        # expect 2 containers, 1 for each input file
+        # expect 1 container
         executor.execute(run_with_file_input_and_directory_output)
 
-        # check files were written locally
-        assert isfile(local_output_file_1)
-        assert isfile(local_output_file_2)
-        check_hello(local_output_file_1, '1')
-        check_hello(local_output_file_2, '2')
-        os.remove(local_output_file_1)
-        os.remove(local_output_file_2)
+        # check file was written locally
+        assert isfile(local_output_file_path)
+        check_hello(local_output_file_path, '1')
+        os.remove(local_output_file_path)
 
-        # check files were pushed to CyVerse
+        # check file was pushed to CyVerse
         files = list_files(remote_path, token)
-        assert join(remote_path, 'f1.txt') in [file['path'] for file in files]
-        assert join(remote_path, 'f2.txt') in [file['path'] for file in files]
+        assert join(remote_path, f"{file_name_1}.output") in [file['path'] for file in files]
     finally:
         clear_dir(testdir)
         delete_collection(remote_path, token)
 
 
-def test_run_with_directory_output_with_excludes(executor, remote_base_path, token, run_with_directory_output_with_excludes):
+def test_run_with_directory_output_with_excludes(executor, remote_base_path, token,
+                                                 run_with_directory_output_with_excludes):
     local_output_path = join(testdir, run_with_directory_output_with_excludes.output['from'])
     local_output_file_included = join(local_output_path, "included.output")
     local_output_file_excluded = join(local_output_path, "excluded.output")
@@ -220,7 +202,7 @@ def test_run_with_directory_output_with_excludes(executor, remote_base_path, tok
         # prep CyVerse collection
         create_collection(remote_path, token)
 
-        # expect 2 containers, 1 for each input file
+        # expect 1 container
         executor.execute(run_with_directory_output_with_excludes)
 
         # check files were written locally

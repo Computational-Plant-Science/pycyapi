@@ -6,15 +6,16 @@ from os.path import join
 
 from plantit_cli.exceptions import PlantitException
 from plantit_cli.run import Run
-from plantit_cli.collection.terrain import Terrain
+from plantit_cli.store.terrain import Terrain
 from plantit_cli.utils import update_status, container_for_directory, containers_for_files, \
     container
 
 
 class Executor(ABC):
+
     @staticmethod
-    def __store(run: Run):
-        return Terrain(run=run)
+    def __store(token: str):
+        return Terrain(token)
 
     @staticmethod
     def __clone_repo(run: Run):
@@ -27,17 +28,29 @@ class Executor(ABC):
             update_status(run, 3, f"Cloned repo '{run.clone}'")
 
     def __pull_input(self, run: Run) -> str:
+        store = Executor.__store(run.cyverse_token)
         input_dir = join(run.workdir, 'input')
         os.makedirs(input_dir, exist_ok=True)
-        Executor.__store(run).pull(input_dir, run.input['pattern'] if 'pattern' in run.input else None)
+
+        if run.input['kind'].lower() == 'file':
+            store.download_file(run.input['from'], input_dir)
+        elif run.input['kind'].lower() == 'directory':
+            store.download_directory(run.input['from'], input_dir,
+                                     run.input['pattern'] if 'pattern' in run.input else None)
+        else:
+            raise ValueError(f"'input.kind' must be either 'file' or 'directory'")
 
         update_status(run, 3, f"Pulled input(s)")
         return input_dir
 
     def __push_output(self, run: Run):
-        self.__store(run).push(join(run.workdir, run.output['from']) if 'from' in run.output else run.workdir,
-                               (run.output['pattern'] if run.output['pattern'] != '' else None) if 'pattern' in run.output else None,
-                               (run.output['exclude'] if run.output['exclude'] != '' else None) if 'exclude' in run.output else None)
+        store = Executor.__store(run.cyverse_token)
+        store.upload_directory(join(run.workdir, run.output['from']) if 'from' in run.output else run.workdir,
+                               run.output['to'],
+                               (run.output['pattern'] if run.output[
+                                                             'pattern'] != '' else None) if 'pattern' in run.output else None,
+                               (run.output['exclude'] if run.output[
+                                                             'exclude'] != '' else None) if 'exclude' in run.output else None)
 
         update_status(run, 3, f"Pushed output(s)")
 

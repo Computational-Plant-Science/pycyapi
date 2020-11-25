@@ -4,7 +4,8 @@ from os.path import join
 
 import pytest
 
-from plantit_cli.collection.terrain import *
+from plantit_cli.run import Run
+from plantit_cli.store.terrain import *
 from plantit_cli.executor.executor import Executor
 
 message = "Message!"
@@ -87,7 +88,17 @@ def run_with_params():
 
 
 @pytest.fixture
-def run_with_file_input(remote_base_path, token):
+def file_name_1():
+    return "test1.txt"
+
+
+@pytest.fixture
+def file_name_2():
+    return "test2.txt"
+
+
+@pytest.fixture
+def run_with_file_input(remote_base_path, token, file_name_1):
     return Run(
         identifier='run_with_file_input',
         workdir=testdir,
@@ -95,8 +106,7 @@ def run_with_file_input(remote_base_path, token):
         command='cat "$INPUT" | tee "$INPUT.output"',
         input={
             'kind': 'file',
-            'pattern': '.txt',
-            'from': join(remote_base_path, "testCollection"),
+            'from': join(remote_base_path, "testCollection", file_name_1),
         },
         cyverse_token=token)
 
@@ -123,7 +133,6 @@ def run_with_file_output(remote_base_path, token):
         image="docker://alpine:latest",
         command='echo "Hello, world!" >> $OUTPUT',
         output={
-            'kind': 'file',
             'to': join(remote_base_path, "testCollection"),
             'from': 'output.txt',
         },
@@ -138,7 +147,6 @@ def run_with_directory_output(remote_base_path, token):
         image="docker://alpine:latest",
         command='echo "Hello, world!" | tee $OUTPUT/t1.txt $OUTPUT/t2.txt',
         output={
-            'kind': 'directory',
             'to': join(remote_base_path, "testCollection"),
             'from': '',
         },
@@ -146,7 +154,7 @@ def run_with_directory_output(remote_base_path, token):
 
 
 @pytest.fixture
-def run_with_file_input_and_directory_output(remote_base_path, token):
+def run_with_file_input_and_directory_output(remote_base_path, token, file_name_1):
     return Run(
         identifier='run_with_file_input_and_directory_output',
         workdir=testdir,
@@ -154,10 +162,9 @@ def run_with_file_input_and_directory_output(remote_base_path, token):
         command='cat $INPUT | tee $INPUT.output',
         input={
             'kind': 'file',
-            'from': join(remote_base_path, "testCollection"),
+            'from': join(remote_base_path, "testCollection", file_name_1),
         },
         output={
-            'kind': 'file',
             'to': join(remote_base_path, "testCollection"),
             'from': 'input',
             'pattern': 'output'
@@ -173,7 +180,6 @@ def run_with_directory_output_with_excludes(remote_base_path, token):
         image="docker://alpine:latest",
         command='touch excluded.output && touch included.output',
         output={
-            'kind': 'file',
             'to': join(remote_base_path, "testCollection"),
             'from': '',
             'pattern': 'output',
@@ -196,7 +202,6 @@ def run_with_directory_input_and_file_output(remote_base_path, token):
             'from': join(remote_base_path, "testCollection"),
         },
         output={
-            'kind': 'file',
             'tp': join(remote_base_path, "testCollection"),
             'from': join(testdir, 'output.txt'),
         },
@@ -215,7 +220,6 @@ def run_with_directory_input_and_directory_output(remote_base_path, token):
             'from': join(remote_base_path, "testCollection"),
         },
         output={
-            'kind': 'directory',
             'to': join(remote_base_path, "testCollection"),
             'from': 'input',
         },

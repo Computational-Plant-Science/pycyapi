@@ -2,14 +2,14 @@ import os
 import tempfile
 from os.path import join, isfile
 
-from plantit_cli.collection.collection import Collection
-from plantit_cli.collection.terrain import Terrain
+from plantit_cli.store.terrain import Terrain
 from plantit_cli.run import Run
 from plantit_cli.tests.utils import clear_dir, delete_collection, upload_file, create_collection
 
 message = "Message!"
 testdir = '/opt/plantit-cli/runs'
 tempdir = tempfile.gettempdir()
+
 
 def _run(remote_base_path, token):
     return Run(
@@ -24,13 +24,13 @@ def _run(remote_base_path, token):
         cyverse_token=token)
 
 
-def test_list(remote_base_path, token):
+def test_list_directory(remote_base_path, token):
     file1_name = 'f1.txt'
     file2_name = 'f2.txt'
     file1_path = join(testdir, file1_name)
     file2_path = join(testdir, file2_name)
     remote_path = join(remote_base_path, "testCollection")
-    collection = Terrain(_run(remote_base_path, token))
+    store = Terrain(token)
 
     try:
         # prep CyVerse collection
@@ -46,7 +46,7 @@ def test_list(remote_base_path, token):
         upload_file(file2_path, remote_path, token)
 
         # list files
-        files = collection.list()
+        files = store.list_directory(remote_path)
 
         # check listed files
         assert join(remote_path, file1_name) in files
@@ -56,13 +56,40 @@ def test_list(remote_base_path, token):
         delete_collection(remote_path, token)
 
 
-def test_pull(remote_base_path, token):
+def test_download_file(remote_base_path, token):
+    file_name = 'f1.txt'
+    file_path = join(testdir, file_name)
+    remote_path = join(remote_base_path, "testCollection")
+    store = Terrain(token)
+
+    try:
+        # prep CyVerse collection
+        create_collection(remote_path, token)
+
+        # create files
+        with open(file_path, "w") as file:
+            file.write('Hello, 1!')
+
+        # upload files to CyVerse
+        upload_file(file_path, remote_path, token)
+
+        # download file
+        store.download_file(join(remote_path, file_name), testdir)
+
+        # check file was downloaded
+        assert isfile(file_path)
+    finally:
+        clear_dir(testdir)
+        delete_collection(remote_path, token)
+
+
+def test_download_directory(remote_base_path, token):
     file1_name = 'f1.txt'
     file2_name = 'f2.txt'
     file1_path = join(testdir, file1_name)
     file2_path = join(testdir, file2_name)
     remote_path = join(remote_base_path, "testCollection")
-    collection = Terrain(_run(remote_base_path, token))
+    store = Terrain(token)
 
     try:
         # prep CyVerse collection
@@ -81,10 +108,10 @@ def test_pull(remote_base_path, token):
         os.remove(file1_path)
         os.remove(file2_path)
 
-        # pull files
-        collection.pull(testdir, '.txt')
+        # download files
+        store.download_directory(remote_path, testdir, '.txt')
 
-        # check files were pulled
+        # check files were downloaded
         assert isfile(file1_path)
         assert isfile(file2_path)
     finally:
