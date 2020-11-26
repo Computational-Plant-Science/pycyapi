@@ -64,7 +64,7 @@ Runs involving inputs and outputs fall into 3 categories:
 
 To pull a file or directory, add an `input` section (the file or directory name will be substituted for `$INPUT` when `command` is invoked).
 
-#### 1 File, 1 Container
+#### Input file (1 container)
 
 To pull a file from the Data Store and spawn a single container to process it, use `kind: file` and `from: <file path>`:
 
@@ -74,7 +74,7 @@ input:
   from: /iplant/home/username/directory/file
 ```
 
-#### 1 Directory, 1 Container
+#### Input directory (1 container)
 
 To pull the contents of a directory from the Data Store and spawn a single container to process it, use `kind: directory` and `from: <directory path>`:
 
@@ -84,14 +84,15 @@ input:
   from: /iplant/home/username/directory
 ```
 
-#### 1 Directory, 1+ Container(s)
+#### Input directory (1 container per file)
 
-To pull a directory from the Data Store and spawn a container for each file, use `kind: file` and `from: <directory path>`:
+To pull a directory from the Data Store and spawn a container for each file, use `kind: directory`, `from: <directory path>`, and the additional flag `many: true`:
 
 ```yaml
 input:
-  kind: file
+  kind: directory
   from: /iplant/home/username/directory
+  many: true
 ```
 
 To push files matching a pattern back to the Data Store after your container executes (the local path will be substituted for `$OUTPUT` when `command` runs):

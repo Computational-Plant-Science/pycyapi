@@ -57,15 +57,18 @@ def token():
 
 
 @pytest.fixture
+def file_name_1():
+    return "test1.txt"
+
+
+@pytest.fixture
+def file_name_2():
+    return "test2.txt"
+
+
+@pytest.fixture
 def executor():
     return Executor()
-
-
-def prep(definition):
-    if 'api_url' not in definition:
-        definition['api_url'] = None
-
-    return definition
 
 
 @pytest.fixture
@@ -88,17 +91,7 @@ def run_with_params():
 
 
 @pytest.fixture
-def file_name_1():
-    return "test1.txt"
-
-
-@pytest.fixture
-def file_name_2():
-    return "test2.txt"
-
-
-@pytest.fixture
-def run_with_file_input(remote_base_path, token, file_name_1):
+def run_with_single_file_input(remote_base_path, token, file_name_1):
     return Run(
         identifier='run_with_file_input',
         workdir=testdir,
@@ -112,14 +105,15 @@ def run_with_file_input(remote_base_path, token, file_name_1):
 
 
 @pytest.fixture
-def run_with_directory_input(remote_base_path, token):
+def run_with_directory_input_many_files(remote_base_path, token):
     return Run(
         identifier='run_with_directory_input',
         workdir=testdir,
         image="docker://alpine:latest",
-        command='ls $INPUT | tee $INPUT.output',
+        command='cat $INPUT | tee $INPUT.output',
         input={
             'kind': 'directory',
+            'many': True,
             'from': join(remote_base_path, "testCollection"),
         },
         cyverse_token=token)

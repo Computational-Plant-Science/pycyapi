@@ -64,9 +64,9 @@ class Executor(ABC):
             if run.input:
                 print(f"Pulling input(s)...")
                 input_dir = self.__pull_input(run)
-                if run.input['kind'].lower() == 'directory':
+                if run.input['kind'].lower() == 'directory' and 'many' not in run.input:
                     container_for_directory(run, input_dir)
-                elif run.input['kind'].lower() == 'file':
+                elif (run.input['kind'].lower() == 'directory' and run.input['many']) or run.input['kind'].lower() == 'file':
                     containers_for_files(run, input_dir)
                 else:
                     raise ValueError(f"'input.kind' must be either 'file' or 'directory'")
