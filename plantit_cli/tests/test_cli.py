@@ -6,7 +6,6 @@ import requests
 from click.testing import CliRunner
 
 from plantit_cli.cli import run
-from plantit_cli.tests.utils import clear_dir, check_hello
 
 from_path = f"/iplant/home/{os.environ.get('CYVERSE_USERNAME')}"
 message = "Hello, world!"

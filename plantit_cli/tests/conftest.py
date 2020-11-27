@@ -1,16 +1,14 @@
 import os
-import tempfile
 from os.path import join
 
 import pytest
 
 from plantit_cli.run import Run
-from plantit_cli.store.terrain import *
-from plantit_cli.executor.executor import Executor
+from plantit_cli.store.mock_store import MockStore
+from plantit_cli.store.terrain_store import *
 
 message = "Message!"
 testdir = '/opt/plantit-cli/runs/'
-tempdir = tempfile.gettempdir()
 
 
 @pytest.fixture()
@@ -67,121 +65,13 @@ def file_name_2():
 
 
 @pytest.fixture
-def executor():
-    return Executor()
+def terrain_store(token):
+    return TerrainStore(token)
 
 
 @pytest.fixture
-def run_with_params():
-    return Run(
-        identifier='run_with_params',
-        workdir=testdir,
-        image="docker://alpine:latest",
-        command='echo "$MESSAGE" >> $MESSAGE_FILE',
-        params=[
-            {
-                'key': 'MESSAGE',
-                'value': message
-            },
-            {
-                'key': 'MESSAGE_FILE',
-                'value': join(testdir, 'message.txt')
-            },
-        ])
-
-
-@pytest.fixture
-def run_with_single_file_input(remote_base_path, token, file_name_1):
-    return Run(
-        identifier='run_with_file_input',
-        workdir=testdir,
-        image="docker://alpine:latest",
-        command='cat "$INPUT" | tee "$INPUT.output"',
-        input={
-            'kind': 'file',
-            'from': join(remote_base_path, "testCollection", file_name_1),
-        },
-        cyverse_token=token)
-
-
-@pytest.fixture
-def run_with_directory_input_many_files(remote_base_path, token):
-    return Run(
-        identifier='run_with_directory_input',
-        workdir=testdir,
-        image="docker://alpine:latest",
-        command='cat $INPUT | tee $INPUT.output',
-        input={
-            'kind': 'directory',
-            'many': True,
-            'from': join(remote_base_path, "testCollection"),
-        },
-        cyverse_token=token)
-
-
-@pytest.fixture
-def run_with_file_output(remote_base_path, token):
-    return Run(
-        identifier='run_with_file_output',
-        workdir=testdir,
-        image="docker://alpine:latest",
-        command='echo "Hello, world!" >> $OUTPUT',
-        output={
-            'to': join(remote_base_path, "testCollection"),
-            'from': 'output.txt',
-        },
-        cyverse_token=token)
-
-
-@pytest.fixture
-def run_with_directory_output(remote_base_path, token):
-    return Run(
-        identifier='run_with_directory_output',
-        workdir=testdir,
-        image="docker://alpine:latest",
-        command='echo "Hello, world!" | tee $OUTPUT/t1.txt $OUTPUT/t2.txt',
-        output={
-            'to': join(remote_base_path, "testCollection"),
-            'from': '',
-        },
-        cyverse_token=token)
-
-
-@pytest.fixture
-def run_with_file_input_and_directory_output(remote_base_path, token, file_name_1):
-    return Run(
-        identifier='run_with_file_input_and_directory_output',
-        workdir=testdir,
-        image="docker://alpine:latest",
-        command='cat $INPUT | tee $INPUT.output',
-        input={
-            'kind': 'file',
-            'from': join(remote_base_path, "testCollection", file_name_1),
-        },
-        output={
-            'to': join(remote_base_path, "testCollection"),
-            'from': 'input',
-            'pattern': 'output'
-        },
-        cyverse_token=token)
-
-
-@pytest.fixture
-def run_with_directory_output_with_excludes(remote_base_path, token):
-    return Run(
-        identifier='run_with_directory_output_with_excludes',
-        workdir=testdir,
-        image="docker://alpine:latest",
-        command='touch excluded.output && touch included.output',
-        output={
-            'to': join(remote_base_path, "testCollection"),
-            'from': '',
-            'pattern': 'output',
-            'exclude': [
-                'excluded.output'
-            ]
-        },
-        cyverse_token=token)
+def mock_store():
+    return MockStore()
 
 
 @pytest.fixture

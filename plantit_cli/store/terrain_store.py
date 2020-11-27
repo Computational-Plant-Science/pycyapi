@@ -8,8 +8,7 @@ from plantit_cli.store.store import Store
 from plantit_cli.store.util import list_files
 
 
-class Terrain(Store):
-
+class TerrainStore(Store):
     def __init__(self, token: str):
         self.__token = token
 

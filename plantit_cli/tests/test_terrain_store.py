@@ -2,9 +2,10 @@ import os
 import tempfile
 from os.path import join, isfile
 
-from plantit_cli.store.terrain import Terrain
+from plantit_cli.store.terrain_store import TerrainStore
 from plantit_cli.run import Run
-from plantit_cli.tests.utils import clear_dir, delete_collection, upload_file, create_collection
+from plantit_cli.tests.terrain_test_utils import delete_collection, upload_file, create_collection
+from plantit_cli.tests.test_utils import clear_dir
 
 message = "Message!"
 testdir = '/opt/plantit-cli/runs'
@@ -30,7 +31,7 @@ def test_list_directory(remote_base_path, token):
     file1_path = join(testdir, file1_name)
     file2_path = join(testdir, file2_name)
     remote_path = join(remote_base_path, "testCollection")
-    store = Terrain(token)
+    store = TerrainStore(token)
 
     try:
         # prep CyVerse collection
@@ -60,7 +61,7 @@ def test_download_file(remote_base_path, token):
     file_name = 'f1.txt'
     file_path = join(testdir, file_name)
     remote_path = join(remote_base_path, "testCollection")
-    store = Terrain(token)
+    store = TerrainStore(token)
 
     try:
         # prep CyVerse collection
@@ -89,7 +90,7 @@ def test_download_directory(remote_base_path, token):
     file1_path = join(testdir, file1_name)
     file2_path = join(testdir, file2_name)
     remote_path = join(remote_base_path, "testCollection")
-    store = Terrain(token)
+    store = TerrainStore(token)
 
     try:
         # prep CyVerse collection

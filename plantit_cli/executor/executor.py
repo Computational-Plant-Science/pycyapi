@@ -6,16 +6,15 @@ from os.path import join
 
 from plantit_cli.exceptions import PlantitException
 from plantit_cli.run import Run
-from plantit_cli.store.terrain import Terrain
+from plantit_cli.store.store import Store
 from plantit_cli.utils import update_status, container_for_directory, containers_for_files, \
     container
 
 
 class Executor(ABC):
 
-    @staticmethod
-    def __store(token: str):
-        return Terrain(token)
+    def __init__(self, store: Store):
+        self.__store = store
 
     @staticmethod
     def __clone_repo(run: Run):
@@ -28,14 +27,13 @@ class Executor(ABC):
             update_status(run, 3, f"Cloned repo '{run.clone}'")
 
     def __pull_input(self, run: Run) -> str:
-        store = Executor.__store(run.cyverse_token)
         input_dir = join(run.workdir, 'input')
         os.makedirs(input_dir, exist_ok=True)
 
         if run.input['kind'].lower() == 'file':
-            store.download_file(run.input['from'], input_dir)
+            self.__store.download_file(run.input['from'], input_dir)
         elif run.input['kind'].lower() == 'directory':
-            store.download_directory(run.input['from'], input_dir,
+            self.__store.download_directory(run.input['from'], input_dir,
                                      run.input['pattern'] if 'pattern' in run.input else None)
         else:
             raise ValueError(f"'input.kind' must be either 'file' or 'directory'")
@@ -44,8 +42,7 @@ class Executor(ABC):
         return input_dir
 
     def __push_output(self, run: Run):
-        store = Executor.__store(run.cyverse_token)
-        store.upload_directory(join(run.workdir, run.output['from']) if 'from' in run.output else run.workdir,
+        self.__store.upload_directory(join(run.workdir, run.output['from']) if 'from' in run.output else run.workdir,
                                run.output['to'],
                                (run.output['pattern'] if run.output[
                                                              'pattern'] != '' else None) if 'pattern' in run.output else None,
