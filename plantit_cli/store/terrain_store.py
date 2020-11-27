@@ -12,27 +12,6 @@ class TerrainStore(Store):
     def __init__(self, token: str):
         self.__token = token
 
-    def __check_status(self, response):
-
-        if response.status_code == 401:
-            raise RuntimeError('Authentication token expired or invalid')
-
-        if response.headers.get('content-type') == 'application/json':
-            content = response.json()
-            if response.status_code == 500 and content['error_code'] == 'ERR_UNCHECKED_EXCEPTION':
-                if 'message' in content:
-                    raise RuntimeError(content['message'])
-                else:
-                    raise RuntimeError(f"Server error: {json.dumps(response.__dict__)}")
-            elif response.status_code != 200:
-                raise RuntimeError(
-                    f"Unexpected error (status {response.status_code}): {content['error_code']}" + f", {content['message']}" if 'message' in content else '')
-        else:
-            if response.status_code == 500:
-                raise RuntimeError(f"Server error (status {response.status_code})")
-            elif response.status_code != 200:
-                raise RuntimeError(f"Unexpected error (status {response.status_code})")
-
     def list_directory(self, path) -> List[str]:
         print(f"Listing '{path}'")
         with requests.get(

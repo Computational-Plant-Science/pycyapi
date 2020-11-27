@@ -86,7 +86,7 @@ def run_with_directory_input_and_file_output(remote_base_path, token):
             'from': join(remote_base_path, "testCollection"),
         },
         output={
-            'tp': join(remote_base_path, "testCollection"),
+            'to': join(remote_base_path, "testCollection"),
             'from': join(testdir, 'output.txt'),
         },
         cyverse_token=token)
