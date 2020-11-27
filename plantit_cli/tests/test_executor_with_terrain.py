@@ -148,9 +148,8 @@ def test_run_with_file_output(
 def test_run_with_directory_output(
         terrain_store,
         remote_base_path,
-        token,
-        run_with_directory_output):
-    local_output_path = join(testdir, run_with_directory_output.output['from'])
+        token):
+    local_output_path = testdir
     local_output_file_1 = join(local_output_path, 't1.txt')
     local_output_file_2 = join(local_output_path, 't2.txt')
     remote_path = join(remote_base_path, "testCollection")
