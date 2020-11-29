@@ -12,7 +12,7 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install
+      - name: Install dependencies
         env:
           SINGULARITY_VERSION: ${{ secrets.SINGULARITY_VERSION }}
         run: |
@@ -37,11 +37,12 @@ jobs:
           TEST_DIRECTORY: ${{ secrets.TEST_DIRECTORY }}
           CYVERSE_USERNAME: ${{ secrets.CYVERSE_USERNAME }}
           CYVERSE_PASSWORD: ${{ secrets.CYVERSE_PASSWORD }}
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
           mkdir -p /opt/plantit-cli/runs/
           coverage run --source=plantit_cli -m pytest
           coveralls
-      - name: Publish
+      - name: Publish package
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
