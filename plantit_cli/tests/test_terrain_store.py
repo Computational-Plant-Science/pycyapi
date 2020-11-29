@@ -5,13 +5,14 @@ from os.path import join, isfile
 from plantit_cli.store.terrain_store import TerrainStore
 from plantit_cli.run import Run
 from plantit_cli.tests.terrain_test_utils import delete_collection, upload_file, create_collection
-from plantit_cli.tests.test_utils import clear_dir
+from plantit_cli.tests.test_utils import clear_dir, get_token
 
 message = "Message!"
 testdir = environ.get('TEST_DIRECTORY')
+token = get_token()
 
 
-def _run(remote_base_path, token):
+def _run(remote_base_path):
     return Run(
         identifier='workflow_with_directory_input',
         workdir=testdir,
@@ -24,7 +25,7 @@ def _run(remote_base_path, token):
         cyverse_token=token)
 
 
-def test_list_directory(remote_base_path, token):
+def test_list_directory(remote_base_path):
     file1_name = 'f1.txt'
     file2_name = 'f2.txt'
     file1_path = join(testdir, file1_name)
@@ -56,7 +57,7 @@ def test_list_directory(remote_base_path, token):
         delete_collection(remote_path, token)
 
 
-def test_download_file(remote_base_path, token):
+def test_download_file(remote_base_path):
     file_name = 'f1.txt'
     file_path = join(testdir, file_name)
     remote_path = join(remote_base_path, "testCollection")
@@ -83,7 +84,7 @@ def test_download_file(remote_base_path, token):
         delete_collection(remote_path, token)
 
 
-def test_download_directory(remote_base_path, token):
+def test_download_directory(remote_base_path):
     file1_name = 'f1.txt'
     file2_name = 'f2.txt'
     file1_path = join(testdir, file1_name)

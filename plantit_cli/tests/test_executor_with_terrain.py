@@ -5,18 +5,15 @@ from os.path import join, isfile
 from plantit_cli.executor.executor import Executor
 from plantit_cli.run import Run
 from plantit_cli.tests.terrain_test_utils import create_collection, upload_file, delete_collection, list_files
-from plantit_cli.tests.test_utils import clear_dir, check_hello
+from plantit_cli.tests.test_utils import clear_dir, check_hello, get_token
 
 message = "Message!"
 testdir = '/opt/plantit-cli/runs/'
 tempdir = tempfile.gettempdir()
+token = get_token()
 
 
-def test_run_with_single_file_input(
-        terrain_store,
-        remote_base_path,
-        token,
-        file_name_1):
+def test_run_with_single_file_input(terrain_store, remote_base_path, file_name_1):
     local_path = join(testdir, file_name_1)
     remote_path = join(remote_base_path, "testCollection")
 
@@ -58,7 +55,6 @@ def test_run_with_single_file_input(
 def test_run_with_directory_input_many_files(
         terrain_store,
         remote_base_path,
-        token,
         file_name_1,
         file_name_2):
     local_path_1 = join(testdir, file_name_1)
@@ -109,10 +105,7 @@ def test_run_with_directory_input_many_files(
         delete_collection(remote_path, token)
 
 
-def test_run_with_file_output(
-        terrain_store,
-        remote_base_path,
-        token):
+def test_run_with_file_output(terrain_store, remote_base_path):
     local_output_path = join(testdir, 'output.txt')
     remote_path = join(remote_base_path, "testCollection")
 
@@ -145,10 +138,7 @@ def test_run_with_file_output(
         delete_collection(remote_path, token)
 
 
-def test_run_with_directory_output(
-        terrain_store,
-        remote_base_path,
-        token):
+def test_run_with_directory_output(terrain_store, remote_base_path):
     local_output_path = testdir
     local_output_file_1 = join(local_output_path, 't1.txt')
     local_output_file_2 = join(local_output_path, 't2.txt')
@@ -190,7 +180,6 @@ def test_run_with_directory_output(
 def test_run_with_file_input_and_directory_output(
         terrain_store,
         remote_base_path,
-        token,
         file_name_1):
     local_input_file_path = join(testdir, file_name_1)
     local_output_path = join(testdir, 'input') # write output files to input dir
@@ -236,10 +225,7 @@ def test_run_with_file_input_and_directory_output(
         delete_collection(remote_path, token)
 
 
-def test_run_with_directory_output_with_excludes(
-        terrain_store,
-        remote_base_path,
-        token):
+def test_run_with_directory_output_with_excludes(terrain_store, remote_base_path):
     local_output_path = testdir
     local_output_file_included = join(local_output_path, "included.output")
     local_output_file_excluded = join(local_output_path, "excluded.output")

@@ -39,7 +39,7 @@ jobs:
           CYVERSE_PASSWORD: ${{ secrets.CYVERSE_PASSWORD }}
         run: |
           mkdir -p /opt/plantit-cli/runs/
-          coverage run --source=plantit_cli -m pytest -s
+          coverage run --source=plantit_cli -m pytest
           coveralls
       - name: Publish
         env:
