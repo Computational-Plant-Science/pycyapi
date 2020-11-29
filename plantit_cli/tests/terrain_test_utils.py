@@ -3,7 +3,7 @@ import pprint
 from os.path import basename
 import requests
 
-DEFAULT_SLEEP = 45
+DEFAULT_SLEEP = 50
 
 
 def create_collection(path, token, sleep=DEFAULT_SLEEP):
