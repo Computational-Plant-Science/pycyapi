@@ -1,4 +1,5 @@
 import os
+from os import environ
 import tempfile
 from os.path import join, isfile
 
@@ -8,7 +9,7 @@ from plantit_cli.tests.terrain_test_utils import delete_collection, upload_file,
 from plantit_cli.tests.test_utils import clear_dir
 
 message = "Message!"
-testdir = '/opt/plantit-cli/runs'
+testdir = environ.get('TEST_DIRECTORY')
 tempdir = tempfile.gettempdir()
 
 

@@ -1,5 +1,5 @@
 import tempfile
-from os import remove
+from os import remove, environ
 from os.path import join, isfile
 
 from plantit_cli.executor.executor import Executor
@@ -7,7 +7,7 @@ from plantit_cli.run import Run
 from plantit_cli.tests.test_utils import clear_dir, check_hello
 
 message = "Message!"
-testdir = '/opt/plantit-cli/runs/'
+testdir = environ.get('TEST_DIRECTORY')
 tempdir = tempfile.gettempdir()
 
 

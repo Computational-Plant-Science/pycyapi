@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.5, 3.6, 3.7, 3.8]
+        python-version: [3.6, 3.7, 3.8]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -25,12 +25,14 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Test
         run: |
+          mkdir -p /opt/plantit-cli/runs/
           coverage run --source=plantit_cli -m pytest -s
           coveralls
       - name: Publish
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+          TEST_DIRECTORY: ${{ secrets.TEST_DIRECTORY }}
         run: |
           python setup.py sdist bdist_wheel
           twine upload dist/*

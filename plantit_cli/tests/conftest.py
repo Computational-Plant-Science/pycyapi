@@ -1,4 +1,5 @@
 import os
+from os import environ
 from os.path import join
 
 import pytest
@@ -8,7 +9,7 @@ from plantit_cli.store.mock_store import MockStore
 from plantit_cli.store.terrain_store import *
 
 message = "Message!"
-testdir = '/opt/plantit-cli/runs/'
+testdir = environ.get('TEST_DIRECTORY')
 
 
 @pytest.fixture()
