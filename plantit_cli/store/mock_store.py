@@ -1,26 +1,20 @@
 from os.path import isfile, isdir, join
-from shutil import copyfileobj
 from pathlib import Path
+from shutil import copyfileobj
 from typing import List
-import tempfile
 
 from plantit_cli.store.store import Store
 from plantit_cli.store.util import list_files
-from plantit_cli.tests.test_utils import clear_dir
 
 
 class MockStore(Store):
-    def __init__(self):
+    def __init__(self, temp_dir):
         self.__files = {}
-        self.__dir = tempfile.gettempdir()
+        self.__dir = temp_dir
 
     @property
     def dir(self):
         return self.__dir
-
-    def clear(self):
-        self.__files = {}
-        clear_dir(self.__dir)
 
     def download_file(self, from_path, to_path):
         from_path_file = join(self.__dir, from_path)

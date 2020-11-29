@@ -71,11 +71,6 @@ def terrain_store(token):
 
 
 @pytest.fixture
-def mock_store():
-    return MockStore()
-
-
-@pytest.fixture
 def run_with_directory_input_and_file_output(remote_base_path, token):
     return Run(
         identifier='run_with_directory_input_and_file_output',

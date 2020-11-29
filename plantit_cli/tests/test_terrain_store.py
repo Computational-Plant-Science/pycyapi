@@ -1,6 +1,5 @@
 import os
 from os import environ
-import tempfile
 from os.path import join, isfile
 
 from plantit_cli.store.terrain_store import TerrainStore
@@ -10,7 +9,6 @@ from plantit_cli.tests.test_utils import clear_dir
 
 message = "Message!"
 testdir = environ.get('TEST_DIRECTORY')
-tempdir = tempfile.gettempdir()
 
 
 def _run(remote_base_path, token):
