@@ -78,7 +78,7 @@ def container_for_directory(run: Run, input_directory: str):
     params += [{'key': 'INPUT', 'value': input_directory}]
 
     if run.output:
-        output_path = join(run.workdir, run.output['from']) if run.output['from'] is not '' else run.workdir
+        output_path = join(run.workdir, run.output['from']) if run.output['from'] != '' else run.workdir
         params += [{'key': 'OUTPUT', 'value': output_path}]
 
     update_status(run, 3,

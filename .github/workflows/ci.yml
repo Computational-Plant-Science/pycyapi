@@ -15,7 +15,7 @@ jobs:
       - name: Install
         run: |
           python -m pip install --upgrade pip
-          pip install flake8 pytest coveralls
+          pip install flake8 pytest coveralls setuptools wheel twine
           pip install -e .
       - name: Lint
         run: |
@@ -27,3 +27,10 @@ jobs:
         run: |
           coverage run --source=plantit_cli -m pytest -s
           coveralls
+      - name: Publish
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          python setup.py sdist bdist_wheel
+          twine upload dist/*

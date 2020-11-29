@@ -55,7 +55,7 @@ class Executor(ABC):
         update_status(run, 3, f"Starting '{run.identifier}'")
 
         try:
-            if run.clone is not None and run.clone is not '':
+            if run.clone is not None and run.clone != '':
                 Executor.__clone_repo(run)
 
             if run.input:
