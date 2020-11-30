@@ -247,7 +247,7 @@ def test_run_with_directory_output_with_excludes(remote_base_path):
                 identifier='run_with_directory_output_with_excludes',
                 workdir=testdir,
                 image="docker://alpine:latest",
-                command='touch excluded.output && touch included.output',
+                command='touch excluded.output included.output',
                 output={
                     'to': remote_path,
                     'from': '',
