@@ -240,7 +240,7 @@ def test_run_with_directory_output_with_excludes(terrain_store, remote_base_path
             identifier='run_with_directory_output_with_excludes',
             workdir=testdir,
             image="docker://alpine:latest",
-            command='touch excluded.output && touch included.output',
+            command='touch excluded.output included.output',
             output={
                 'to': join(remote_base_path, "testCollection"),
                 'from': '',
