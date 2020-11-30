@@ -17,9 +17,11 @@ jobs:
         env:
           SINGULARITY_VERSION: ${{ secrets.SINGULARITY_VERSION }}
         run: |
+          # python
           python -m pip install --upgrade pip
           pip install flake8 pytest coveralls setuptools wheel twine
           pip install -e .
+          # singularity
           wget https://github.com/sylabs/singularity/releases/download/v${SINGULARITY_VERSION}/singularity-${SINGULARITY_VERSION}.tar.gz
           tar -xzf singularity-${SINGULARITY_VERSION}.tar.gz
           cd singularity
@@ -43,6 +45,26 @@ jobs:
           mkdir -p /opt/plantit-cli/runs/
           coverage run --source=plantit_cli -m pytest
           coveralls
+  publish:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 1
+      matrix:
+        python-version: [3.8]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        env:
+          SINGULARITY_VERSION: ${{ secrets.SINGULARITY_VERSION }}
+        run: |
+          # python
+          python -m pip install --upgrade pip
+          pip install flake8 pytest coveralls setuptools wheel twine
+          pip install -e .
       - name: Publish package
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
