@@ -11,35 +11,36 @@ message = "Message!"
 testdir = environ.get('TEST_DIRECTORY')
 
 
-def test_run_with_params(mock_store):
-    try:
-        # expect 1 container
-        Executor(mock_store).execute(Run(
-            identifier='run_with_params',
-            workdir=testdir,
-            image="docker://alpine:latest",
-            command='echo "$MESSAGE" >> $MESSAGE_FILE',
-            params=[
-                {
-                    'key': 'MESSAGE',
-                    'value': message
-                },
-                {
-                    'key': 'MESSAGE_FILE',
-                    'value': join(testdir, 'message.txt')
-                },
-            ]))
+def test_run_with_params():
+    with TemporaryDirectory() as temp_dir:
+        mock_store = MockStore(temp_dir)
+        try:
+            # expect 1 container
+            Executor(mock_store).execute(Run(
+                identifier='run_with_params',
+                workdir=testdir,
+                image="docker://alpine:latest",
+                command='echo "$MESSAGE" >> $MESSAGE_FILE',
+                params=[
+                    {
+                        'key': 'MESSAGE',
+                        'value': message
+                    },
+                    {
+                        'key': 'MESSAGE_FILE',
+                        'value': join(testdir, 'message.txt')
+                    },
+                ]))
 
-        # check local file was written
-        file = join(testdir, 'message.txt')
-        assert isfile(file)
-        with open(file) as file:
-            lines = file.readlines()
-            assert len(lines) == 1
-            assert lines[0] == f"{message}\n"
-    finally:
-        clear_dir(testdir)
-        mock_store.clear()
+            # check local file was written
+            file = join(testdir, 'message.txt')
+            assert isfile(file)
+            with open(file) as file:
+                lines = file.readlines()
+                assert len(lines) == 1
+                assert lines[0] == f"{message}\n"
+        finally:
+            clear_dir(testdir)
 
 
 def test_run_with_single_file_input(remote_base_path, file_name_1):
