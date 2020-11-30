@@ -52,6 +52,8 @@ params:                                          # parameters substituted when `
   value: Hello, plant person!
 ```
 
+Note that your `command` may fail on some operating systems if it contains `&&`. If you must run multiple consecutive commands, you should package them into a script.
+
 ### Input/Output
 
 The CLI can automatically copy files from the CyVerse Data Store to the local (or network) file system before your code runs, then push output files back to the Data Store afterwards.
