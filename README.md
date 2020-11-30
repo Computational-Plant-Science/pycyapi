@@ -4,7 +4,7 @@
 
 # PlantIT CLI
 
-~~![Build](https://github.com/Computational-Plant-Science/plantit-cli/workflows/Build/badge.svg)~~ [![PyPI version](https://badge.fury.io/py/plantit-cli.svg)](https://badge.fury.io/py/plantit-cli) [![Coverage Status](https://coveralls.io/repos/github/Computational-Plant-Science/plantit-cli/badge.png?branch=master)](https://coveralls.io/github/Computational-Plant-Science/plantit-cli) 
+~~![CI](https://github.com/Computational-Plant-Science/plantit-cli/workflows/CI/badge.svg)~~ [![PyPI version](https://badge.fury.io/py/plantit-cli.svg)](https://badge.fury.io/py/plantit-cli) [![Coverage Status](https://coveralls.io/repos/github/Computational-Plant-Science/plantit-cli/badge.png?branch=master)](https://coveralls.io/github/Computational-Plant-Science/plantit-cli) 
 
 Deploy workflows on laptops, servers, or HPC/HTC clusters.
 

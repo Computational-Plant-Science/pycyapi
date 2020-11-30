@@ -1,4 +1,4 @@
-name: Build
+name: CI
 on: [push]
 jobs:
   build:
@@ -46,6 +46,7 @@ jobs:
           coverage run --source=plantit_cli -m pytest
           coveralls
   publish:
+    needs: build
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 1
