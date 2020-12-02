@@ -54,7 +54,7 @@ params:                                          # parameters substituted when `
 
 Note that your `command` may fail on some operating systems if it contains `&&`. If you must run multiple consecutive commands, you should package them into a script.
 
-### Input/Output
+### Inputs
 
 The CLI can automatically copy files from the CyVerse Data Store to the local (or network) file system before your code runs, then push output files back to the Data Store afterwards.
 
@@ -66,7 +66,7 @@ Runs involving inputs and outputs fall into 3 categories:
 
 To pull a file or directory, add an `input` section (the file or directory name will be substituted for `$INPUT` when `command` is invoked).
 
-#### Input file (1 container)
+#### Input file
 
 To pull a file from the Data Store and spawn a single container to process it, use `kind: file` and `from: <file path>`:
 
@@ -76,7 +76,17 @@ input:
   from: /iplant/home/username/directory/file
 ```
 
-#### Input directory (1 container)
+#### Input files
+
+To pull a directory from the Data Store and spawn a container for each file, use `kind: files` and `from: <directory path>`:
+
+```yaml
+input:
+  kind: files
+  from: /iplant/home/username/directory
+```
+
+#### Input directory
 
 To pull the contents of a directory from the Data Store and spawn a single container to process it, use `kind: directory` and `from: <directory path>`:
 
@@ -86,27 +96,18 @@ input:
   from: /iplant/home/username/directory
 ```
 
-#### Input directory (1 container per file)
-
-To pull a directory from the Data Store and spawn a container for each file, use `kind: directory`, `from: <directory path>`, and the additional flag `many: true`:
-
-```yaml
-input:
-  kind: directory
-  from: /iplant/home/username/directory
-  many: true
-```
+### Outputs
 
 To push files matching a pattern back to the Data Store after your container executes (the local path will be substituted for `$OUTPUT` when `command` runs):
 
 ```yaml
 output:
-  pattern: xslx     # optional, single value or list
-  exclude:          # optional, single value or list
+  pattern: xslx                         # optional, single value or list
+  exclude:                              # optional, single value or list
     - excluded.png
     - excluded.jpg
-  from: directory   # relative to the working directory
-  to: /iplant/home/username/collection
+  from: directory                       # relative to the working directory
+  to: /iplant/home/username/collection  # required
 ```
 
 ### Authenticating with the Terrain API

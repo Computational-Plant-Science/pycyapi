@@ -55,4 +55,6 @@ class MockStore(Store):
                 f"Remote path '{to_path}' is a file; specify a directory path instead")
 
     def list_directory(self, path) -> List[str]:
+        for k, v in self.__files.items():
+            print(k)
         return [k for k, v in self.__files.items() if k.rpartition('/')[0] == join(self.__dir, path)]

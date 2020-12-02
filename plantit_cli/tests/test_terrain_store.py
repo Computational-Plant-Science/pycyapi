@@ -3,7 +3,7 @@ from os import environ
 from os.path import join, isfile
 
 from plantit_cli.store.terrain_store import TerrainStore
-from plantit_cli.run import Run
+from plantit_cli.plan import Plan
 from plantit_cli.tests.terrain_test_utils import delete_collection, upload_file, create_collection
 from plantit_cli.tests.test_utils import clear_dir, get_token
 
@@ -13,7 +13,7 @@ token = get_token()
 
 
 def _run(remote_base_path):
-    return Run(
+    return Plan(
         identifier='workflow_with_directory_input',
         workdir=testdir,
         image="docker://alpine:latest",

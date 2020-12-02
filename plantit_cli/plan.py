@@ -1,4 +1,4 @@
-class Run(object):
+class Plan(object):
     def __init__(self,
                  identifier: str,
                  workdir: str,

@@ -1,8 +1,8 @@
 import click
 import yaml
 
-from plantit_cli.executor.executor import Executor
-from plantit_cli.run import Run
+from plantit_cli.runner.runner import Runner
+from plantit_cli.plan import Plan
 from plantit_cli.store.terrain_store import TerrainStore
 
 
@@ -19,4 +19,4 @@ def run(workflow, plantit_token, cyverse_token):
         if 'api_url' not in workflow_def:
             workflow_def['api_url'] = None
 
-        Executor(TerrainStore(cyverse_token)).execute(Run(**workflow_def))
+        Runner(TerrainStore(cyverse_token)).run(Plan(**workflow_def))

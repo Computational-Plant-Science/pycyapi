@@ -2,8 +2,8 @@ import tempfile
 from os import remove
 from os.path import join, isfile
 
-from plantit_cli.executor.executor import Executor
-from plantit_cli.run import Run
+from plantit_cli.runner.runner import Runner
+from plantit_cli.plan import Plan
 from plantit_cli.tests.terrain_test_utils import create_collection, upload_file, delete_collection, list_files
 from plantit_cli.tests.test_utils import clear_dir, check_hello, get_token
 
@@ -27,7 +27,7 @@ def test_run_with_single_file_input(terrain_store, remote_base_path, file_name_1
         upload_file(local_path, remote_path, token)
 
         # expect 1 container
-        Executor(terrain_store).execute(Run(
+        Runner(terrain_store).run(Plan(
             identifier='run_with_file_input',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -73,7 +73,7 @@ def test_run_with_directory_input_many_files(
         upload_file(local_path_2, remote_path, token)
 
         # expect 2 containers
-        Executor(terrain_store).execute(Run(
+        Runner(terrain_store).run(Plan(
             identifier='run_with_directory_input',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -114,7 +114,7 @@ def test_run_with_file_output(terrain_store, remote_base_path):
         create_collection(remote_path, token)
 
         # run
-        Executor(terrain_store).execute(Run(
+        Runner(terrain_store).run(Plan(
             identifier='run_with_file_output',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -149,7 +149,7 @@ def test_run_with_directory_output(terrain_store, remote_base_path):
         create_collection(remote_path, token)
 
         # run
-        Executor(terrain_store).execute(Run(
+        Runner(terrain_store).run(Plan(
             identifier='run_with_directory_output',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -196,7 +196,7 @@ def test_run_with_file_input_and_directory_output(
         upload_file(local_input_file_path, remote_path, token)
 
         # expect 1 container
-        Executor(terrain_store).execute(Run(
+        Runner(terrain_store).run(Plan(
             identifier='run_with_file_input_and_directory_output',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -236,7 +236,7 @@ def test_run_with_directory_output_with_excludes(terrain_store, remote_base_path
         create_collection(remote_path, token)
 
         # expect 1 container
-        Executor(terrain_store).execute(Run(
+        Runner(terrain_store).run(Plan(
             identifier='run_with_directory_output_with_excludes',
             workdir=testdir,
             image="docker://alpine:latest",
