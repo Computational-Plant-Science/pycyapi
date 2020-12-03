@@ -124,8 +124,7 @@ def test_run_with_no_params_and_files_input_and_no_output(
             image="docker://alpine:latest",
             command='cat $INPUT | tee $INPUT.output',
             input={
-                'kind': 'directory',
-                'many': True,
+                'kind': 'files',
                 'from': join(remote_base_path, "testCollection"),
             },
             cyverse_token=token))
@@ -177,8 +176,7 @@ def test_run_with_params_and_files_input_and_no_output(
             image="docker://alpine:latest",
             command='cat $INPUT | tee $INPUT.$TAG.output',
             input={
-                'kind': 'directory',
-                'many': True,
+                'kind': 'files',
                 'from': join(remote_base_path, "testCollection"),
             },
             cyverse_token=token,
@@ -474,11 +472,14 @@ def test_run_with_no_params_and_directory_input_and_directory_output(
         file_name_2):
     local_input_file_path_1 = join(testdir, file_name_1)
     local_input_file_path_2 = join(testdir, file_name_2)
-    remote_path = join(remote_base_path[1:], "testCollection")
+    remote_path = join(remote_base_path, "testCollection")
     local_output_dir = join(testdir, 'input')  # write output files to input dir
     local_output_path = join(local_output_dir, f"{join(testdir, 'input')}.output")
 
     try:
+        # prep CyVerse collection
+        create_collection(remote_path, token)
+
         # prep file
         with open(local_input_file_path_1, "w") as file1, open(local_input_file_path_2, "w") as file2:
             file1.write('Hello, 1!')
@@ -526,11 +527,14 @@ def test_run_with_params_and_directory_input_and_directory_output(
         file_name_2):
     local_input_file_path_1 = join(testdir, file_name_1)
     local_input_file_path_2 = join(testdir, file_name_2)
-    remote_path = join(remote_base_path[1:], "testCollection")
+    remote_path = join(remote_base_path, "testCollection")
     local_output_dir = join(testdir, 'input')  # write output files to input dir
     local_output_path = join(local_output_dir, f"{join(testdir, 'input')}.{message}.output")
 
     try:
+        # prep CyVerse collection
+        create_collection(remote_path, token)
+
         # prep file
         with open(local_input_file_path_1, "w") as file1, open(local_input_file_path_2, "w") as file2:
             file1.write('Hello, 1!')
