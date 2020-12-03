@@ -45,7 +45,7 @@ jobs:
           COVERALLS_PARALLEL: true
         run: |
           mkdir -p /opt/plantit-cli/runs/
-          coverage run --source=plantit_cli/tests/unit -m pytest /home/runner/work/plantit-cli/plantit-cli/plantit_cli/tests/unit -s
+          coverage run --source=plantit_cli -m pytest /home/runner/work/plantit-cli/plantit-cli/plantit_cli/tests/unit -s
           coveralls
   integration-tests:
     runs-on: ubuntu-latest
@@ -92,7 +92,7 @@ jobs:
           COVERALLS_PARALLEL: true
         run: |
           mkdir -p /opt/plantit-cli/runs/
-          coverage run --source=plantit_cli/tests/integration -m pytest /home/runner/work/plantit-cli/plantit-cli/plantit_cli/tests/integration -s
+          coverage run --source=plantit_cli -m pytest /home/runner/work/plantit-cli/plantit-cli/plantit_cli/tests/integration -s
           coveralls
       - name: Update Coveralls
         run: |
