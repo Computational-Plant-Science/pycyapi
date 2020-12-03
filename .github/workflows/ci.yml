@@ -1,5 +1,5 @@
 name: CI
-on: ['push', 'pull_request']
+on: [push, pull_request]
 jobs:
   unit-tests:
     runs-on: ubuntu-latest
@@ -40,12 +40,12 @@ jobs:
           CYVERSE_USERNAME: ${{ secrets.CYVERSE_USERNAME }}
           CYVERSE_PASSWORD: ${{ secrets.CYVERSE_PASSWORD }}
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+          COVERALLS_PARALLEL: true
         run: |
           mkdir -p /opt/plantit-cli/runs/
           coverage run --source=plantit_cli/tests/unit -m pytest /home/runner/work/plantit-cli/plantit-cli/plantit_cli/tests/unit -s
-          COVERALLS_PARALLEL=true coveralls
+          coveralls
   integration-tests:
-    needs: unit-tests
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 1
@@ -85,12 +85,13 @@ jobs:
           CYVERSE_USERNAME: ${{ secrets.CYVERSE_USERNAME }}
           CYVERSE_PASSWORD: ${{ secrets.CYVERSE_PASSWORD }}
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+          COVERALLS_PARALLEL: true
         run: |
           mkdir -p /opt/plantit-cli/runs/
           coverage run --source=plantit_cli/tests/integration -m pytest /home/runner/work/plantit-cli/plantit-cli/plantit_cli/tests/integration -s
           coveralls --finish
   publish:
-    needs: integration-tests
+    needs: [unit-tests, integration-tests]
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 1
