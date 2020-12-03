@@ -42,7 +42,7 @@ jobs:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
           mkdir -p /opt/plantit-cli/runs/
-          coverage run --source=plantit_cli/tests/unit -m pytest
+          coverage run --source=plantit_cli/tests/unit -m pytest /home/runner/work/plantit-cli/plantit-cli/plantit_cli/tests/unit -s
           COVERALLS_PARALLEL=true coveralls
   integration-tests:
     needs: unit-tests
@@ -87,7 +87,7 @@ jobs:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
           mkdir -p /opt/plantit-cli/runs/
-          coverage run --source=plantit_cli/tests/integration -m pytest
+          coverage run --source=plantit_cli/tests/integration -m pytest /home/runner/work/plantit-cli/plantit-cli/plantit_cli/tests/integration -s
           coveralls --finish
   publish:
     needs: integration-tests

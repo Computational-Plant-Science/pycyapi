@@ -132,6 +132,6 @@ Sample definition files can be found in `examples/`.
 
 Before running tests, run `scripts/bootstrap.sh` (this will pull/build images for a small `docker-compose` SLURM cluster test environment). Then run:
 
-```docker-compose -f docker-compose.test.yml exec slurmctld python3 -m pytest /opt/plantit-cli -s```
+```docker-compose -f docker-compose.test.yml exec slurmctld python3 -m pytest /opt/plantit-cli/plantit_cli/tests/unit -s```
 
 Tests invoking the Terrain API may take some time to complete; they're rigged with a delay to allow writes to propagate from Terrain to the CyVerse Data Store (some pass/fail non-determinism occurs otherwise).
