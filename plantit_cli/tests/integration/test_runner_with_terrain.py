@@ -4,7 +4,7 @@ from os.path import join, isfile
 
 from plantit_cli.runner.runner import Runner
 from plantit_cli.plan import Plan
-from plantit_cli.tests.terrain_test_utils import create_collection, upload_file, delete_collection, list_files
+from plantit_cli.tests.integration.terrain_test_utils import create_collection, upload_file, delete_collection, list_files
 from plantit_cli.tests.test_utils import clear_dir, check_hello, get_token
 
 message = "Message"

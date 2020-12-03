@@ -1,7 +1,7 @@
 name: CI
 on: ['push', 'pull_request']
 jobs:
-  build:
+  unit-tests:
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 1
@@ -43,11 +43,52 @@ jobs:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
           mkdir -p /opt/plantit-cli/runs/
-          coverage run --source=plantit_cli -m pytest
-      - name: Coveralls
-        uses: coverallsapp/github-action@master
+          coverage run --source=plantit_cli/tests/unit -m pytest
+          COVERALLS_PARALLEL=true coveralls
+  integration-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 1
+      matrix:
+        python-version: [3.6]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
         with:
-          github-token: ${{ secrets.COVERALLS_REPO_TOKEN }}
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        env:
+          SINGULARITY_VERSION: ${{ secrets.SINGULARITY_VERSION }}
+        run: |
+          # python
+          python -m pip install --upgrade pip
+          pip install flake8 pytest coveralls setuptools wheel twine
+          pip install -e .
+          # singularity
+          wget https://github.com/sylabs/singularity/releases/download/v${SINGULARITY_VERSION}/singularity-${SINGULARITY_VERSION}.tar.gz
+          tar -xzf singularity-${SINGULARITY_VERSION}.tar.gz
+          cd singularity
+          ./mconfig
+          make -C builddir
+          sudo make -C builddir install
+          cd ..
+      - name: Lint
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Test
+        env:
+          TEST_DIRECTORY: ${{ secrets.TEST_DIRECTORY }}
+          CYVERSE_USERNAME: ${{ secrets.CYVERSE_USERNAME }}
+          CYVERSE_PASSWORD: ${{ secrets.CYVERSE_PASSWORD }}
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        run: |
+          mkdir -p /opt/plantit-cli/runs/
+          coverage run --source=plantit_cli/tests/integration -m pytest
+          coveralls --finish
   publish:
     needs: build
     runs-on: ubuntu-latest
