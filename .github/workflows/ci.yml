@@ -46,6 +46,7 @@ jobs:
           coverage run --source=plantit_cli/tests/unit -m pytest
           COVERALLS_PARALLEL=true coveralls
   integration-tests:
+    needs: unit-tests
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 1
@@ -90,7 +91,7 @@ jobs:
           coverage run --source=plantit_cli/tests/integration -m pytest
           coveralls --finish
   publish:
-    needs: build
+    needs: integration-tests
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 1
