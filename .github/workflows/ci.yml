@@ -5,7 +5,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        test-name: unit tests
         python-version: [3.6, 3.7, 3.8]
     steps:
       - uses: actions/checkout@v2
@@ -42,7 +41,7 @@ jobs:
           CYVERSE_PASSWORD: ${{ secrets.CYVERSE_PASSWORD }}
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_FLAG_NAME: ${{ matrix.test-name }}
+          COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
           COVERALLS_PARALLEL: true
         run: |
           mkdir -p /opt/plantit-cli/runs/
@@ -54,7 +53,6 @@ jobs:
       max-parallel: 1
       matrix:
         python-version: [3.6]
-        test-name: integration tests
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -90,7 +88,7 @@ jobs:
           CYVERSE_PASSWORD: ${{ secrets.CYVERSE_PASSWORD }}
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_FLAG_NAME: ${{ matrix.test-name }}
+          COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
           COVERALLS_PARALLEL: true
         run: |
           mkdir -p /opt/plantit-cli/runs/
