@@ -2,21 +2,24 @@ from os import remove, environ
 from os.path import join, isfile
 from tempfile import TemporaryDirectory
 
+import pytest
+
+from plantit_cli.exceptions import PlantitException
 from plantit_cli.runner.runner import Runner
 from plantit_cli.plan import Plan
-from plantit_cli.store.mock_store import MockStore
+from plantit_cli.store.local_store import LocalStore
 from plantit_cli.tests.test_utils import clear_dir, check_hello
 
 message = "Message"
 testdir = environ.get('TEST_DIRECTORY')
 
 
-def test_run_with_params_and_no_input_and_no_output():
+def test_run_succeeds_with_params_and_no_input_and_no_output():
     with TemporaryDirectory() as temp_dir:
-        mock_store = MockStore(temp_dir)
+        local_store = LocalStore(temp_dir)
         try:
             # expect 1 container
-            Runner(mock_store).run(Plan(
+            Runner(local_store).run(Plan(
                 identifier='run_with_params',
                 workdir=testdir,
                 image="docker://alpine:latest",
@@ -43,9 +46,9 @@ def test_run_with_params_and_no_input_and_no_output():
             clear_dir(testdir)
 
 
-def test_run_with_no_params_and_file_input_and_no_output(remote_base_path, file_name_1):
+def test_run_succeeds_with_no_params_and_file_input_and_no_output(remote_base_path, file_name_1):
     with TemporaryDirectory() as temp_dir:
-        mock_store = MockStore(temp_dir)
+        local_store = LocalStore(temp_dir)
         local_path = join(testdir, file_name_1)
         remote_path = join(remote_base_path[1:], "testCollection")
 
@@ -53,10 +56,10 @@ def test_run_with_no_params_and_file_input_and_no_output(remote_base_path, file_
             # prep file
             with open(local_path, "w") as file1:
                 file1.write('Hello, 1!')
-            mock_store.upload_file(local_path, remote_path)
+            local_store.upload_file(local_path, remote_path)
 
             # expect 1 container
-            Runner(mock_store).run(Plan(
+            Runner(local_store).run(Plan(
                 identifier='run_with_file_input',
                 workdir=testdir,
                 image="docker://alpine:latest",
@@ -79,9 +82,9 @@ def test_run_with_no_params_and_file_input_and_no_output(remote_base_path, file_
             clear_dir(testdir)
 
 
-def test_run_with_params_and_file_input_and_no_output(remote_base_path, file_name_1):
+def test_run_succeeds_with_params_and_file_input_and_no_output(remote_base_path, file_name_1):
     with TemporaryDirectory() as temp_dir:
-        mock_store = MockStore(temp_dir)
+        local_store = LocalStore(temp_dir)
         local_path = join(testdir, file_name_1)
         remote_path = join(remote_base_path[1:], "testCollection")
 
@@ -89,10 +92,10 @@ def test_run_with_params_and_file_input_and_no_output(remote_base_path, file_nam
             # prep file
             with open(local_path, "w") as file1:
                 file1.write('Hello, 1!')
-            mock_store.upload_file(local_path, remote_path)
+            local_store.upload_file(local_path, remote_path)
 
             # expect 1 container
-            Runner(mock_store).run(Plan(
+            Runner(local_store).run(Plan(
                 identifier='run_with_file_input',
                 workdir=testdir,
                 image="docker://alpine:latest",
@@ -121,9 +124,57 @@ def test_run_with_params_and_file_input_and_no_output(remote_base_path, file_nam
             clear_dir(testdir)
 
 
-def test_run_with_no_params_and_files_input_and_no_output(remote_base_path, file_name_1, file_name_2):
+def test_run_fails_with_no_params_and_file_input_and_no_output_when_no_inputs_found(remote_base_path, file_name_1):
     with TemporaryDirectory() as temp_dir:
-        mock_store = MockStore(temp_dir)
+        local_store = LocalStore(temp_dir)
+        remote_path = join(remote_base_path[1:], "testCollection")
+
+        try:
+            # expect exception
+            with pytest.raises(FileNotFoundError):
+                Runner(local_store).run(Plan(
+                    identifier='run_with_file_input',
+                    workdir=testdir,
+                    image="docker://alpine:latest",
+                    command='cat "$INPUT" | tee "$INPUT.output"',
+                    input={
+                        'kind': 'file',
+                        'from': join(remote_path, file_name_1),
+                    }))
+        finally:
+            clear_dir(testdir)
+
+
+def test_run_fails_with_params_and_file_input_and_no_output_when_no_inputs_found(remote_base_path, file_name_1):
+    with TemporaryDirectory() as temp_dir:
+        local_store = LocalStore(temp_dir)
+        remote_path = join(remote_base_path[1:], "testCollection")
+
+        try:
+            # expect exception
+            with pytest.raises(FileNotFoundError):
+                Runner(local_store).run(Plan(
+                    identifier='run_with_file_input',
+                    workdir=testdir,
+                    image="docker://alpine:latest",
+                    command='cat "$INPUT" | tee "$INPUT.$TAG.output"',
+                    input={
+                        'kind': 'file',
+                        'from': join(remote_path, file_name_1),
+                    },
+                    params=[
+                        {
+                            'key': 'TAG',
+                            'value': message
+                        },
+                    ]))
+        finally:
+            clear_dir(testdir)
+
+
+def test_run_succeeds_with_no_params_and_files_input_and_no_output(remote_base_path, file_name_1, file_name_2):
+    with TemporaryDirectory() as temp_dir:
+        local_store = LocalStore(temp_dir)
         local_path_1 = join(testdir, file_name_1)
         local_path_2 = join(testdir, file_name_2)
         remote_path = join(remote_base_path[1:], "testCollection")
@@ -133,11 +184,11 @@ def test_run_with_no_params_and_files_input_and_no_output(remote_base_path, file
             with open(local_path_1, "w") as file1, open(local_path_2, "w") as file2:
                 file1.write('Hello, 1!')
                 file2.write('Hello, 2!')
-            mock_store.upload_file(local_path_1, remote_path)
-            mock_store.upload_file(local_path_2, remote_path)
+            local_store.upload_file(local_path_1, remote_path)
+            local_store.upload_file(local_path_2, remote_path)
 
             # expect 2 containers
-            Runner(mock_store).run(Plan(
+            Runner(local_store).run(Plan(
                 identifier='run_with_directory_input',
                 workdir=testdir,
                 image="docker://alpine:latest",
@@ -166,9 +217,9 @@ def test_run_with_no_params_and_files_input_and_no_output(remote_base_path, file
             clear_dir(testdir)
 
 
-def test_run_with_params_and_files_input_and_no_output(remote_base_path, file_name_1, file_name_2):
+def test_run_succeeds_with_params_and_files_input_and_no_output(remote_base_path, file_name_1, file_name_2):
     with TemporaryDirectory() as temp_dir:
-        mock_store = MockStore(temp_dir)
+        local_store = LocalStore(temp_dir)
         local_path_1 = join(testdir, file_name_1)
         local_path_2 = join(testdir, file_name_2)
         remote_path = join(remote_base_path[1:], "testCollection")
@@ -178,11 +229,11 @@ def test_run_with_params_and_files_input_and_no_output(remote_base_path, file_na
             with open(local_path_1, "w") as file1, open(local_path_2, "w") as file2:
                 file1.write('Hello, 1!')
                 file2.write('Hello, 2!')
-            mock_store.upload_file(local_path_1, remote_path)
-            mock_store.upload_file(local_path_2, remote_path)
+            local_store.upload_file(local_path_1, remote_path)
+            local_store.upload_file(local_path_2, remote_path)
 
             # expect 2 containers
-            Runner(mock_store).run(Plan(
+            Runner(local_store).run(Plan(
                 identifier='run_with_directory_input',
                 workdir=testdir,
                 image="docker://alpine:latest",
@@ -217,15 +268,63 @@ def test_run_with_params_and_files_input_and_no_output(remote_base_path, file_na
             clear_dir(testdir)
 
 
-def test_run_with_no_params_and_no_input_and_file_output(remote_base_path):
+def test_run_fails_with_no_params_and_files_input_and_no_output_when_no_inputs_found(remote_base_path):
     with TemporaryDirectory() as temp_dir:
-        mock_store = MockStore(temp_dir)
+        local_store = LocalStore(temp_dir)
+        remote_path = join(remote_base_path[1:], "testCollection")
+
+        try:
+            # expect exception
+            with pytest.raises(PlantitException):
+                Runner(local_store).run(Plan(
+                    identifier='run_with_directory_input',
+                    workdir=testdir,
+                    image="docker://alpine:latest",
+                    command='cat $INPUT | tee $INPUT.output',
+                    input={
+                        'kind': 'files',
+                        'from': remote_path,
+                    }))
+        finally:
+            clear_dir(testdir)
+
+
+def test_run_fails_with_params_and_files_input_and_no_output_when_no_inputs_found(remote_base_path):
+    with TemporaryDirectory() as temp_dir:
+        local_store = LocalStore(temp_dir)
+        remote_path = join(remote_base_path[1:], "testCollection")
+
+        try:
+            # expect exception
+            with pytest.raises(PlantitException):
+                Runner(local_store).run(Plan(
+                    identifier='run_with_directory_input',
+                    workdir=testdir,
+                    image="docker://alpine:latest",
+                    command='cat $INPUT | tee $INPUT.$TAG.output',
+                    input={
+                        'kind': 'files',
+                        'from': remote_path,
+                    },
+                    params=[
+                        {
+                            'key': 'TAG',
+                            'value': message
+                        },
+                    ]))
+        finally:
+            clear_dir(testdir)
+
+
+def test_run_succeeds_with_no_params_and_no_input_and_file_output(remote_base_path):
+    with TemporaryDirectory() as temp_dir:
+        local_store = LocalStore(temp_dir)
         local_output_path = join(testdir, 'output.txt')
         remote_path = join(remote_base_path[1:], "testCollection")
 
         try:
             # expect 1 container
-            Runner(mock_store).run(Plan(
+            Runner(local_store).run(Plan(
                 identifier='run_with_file_output',
                 workdir=testdir,
                 image="docker://alpine:latest",
@@ -241,21 +340,21 @@ def test_run_with_no_params_and_no_input_and_file_output(remote_base_path):
             # os.remove(local_output_file)
 
             # check file was pushed
-            files = mock_store.list_directory(remote_path)
-            assert join(mock_store.dir, remote_path, 'output.txt') in files
+            files = local_store.list_directory(remote_path)
+            assert join(local_store.dir, remote_path, 'output.txt') in files
         finally:
             clear_dir(testdir)
 
 
-def test_run_with_params_and_no_input_and_file_output(remote_base_path):
+def test_run_succeeds_with_params_and_no_input_and_file_output(remote_base_path):
     with TemporaryDirectory() as temp_dir:
-        mock_store = MockStore(temp_dir)
+        local_store = LocalStore(temp_dir)
         local_output_path = join(testdir, f"output.{message}.txt")
         remote_path = join(remote_base_path[1:], "testCollection")
 
         try:
             # expect 1 container
-            Runner(mock_store).run(Plan(
+            Runner(local_store).run(Plan(
                 identifier='run_with_file_output',
                 workdir=testdir,
                 image="docker://alpine:latest",
@@ -277,15 +376,15 @@ def test_run_with_params_and_no_input_and_file_output(remote_base_path):
             # os.remove(local_output_file)
 
             # check file was pushed
-            files = mock_store.list_directory(remote_path)
-            assert join(mock_store.dir, remote_path, f"output.{message}.txt") in files
+            files = local_store.list_directory(remote_path)
+            assert join(local_store.dir, remote_path, f"output.{message}.txt") in files
         finally:
             clear_dir(testdir)
 
 
-def test_run_with_no_params_and_no_input_and_directory_output(remote_base_path):
+def test_run_succeeds_with_no_params_and_no_input_and_directory_output(remote_base_path):
     with TemporaryDirectory() as temp_dir:
-        mock_store = MockStore(temp_dir)
+        local_store = LocalStore(temp_dir)
         local_output_path = testdir
         local_output_file_1 = join(local_output_path, 't1.txt')
         local_output_file_2 = join(local_output_path, 't2.txt')
@@ -293,7 +392,7 @@ def test_run_with_no_params_and_no_input_and_directory_output(remote_base_path):
 
         try:
             # expect 1 container
-            Runner(mock_store).run(Plan(
+            Runner(local_store).run(Plan(
                 identifier='run_with_directory_output',
                 workdir=testdir,
                 image="docker://alpine:latest",
@@ -312,16 +411,16 @@ def test_run_with_no_params_and_no_input_and_directory_output(remote_base_path):
             remove(local_output_file_2)
 
             # check files were pushed
-            files = mock_store.list_directory(remote_path)
-            assert join(mock_store.dir, remote_path, 't1.txt') in files
-            assert join(mock_store.dir, remote_path, 't2.txt') in files
+            files = local_store.list_directory(remote_path)
+            assert join(local_store.dir, remote_path, 't1.txt') in files
+            assert join(local_store.dir, remote_path, 't2.txt') in files
         finally:
             clear_dir(testdir)
 
 
-def test_run_with_params_and_no_input_and_directory_output(remote_base_path):
+def test_run_succeeds_with_params_and_no_input_and_directory_output(remote_base_path):
     with TemporaryDirectory() as temp_dir:
-        mock_store = MockStore(temp_dir)
+        local_store = LocalStore(temp_dir)
         local_output_path = testdir
         local_output_file_1 = join(local_output_path, f"t1.{message}.txt")
         local_output_file_2 = join(local_output_path, f"t2.{message}.txt")
@@ -329,7 +428,7 @@ def test_run_with_params_and_no_input_and_directory_output(remote_base_path):
 
         try:
             # expect 1 container
-            Runner(mock_store).run(Plan(
+            Runner(local_store).run(Plan(
                 identifier='run_with_directory_output',
                 workdir=testdir,
                 image="docker://alpine:latest",
@@ -354,16 +453,16 @@ def test_run_with_params_and_no_input_and_directory_output(remote_base_path):
             remove(local_output_file_2)
 
             # check files were pushed
-            files = mock_store.list_directory(remote_path)
-            assert join(mock_store.dir, remote_path, f"t1.{message}.txt") in files
-            assert join(mock_store.dir, remote_path, f"t2.{message}.txt") in files
+            files = local_store.list_directory(remote_path)
+            assert join(local_store.dir, remote_path, f"t1.{message}.txt") in files
+            assert join(local_store.dir, remote_path, f"t2.{message}.txt") in files
         finally:
             clear_dir(testdir)
 
 
-def test_run_with_no_params_and_file_input_and_directory_output(remote_base_path, file_name_1):
+def test_run_succeeds_with_no_params_and_file_input_and_directory_output(remote_base_path, file_name_1):
     with TemporaryDirectory() as temp_dir:
-        mock_store = MockStore(temp_dir)
+        local_store = LocalStore(temp_dir)
         local_input_file_path = join(testdir, file_name_1)
         local_output_path = join(testdir, 'input')  # write output files to input dir
         local_output_file_path = join(local_output_path, f"{file_name_1}.output")
@@ -373,10 +472,10 @@ def test_run_with_no_params_and_file_input_and_directory_output(remote_base_path
             # prep file
             with open(local_input_file_path, "w") as file1:
                 file1.write('Hello, 1!')
-            mock_store.upload_file(local_input_file_path, remote_path)
+            local_store.upload_file(local_input_file_path, remote_path)
 
             # expect 1 container
-            Runner(mock_store).run(Plan(
+            Runner(local_store).run(Plan(
                 identifier='run_with_file_input_and_directory_output',
                 workdir=testdir,
                 image="docker://alpine:latest",
@@ -397,15 +496,15 @@ def test_run_with_no_params_and_file_input_and_directory_output(remote_base_path
             remove(local_output_file_path)
 
             # check file was pushed to store
-            files = mock_store.list_directory(remote_path)
-            assert join(mock_store.dir, remote_path, f"{file_name_1}.output") in files
+            files = local_store.list_directory(remote_path)
+            assert join(local_store.dir, remote_path, f"{file_name_1}.output") in files
         finally:
             clear_dir(testdir)
 
 
-def test_run_with_params_and_file_input_and_directory_output(remote_base_path, file_name_1):
+def test_run_succeeds_with_params_and_file_input_and_directory_output(remote_base_path, file_name_1):
     with TemporaryDirectory() as temp_dir:
-        mock_store = MockStore(temp_dir)
+        local_store = LocalStore(temp_dir)
         local_input_file_path = join(testdir, file_name_1)
         local_output_path = join(testdir, 'input')  # write output files to input dir
         local_output_file_path = join(local_output_path, f"{file_name_1}.{message}.output")
@@ -415,10 +514,10 @@ def test_run_with_params_and_file_input_and_directory_output(remote_base_path, f
             # prep file
             with open(local_input_file_path, "w") as file1:
                 file1.write('Hello, 1!')
-            mock_store.upload_file(local_input_file_path, remote_path)
+            local_store.upload_file(local_input_file_path, remote_path)
 
             # expect 1 container
-            Runner(mock_store).run(Plan(
+            Runner(local_store).run(Plan(
                 identifier='run_with_file_input_and_directory_output',
                 workdir=testdir,
                 image="docker://alpine:latest",
@@ -445,15 +544,17 @@ def test_run_with_params_and_file_input_and_directory_output(remote_base_path, f
             remove(local_output_file_path)
 
             # check file was pushed to store
-            files = mock_store.list_directory(remote_path)
-            assert join(mock_store.dir, remote_path, f"{file_name_1}.{message}.output") in files
+            files = local_store.list_directory(remote_path)
+            assert join(local_store.dir, remote_path, f"{file_name_1}.{message}.output") in files
         finally:
             clear_dir(testdir)
 
 
-def test_run_with_no_params_and_files_input_and_directory_output(remote_base_path, file_name_1, file_name_2):
+def test_run_succeeds_with_no_params_and_files_input_and_directory_output(remote_base_path,
+                                                                          file_name_1,
+                                                                          file_name_2):
     with TemporaryDirectory() as temp_dir:
-        mock_store = MockStore(temp_dir)
+        local_store = LocalStore(temp_dir)
         local_input_file_path_1 = join(testdir, file_name_1)
         local_input_file_path_2 = join(testdir, file_name_2)
         local_output_path = join(testdir, 'input')  # write output files to input dir
@@ -466,11 +567,11 @@ def test_run_with_no_params_and_files_input_and_directory_output(remote_base_pat
             with open(local_input_file_path_1, "w") as file1, open(local_input_file_path_2, "w") as file2:
                 file1.write('Hello, 1!')
                 file2.write('Hello, 2!')
-            mock_store.upload_file(local_input_file_path_1, remote_path)
-            mock_store.upload_file(local_input_file_path_2, remote_path)
+            local_store.upload_file(local_input_file_path_1, remote_path)
+            local_store.upload_file(local_input_file_path_2, remote_path)
 
             # expect 2 containers
-            Runner(mock_store).run(Plan(
+            Runner(local_store).run(Plan(
                 identifier='run_with_file_input_and_directory_output',
                 workdir=testdir,
                 image="docker://alpine:latest",
@@ -494,15 +595,17 @@ def test_run_with_no_params_and_files_input_and_directory_output(remote_base_pat
             remove(local_output_file_path_2)
 
             # check file was pushed to store
-            files = mock_store.list_directory(remote_path)
-            assert join(mock_store.dir, remote_path, f"{file_name_1}.output") in files
+            files = local_store.list_directory(remote_path)
+            assert join(local_store.dir, remote_path, f"{file_name_1}.output") in files
         finally:
             clear_dir(testdir)
 
 
-def test_run_with_params_and_files_input_and_directory_output(remote_base_path, file_name_1, file_name_2):
+def test_run_succeeds_with_params_and_files_input_and_directory_output(remote_base_path,
+                                                                       file_name_1,
+                                                                       file_name_2):
     with TemporaryDirectory() as temp_dir:
-        mock_store = MockStore(temp_dir)
+        local_store = LocalStore(temp_dir)
         local_input_file_path_1 = join(testdir, file_name_1)
         local_input_file_path_2 = join(testdir, file_name_2)
         local_output_path = join(testdir, 'input')  # write output files to input dir
@@ -515,11 +618,11 @@ def test_run_with_params_and_files_input_and_directory_output(remote_base_path, 
             with open(local_input_file_path_1, "w") as file1, open(local_input_file_path_2, "w") as file2:
                 file1.write('Hello, 1!')
                 file2.write('Hello, 2!')
-            mock_store.upload_file(local_input_file_path_1, remote_path)
-            mock_store.upload_file(local_input_file_path_2, remote_path)
+            local_store.upload_file(local_input_file_path_1, remote_path)
+            local_store.upload_file(local_input_file_path_2, remote_path)
 
             # expect 2 containers
-            Runner(mock_store).run(Plan(
+            Runner(local_store).run(Plan(
                 identifier='run_with_file_input_and_directory_output',
                 workdir=testdir,
                 image="docker://alpine:latest",
@@ -549,30 +652,32 @@ def test_run_with_params_and_files_input_and_directory_output(remote_base_path, 
             remove(local_output_file_path_2)
 
             # check file was pushed to store
-            files = mock_store.list_directory(remote_path)
-            assert join(mock_store.dir, remote_path, f"{file_name_1}.{message}.output") in files
+            files = local_store.list_directory(remote_path)
+            assert join(local_store.dir, remote_path, f"{file_name_1}.{message}.output") in files
         finally:
             clear_dir(testdir)
 
 
-def test_run_with_no_params_and_directory_input_and_directory_output(remote_base_path, file_name_1, file_name_2):
+def test_run_succeeds_with_no_params_and_directory_input_and_directory_output(remote_base_path,
+                                                                              file_name_1,
+                                                                              file_name_2):
     with TemporaryDirectory() as temp_dir:
-        mock_store = MockStore(temp_dir)
+        local_store = LocalStore(temp_dir)
         local_input_file_path_1 = join(testdir, file_name_1)
         local_input_file_path_2 = join(testdir, file_name_2)
         remote_path = join(remote_base_path[1:], "testCollection")
-        local_output_path = join(mock_store.dir, f"{join(testdir, 'input')}.output")
+        local_output_path = join(local_store.dir, f"{join(testdir, 'input')}.output")
 
         try:
             # prep file
             with open(local_input_file_path_1, "w") as file1, open(local_input_file_path_2, "w") as file2:
                 file1.write('Hello, 1!')
                 file2.write('Hello, 2!')
-            mock_store.upload_file(local_input_file_path_1, remote_path)
-            mock_store.upload_file(local_input_file_path_2, remote_path)
+            local_store.upload_file(local_input_file_path_1, remote_path)
+            local_store.upload_file(local_input_file_path_2, remote_path)
 
             # expect 1 container
-            Runner(mock_store).run(Plan(
+            Runner(local_store).run(Plan(
                 identifier='run_with_file_input_and_directory_output',
                 workdir=testdir,
                 image="docker://alpine:latest",
@@ -597,30 +702,30 @@ def test_run_with_no_params_and_directory_input_and_directory_output(remote_base
             remove(local_output_path)
 
             # check file was pushed to store
-            files = mock_store.list_directory(remote_path)
-            assert join(mock_store.dir, remote_path, local_output_path.split('/')[-1]) in files
+            files = local_store.list_directory(remote_path)
+            assert join(local_store.dir, remote_path, local_output_path.split('/')[-1]) in files
         finally:
             clear_dir(testdir)
 
 
-def test_run_with_params_and_directory_input_and_directory_output(remote_base_path, file_name_1, file_name_2):
+def test_run_succeeds_with_params_and_directory_input_and_directory_output(remote_base_path, file_name_1, file_name_2):
     with TemporaryDirectory() as temp_dir:
-        mock_store = MockStore(temp_dir)
+        local_store = LocalStore(temp_dir)
         local_input_file_path_1 = join(testdir, file_name_1)
         local_input_file_path_2 = join(testdir, file_name_2)
         remote_path = join(remote_base_path[1:], "testCollection")
-        local_output_path = join(mock_store.dir, f"{join(testdir, 'input')}.{message}.output")
+        local_output_path = join(local_store.dir, f"{join(testdir, 'input')}.{message}.output")
 
         try:
             # prep file
             with open(local_input_file_path_1, "w") as file1, open(local_input_file_path_2, "w") as file2:
                 file1.write('Hello, 1!')
                 file2.write('Hello, 2!')
-            mock_store.upload_file(local_input_file_path_1, remote_path)
-            mock_store.upload_file(local_input_file_path_2, remote_path)
+            local_store.upload_file(local_input_file_path_1, remote_path)
+            local_store.upload_file(local_input_file_path_2, remote_path)
 
             # expect 1 container
-            Runner(mock_store).run(Plan(
+            Runner(local_store).run(Plan(
                 identifier='run_with_file_input_and_directory_output',
                 workdir=testdir,
                 image="docker://alpine:latest",
@@ -651,15 +756,73 @@ def test_run_with_params_and_directory_input_and_directory_output(remote_base_pa
             remove(local_output_path)
 
             # check file was pushed to store
-            files = mock_store.list_directory(remote_path)
-            assert join(mock_store.dir, remote_path, local_output_path.split('/')[-1]) in files
+            files = local_store.list_directory(remote_path)
+            assert join(local_store.dir, remote_path, local_output_path.split('/')[-1]) in files
         finally:
             clear_dir(testdir)
 
 
-def test_run_with_no_params_and_no_input_and_directory_output_with_excludes(remote_base_path):
+def test_run_fails_with_no_params_and_directory_input_and_directory_output_when_no_inputs_found(remote_base_path):
     with TemporaryDirectory() as temp_dir:
-        mock_store = MockStore(temp_dir)
+        local_store = LocalStore(temp_dir)
+        remote_path = join(remote_base_path[1:], "testCollection")
+
+        try:
+            # expect exception
+            with pytest.raises(PlantitException):
+                Runner(local_store).run(Plan(
+                    identifier='run_with_file_input_and_directory_output',
+                    workdir=testdir,
+                    image="docker://alpine:latest",
+                    command='ls $INPUT | tee $INPUT.output',
+                    input={
+                        'kind': 'directory',
+                        'from': remote_path,
+                    },
+                    output={
+                        'to': remote_path,
+                        'from': '',
+                        'pattern': 'output'
+                    }))
+        finally:
+            clear_dir(testdir)
+
+
+def test_run_fails_with_params_and_directory_input_and_directory_output_when_no_inputs_found(remote_base_path):
+    with TemporaryDirectory() as temp_dir:
+        local_store = LocalStore(temp_dir)
+        remote_path = join(remote_base_path[1:], "testCollection")
+
+        try:
+            # expect exception
+            with pytest.raises(PlantitException):
+                Runner(local_store).run(Plan(
+                    identifier='run_with_file_input_and_directory_output',
+                    workdir=testdir,
+                    image="docker://alpine:latest",
+                    command='ls $INPUT | tee $INPUT.$TAG.output',
+                    input={
+                        'kind': 'directory',
+                        'from': remote_path,
+                    },
+                    output={
+                        'to': remote_path,
+                        'from': '',
+                        'pattern': 'output'
+                    },
+                    params=[
+                        {
+                            'key': 'TAG',
+                            'value': message
+                        },
+                    ]))
+        finally:
+            clear_dir(testdir)
+
+
+def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_excludes(remote_base_path):
+    with TemporaryDirectory() as temp_dir:
+        local_store = LocalStore(temp_dir)
         local_output_path = testdir
         local_output_file_included = join(local_output_path, "included.output")
         local_output_file_excluded = join(local_output_path, "excluded.output")
@@ -667,7 +830,7 @@ def test_run_with_no_params_and_no_input_and_directory_output_with_excludes(remo
 
         try:
             # expect 1 container
-            Runner(mock_store).run(Plan(
+            Runner(local_store).run(Plan(
                 identifier='run_with_directory_output_with_excludes',
                 workdir=testdir,
                 image="docker://alpine:latest",
@@ -688,16 +851,16 @@ def test_run_with_no_params_and_no_input_and_directory_output_with_excludes(remo
             remove(local_output_file_excluded)
 
             # check files were pushed to store
-            files = mock_store.list_directory(remote_path)
+            files = local_store.list_directory(remote_path)
             assert len(files) == 1
-            assert join(mock_store.dir, remote_path, 'included.output') in files
+            assert join(local_store.dir, remote_path, 'included.output') in files
         finally:
             clear_dir(testdir)
 
 
-def test_run_with_params_and_no_input_and_directory_output_with_excludes(remote_base_path):
+def test_run_succeeds_with_params_and_no_input_and_directory_output_with_excludes(remote_base_path):
     with TemporaryDirectory() as temp_dir:
-        mock_store = MockStore(temp_dir)
+        local_store = LocalStore(temp_dir)
         local_output_path = testdir
         local_output_file_included = join(local_output_path, f"included.{message}.output")
         local_output_file_excluded = join(local_output_path, "excluded.output")
@@ -705,7 +868,7 @@ def test_run_with_params_and_no_input_and_directory_output_with_excludes(remote_
 
         try:
             # expect 1 container
-            Runner(mock_store).run(Plan(
+            Runner(local_store).run(Plan(
                 identifier='run_with_directory_output_with_excludes',
                 workdir=testdir,
                 image="docker://alpine:latest",
@@ -732,9 +895,8 @@ def test_run_with_params_and_no_input_and_directory_output_with_excludes(remote_
             remove(local_output_file_excluded)
 
             # check files were pushed to store
-            files = mock_store.list_directory(remote_path)
+            files = local_store.list_directory(remote_path)
             assert len(files) == 1
-            assert join(mock_store.dir, remote_path, f"included.{message}.output") in files
+            assert join(local_store.dir, remote_path, f"included.{message}.output") in files
         finally:
             clear_dir(testdir)
-

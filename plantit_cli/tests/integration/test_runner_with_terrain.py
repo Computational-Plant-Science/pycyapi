@@ -2,9 +2,13 @@ import tempfile
 from os import remove
 from os.path import join, isfile
 
+import pytest
+
+from plantit_cli.exceptions import PlantitException
 from plantit_cli.runner.runner import Runner
 from plantit_cli.plan import Plan
-from plantit_cli.tests.integration.terrain_test_utils import create_collection, upload_file, delete_collection, list_files
+from plantit_cli.tests.integration.terrain_test_utils import create_collection, upload_file, delete_collection, \
+    list_files
 from plantit_cli.tests.test_utils import clear_dir, check_hello, get_token
 
 message = "Message"
@@ -13,7 +17,9 @@ tempdir = tempfile.gettempdir()
 token = get_token()
 
 
-def test_run_with_no_params_and_file_input_and_no_output(terrain_store, remote_base_path, file_name_1):
+def test_run_succeeds_with_no_params_and_file_input_and_no_output(terrain_store,
+                                                                  remote_base_path,
+                                                                  file_name_1):
     local_path = join(testdir, file_name_1)
     remote_path = join(remote_base_path, "testCollection")
 
@@ -52,7 +58,9 @@ def test_run_with_no_params_and_file_input_and_no_output(terrain_store, remote_b
         delete_collection(remote_path, token)
 
 
-def test_run_with_params_and_file_input_and_no_output(terrain_store, remote_base_path, file_name_1):
+def test_run_succeeds_with_params_and_file_input_and_no_output(terrain_store,
+                                                               remote_base_path,
+                                                               file_name_1):
     local_path = join(testdir, file_name_1)
     remote_path = join(remote_base_path, "testCollection")
 
@@ -97,7 +105,53 @@ def test_run_with_params_and_file_input_and_no_output(terrain_store, remote_base
         delete_collection(remote_path, token)
 
 
-def test_run_with_no_params_and_files_input_and_no_output(
+def test_run_fails_with_no_params_and_file_input_and_no_output_when_no_inputs_found(terrain_store,
+                                                                                    remote_base_path,
+                                                                                    file_name_1):
+    try:
+        # expect exception
+        with pytest.raises(PlantitException):
+            Runner(terrain_store).run(Plan(
+                identifier='run_with_file_input',
+                workdir=testdir,
+                image="docker://alpine:latest",
+                command='cat "$INPUT" | tee "$INPUT.output"',
+                input={
+                           'kind': 'file',
+                           'from': join(remote_base_path, "testCollection", file_name_1),
+                              },
+                cyverse_token=token))
+    finally:
+        clear_dir(testdir)
+
+
+def test_run_fails_with_params_and_file_input_and_no_output_when_no_inputs_found(terrain_store,
+                                                                                 remote_base_path,
+                                                                                 file_name_1):
+    try:
+        # expect exception
+        with pytest.raises(PlantitException):
+            Runner(terrain_store).run(Plan(
+                identifier='run_with_file_input',
+                workdir=testdir,
+                image="docker://alpine:latest",
+                command='cat "$INPUT" | tee "$INPUT.$TAG.output"',
+                input={
+                           'kind': 'file',
+                           'from': join(remote_base_path, "testCollection", file_name_1),
+                              },
+                cyverse_token=token,
+                params=[
+                {
+                    'key': 'TAG',
+                    'value': message
+                },
+            ]))
+    finally:
+        clear_dir(testdir)
+
+
+def test_run_succeeds_with_no_params_and_files_input_and_no_output(
         terrain_store,
         remote_base_path,
         file_name_1,
@@ -149,7 +203,7 @@ def test_run_with_no_params_and_files_input_and_no_output(
         delete_collection(remote_path, token)
 
 
-def test_run_with_params_and_files_input_and_no_output(
+def test_run_succeeds_with_params_and_files_input_and_no_output(
         terrain_store,
         remote_base_path,
         file_name_1,
@@ -207,7 +261,7 @@ def test_run_with_params_and_files_input_and_no_output(
         delete_collection(remote_path, token)
 
 
-def test_run_with_no_params_and_no_input_and_file_output(terrain_store, remote_base_path):
+def test_run_succeeds_with_no_params_and_no_input_and_file_output(terrain_store, remote_base_path):
     local_output_path = join(testdir, 'output.txt')
     remote_path = join(remote_base_path, "testCollection")
 
@@ -240,7 +294,7 @@ def test_run_with_no_params_and_no_input_and_file_output(terrain_store, remote_b
         delete_collection(remote_path, token)
 
 
-def test_run_with_params_and_no_input_and_file_output(terrain_store, remote_base_path):
+def test_run_succeeds_with_params_and_no_input_and_file_output(terrain_store, remote_base_path):
     local_output_path = join(testdir, f"output.{message}.txt")
     remote_path = join(remote_base_path, "testCollection")
 
@@ -279,7 +333,7 @@ def test_run_with_params_and_no_input_and_file_output(terrain_store, remote_base
         delete_collection(remote_path, token)
 
 
-def test_run_with_no_params_and_no_input_and_directory_output(terrain_store, remote_base_path):
+def test_run_succeeds_with_no_params_and_no_input_and_directory_output(terrain_store, remote_base_path):
     local_output_path = testdir
     local_output_file_1 = join(local_output_path, 't1.txt')
     local_output_file_2 = join(local_output_path, 't2.txt')
@@ -318,7 +372,7 @@ def test_run_with_no_params_and_no_input_and_directory_output(terrain_store, rem
         delete_collection(remote_path, token)
 
 
-def test_run_with_params_and_no_input_and_directory_output(terrain_store, remote_base_path):
+def test_run_succeeds_with_params_and_no_input_and_directory_output(terrain_store, remote_base_path):
     local_output_path = testdir
     local_output_file_1 = join(local_output_path, f"t1.{message}.txt")
     local_output_file_2 = join(local_output_path, f"t2.{message}.txt")
@@ -363,7 +417,7 @@ def test_run_with_params_and_no_input_and_directory_output(terrain_store, remote
         delete_collection(remote_path, token)
 
 
-def test_run_with_no_params_and_file_input_and_directory_output(
+def test_run_succeeds_with_no_params_and_file_input_and_directory_output(
         terrain_store,
         remote_base_path,
         file_name_1):
@@ -411,7 +465,7 @@ def test_run_with_no_params_and_file_input_and_directory_output(
         delete_collection(remote_path, token)
 
 
-def test_run_with_params_and_file_input_and_directory_output(
+def test_run_succeeds_with_params_and_file_input_and_directory_output(
         terrain_store,
         remote_base_path,
         file_name_1):
@@ -465,7 +519,7 @@ def test_run_with_params_and_file_input_and_directory_output(
         delete_collection(remote_path, token)
 
 
-def test_run_with_no_params_and_directory_input_and_directory_output(
+def test_run_succeeds_with_no_params_and_directory_input_and_directory_output(
         terrain_store,
         remote_base_path,
         file_name_1,
@@ -520,7 +574,7 @@ def test_run_with_no_params_and_directory_input_and_directory_output(
         delete_collection(remote_path, token)
 
 
-def test_run_with_params_and_directory_input_and_directory_output(
+def test_run_succeeds_with_params_and_directory_input_and_directory_output(
         terrain_store,
         remote_base_path,
         file_name_1,
@@ -581,7 +635,7 @@ def test_run_with_params_and_directory_input_and_directory_output(
         delete_collection(remote_path, token)
 
 
-def test_run_with_no_params_and_no_input_and_directory_output_with_excludes(terrain_store, remote_base_path):
+def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_excludes(terrain_store, remote_base_path):
     local_output_path = testdir
     local_output_file_included = join(local_output_path, "included.output")
     local_output_file_excluded = join(local_output_path, "excluded.output")
@@ -622,7 +676,7 @@ def test_run_with_no_params_and_no_input_and_directory_output_with_excludes(terr
         delete_collection(remote_path, token)
 
 
-def test_run_with_params_and_no_input_and_directory_output_with_excludes(terrain_store, remote_base_path):
+def test_run_succeeds_with_params_and_no_input_and_directory_output_with_excludes(terrain_store, remote_base_path):
     local_output_path = testdir
     local_output_file_included = join(local_output_path, f"included.{message}.output")
     local_output_file_excluded = join(local_output_path, "excluded.output")

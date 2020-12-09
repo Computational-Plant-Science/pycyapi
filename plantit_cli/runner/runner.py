@@ -37,7 +37,10 @@ class Runner(ABC):
             self.__store.download_file(plan.input['from'], input_dir)
         else:
             raise ValueError(f"'input.kind' must be either 'file' or 'directory'")
-        update_status(plan, 3, f"Pulled input(s)")
+        input_files = os.listdir(input_dir)
+        if len(input_files) == 0:
+            raise PlantitException(f"No inputs found at path '{plan.input['from']}'" + (f" matching pattern '{plan.input['pattern']}'" if 'pattern' in plan.input else ''))
+        update_status(plan, 3, f"Pulled input(s): {','.join(input_files)}")
         return input_dir
 
     def __push_output(self, plan: Plan):
@@ -73,8 +76,8 @@ class Runner(ABC):
             if plan.output:
                 print(f"Pushing output(s)")
                 self.__push_output(plan)
-        except Exception:
+        except Exception as e:
             update_status(plan, 2, f"'{plan.identifier}' failed: {traceback.format_exc()}")
-            return
+            raise e
 
         update_status(plan, 1, f"Completed '{plan.identifier}'")
