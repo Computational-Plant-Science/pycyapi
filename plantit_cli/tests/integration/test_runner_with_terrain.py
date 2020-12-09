@@ -721,3 +721,91 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output_with_exclude
     finally:
         clear_dir(testdir)
         delete_collection(remote_path, token)
+
+
+def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes(terrain_store, remote_base_path):
+    local_output_path = testdir
+    local_output_file_included = join(local_output_path, "included.output")
+    local_output_file_excluded = join(local_output_path, "excluded.output")
+    remote_path = join(remote_base_path, "testCollection")
+
+    try:
+        # prep CyVerse collection
+        create_collection(remote_path, token)
+
+        # expect 1 container
+        Runner(terrain_store).run(Plan(
+            identifier='test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes',
+            workdir=testdir,
+            image="docker://alpine:latest",
+            command='touch excluded.output included.output',
+            output={
+                'to': join(remote_base_path, "testCollection"),
+                'from': '',
+                'pattern': 'OUTPUT',
+                'exclude': [
+                    'excluded.output'
+                ]
+            },
+            cyverse_token=token))
+
+        # check files were written locally
+        assert isfile(local_output_file_included)
+        assert isfile(local_output_file_excluded)
+        remove(local_output_file_included)
+        remove(local_output_file_excluded)
+
+        # check files were pushed to CyVerse
+        files = list_files(remote_path, token)
+        assert len(files) == 1
+        assert join(remote_path, 'included.output') in [file['path'] for file in files]
+    finally:
+        clear_dir(testdir)
+        delete_collection(remote_path, token)
+
+
+def test_run_succeeds_with_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes(terrain_store, remote_base_path):
+    local_output_path = testdir
+    local_output_file_included = join(local_output_path, f"included.{message}.output")
+    local_output_file_excluded = join(local_output_path, "excluded.output")
+    remote_path = join(remote_base_path, "testCollection")
+
+    try:
+        # prep CyVerse collection
+        create_collection(remote_path, token)
+
+        # expect 1 container
+        Runner(terrain_store).run(Plan(
+            identifier='test_run_succeeds_with_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes',
+            workdir=testdir,
+            image="docker://alpine:latest",
+            command='touch excluded.output included.$TAG.output',
+            output={
+                'to': join(remote_base_path, "testCollection"),
+                'from': '',
+                'pattern': 'OUTPUT',
+                'exclude': [
+                    'excluded.output'
+                ]
+            },
+            cyverse_token=token,
+            params=[
+                {
+                    'key': 'TAG',
+                    'value': message
+                },
+            ]))
+
+        # check files were written locally
+        assert isfile(local_output_file_included)
+        assert isfile(local_output_file_excluded)
+        remove(local_output_file_included)
+        remove(local_output_file_excluded)
+
+        # check files were pushed to CyVerse
+        files = list_files(remote_path, token)
+        assert len(files) == 1
+        assert join(remote_path, f"included.{message}.output") in [file['path'] for file in files]
+    finally:
+        clear_dir(testdir)
+        delete_collection(remote_path, token)

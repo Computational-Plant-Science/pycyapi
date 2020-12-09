@@ -900,3 +900,85 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output_with_exclude
             assert join(local_store.dir, remote_path, f"included.{message}.output") in files
         finally:
             clear_dir(testdir)
+
+
+def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes(remote_base_path):
+    with TemporaryDirectory() as temp_dir:
+        local_store = LocalStore(temp_dir)
+        local_output_path = testdir
+        local_output_file_included = join(local_output_path, "included.output")
+        local_output_file_excluded = join(local_output_path, "excluded.output")
+        remote_path = join(remote_base_path[1:], "testCollection")
+
+        try:
+            # expect 1 container
+            Runner(local_store).run(Plan(
+                identifier='test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes',
+                workdir=testdir,
+                image="docker://alpine:latest",
+                command='touch excluded.output included.output',
+                output={
+                    'to': remote_path,
+                    'from': '',
+                    'pattern': 'OUTPUT',
+                    'exclude': [
+                        'excluded.output'
+                    ]
+                }))
+
+            # check files were written locally
+            assert isfile(local_output_file_included)
+            assert isfile(local_output_file_excluded)
+            remove(local_output_file_included)
+            remove(local_output_file_excluded)
+
+            # check files were pushed to store
+            files = local_store.list_directory(remote_path)
+            assert len(files) == 1
+            assert join(local_store.dir, remote_path, 'included.output') in files
+        finally:
+            clear_dir(testdir)
+
+
+def test_run_succeeds_with_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes(remote_base_path):
+    with TemporaryDirectory() as temp_dir:
+        local_store = LocalStore(temp_dir)
+        local_output_path = testdir
+        local_output_file_included = join(local_output_path, f"included.{message}.output")
+        local_output_file_excluded = join(local_output_path, "excluded.output")
+        remote_path = join(remote_base_path[1:], "testCollection")
+
+        try:
+            # expect 1 container
+            Runner(local_store).run(Plan(
+                identifier='test_run_succeeds_with_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes',
+                workdir=testdir,
+                image="docker://alpine:latest",
+                command='touch excluded.output included.$TAG.output',
+                output={
+                    'to': remote_path,
+                    'from': '',
+                    'pattern': 'OUTPUT',
+                    'exclude': [
+                        'excluded.output'
+                    ]
+                },
+                params=[
+                    {
+                        'key': 'TAG',
+                        'value': message
+                    },
+                ]))
+
+            # check files were written locally
+            assert isfile(local_output_file_included)
+            assert isfile(local_output_file_excluded)
+            remove(local_output_file_included)
+            remove(local_output_file_excluded)
+
+            # check files were pushed to store
+            files = local_store.list_directory(remote_path)
+            assert len(files) == 1
+            assert join(local_store.dir, remote_path, f"included.{message}.output") in files
+        finally:
+            clear_dir(testdir)

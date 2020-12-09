@@ -25,7 +25,7 @@ class LocalStore(Store):
 
     def download_directory(self, from_path, to_path, pattern):
         from_paths = [p for p in self.list_directory(from_path) if
-                      pattern in p] if pattern is not None else self.list_directory(from_path)
+                      pattern.lower() in p.lower()] if pattern is not None else self.list_directory(from_path)
         for path in from_paths:
             self.download_file(path, to_path)
 
