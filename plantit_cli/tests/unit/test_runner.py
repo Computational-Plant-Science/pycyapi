@@ -20,7 +20,7 @@ def test_run_succeeds_with_params_and_no_input_and_no_output():
         try:
             # expect 1 container
             Runner(local_store).run(Plan(
-                identifier='run_with_params',
+                identifier='test_run_succeeds_with_params_and_no_input_and_no_output',
                 workdir=testdir,
                 image="docker://alpine:latest",
                 command='echo "$MESSAGE" >> $MESSAGE_FILE',
@@ -60,7 +60,7 @@ def test_run_succeeds_with_no_params_and_file_input_and_no_output(remote_base_pa
 
             # expect 1 container
             Runner(local_store).run(Plan(
-                identifier='run_with_file_input',
+                identifier='test_run_succeeds_with_no_params_and_file_input_and_no_output',
                 workdir=testdir,
                 image="docker://alpine:latest",
                 command='cat "$INPUT" | tee "$INPUT.output"',
@@ -96,7 +96,7 @@ def test_run_succeeds_with_params_and_file_input_and_no_output(remote_base_path,
 
             # expect 1 container
             Runner(local_store).run(Plan(
-                identifier='run_with_file_input',
+                identifier='test_run_succeeds_with_params_and_file_input_and_no_output',
                 workdir=testdir,
                 image="docker://alpine:latest",
                 command='cat "$INPUT" | tee "$INPUT.$TAG.output"',
@@ -133,7 +133,7 @@ def test_run_fails_with_no_params_and_file_input_and_no_output_when_no_inputs_fo
             # expect exception
             with pytest.raises(FileNotFoundError):
                 Runner(local_store).run(Plan(
-                    identifier='run_with_file_input',
+                    identifier='test_run_fails_with_no_params_and_file_input_and_no_output_when_no_inputs_found',
                     workdir=testdir,
                     image="docker://alpine:latest",
                     command='cat "$INPUT" | tee "$INPUT.output"',
@@ -154,7 +154,7 @@ def test_run_fails_with_params_and_file_input_and_no_output_when_no_inputs_found
             # expect exception
             with pytest.raises(FileNotFoundError):
                 Runner(local_store).run(Plan(
-                    identifier='run_with_file_input',
+                    identifier='test_run_fails_with_params_and_file_input_and_no_output_when_no_inputs_found',
                     workdir=testdir,
                     image="docker://alpine:latest",
                     command='cat "$INPUT" | tee "$INPUT.$TAG.output"',
@@ -189,7 +189,7 @@ def test_run_succeeds_with_no_params_and_files_input_and_no_output(remote_base_p
 
             # expect 2 containers
             Runner(local_store).run(Plan(
-                identifier='run_with_directory_input',
+                identifier='test_run_succeeds_with_no_params_and_files_input_and_no_output',
                 workdir=testdir,
                 image="docker://alpine:latest",
                 command='cat $INPUT | tee $INPUT.output',
@@ -234,7 +234,7 @@ def test_run_succeeds_with_params_and_files_input_and_no_output(remote_base_path
 
             # expect 2 containers
             Runner(local_store).run(Plan(
-                identifier='run_with_directory_input',
+                identifier='test_run_succeeds_with_params_and_files_input_and_no_output',
                 workdir=testdir,
                 image="docker://alpine:latest",
                 command='cat $INPUT | tee $INPUT.$TAG.output',
@@ -277,7 +277,7 @@ def test_run_fails_with_no_params_and_files_input_and_no_output_when_no_inputs_f
             # expect exception
             with pytest.raises(PlantitException):
                 Runner(local_store).run(Plan(
-                    identifier='run_with_directory_input',
+                    identifier='test_run_fails_with_no_params_and_files_input_and_no_output_when_no_inputs_found',
                     workdir=testdir,
                     image="docker://alpine:latest",
                     command='cat $INPUT | tee $INPUT.output',
@@ -298,7 +298,7 @@ def test_run_fails_with_params_and_files_input_and_no_output_when_no_inputs_foun
             # expect exception
             with pytest.raises(PlantitException):
                 Runner(local_store).run(Plan(
-                    identifier='run_with_directory_input',
+                    identifier='test_run_fails_with_params_and_files_input_and_no_output_when_no_inputs_found',
                     workdir=testdir,
                     image="docker://alpine:latest",
                     command='cat $INPUT | tee $INPUT.$TAG.output',
@@ -325,7 +325,7 @@ def test_run_succeeds_with_no_params_and_no_input_and_file_output(remote_base_pa
         try:
             # expect 1 container
             Runner(local_store).run(Plan(
-                identifier='run_with_file_output',
+                identifier='test_run_succeeds_with_no_params_and_no_input_and_file_output',
                 workdir=testdir,
                 image="docker://alpine:latest",
                 command='echo "Hello, world!" >> $OUTPUT',
@@ -355,7 +355,7 @@ def test_run_succeeds_with_params_and_no_input_and_file_output(remote_base_path)
         try:
             # expect 1 container
             Runner(local_store).run(Plan(
-                identifier='run_with_file_output',
+                identifier='test_run_succeeds_with_params_and_no_input_and_file_output',
                 workdir=testdir,
                 image="docker://alpine:latest",
                 command='echo "Hello, world!" >> $OUTPUT',
@@ -393,7 +393,7 @@ def test_run_succeeds_with_no_params_and_no_input_and_directory_output(remote_ba
         try:
             # expect 1 container
             Runner(local_store).run(Plan(
-                identifier='run_with_directory_output',
+                identifier='test_run_succeeds_with_no_params_and_no_input_and_directory_output',
                 workdir=testdir,
                 image="docker://alpine:latest",
                 command='echo "Hello, world!" | tee $OUTPUT/t1.txt $OUTPUT/t2.txt',
@@ -429,7 +429,7 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output(remote_base_
         try:
             # expect 1 container
             Runner(local_store).run(Plan(
-                identifier='run_with_directory_output',
+                identifier='test_run_succeeds_with_params_and_no_input_and_directory_output',
                 workdir=testdir,
                 image="docker://alpine:latest",
                 command='echo "Hello, world!" | tee $OUTPUT/t1.$TAG.txt $OUTPUT/t2.$TAG.txt',
@@ -476,7 +476,7 @@ def test_run_succeeds_with_no_params_and_file_input_and_directory_output(remote_
 
             # expect 1 container
             Runner(local_store).run(Plan(
-                identifier='run_with_file_input_and_directory_output',
+                identifier='test_run_succeeds_with_no_params_and_file_input_and_directory_output',
                 workdir=testdir,
                 image="docker://alpine:latest",
                 command='cat $INPUT | tee $INPUT.output',
@@ -518,7 +518,7 @@ def test_run_succeeds_with_params_and_file_input_and_directory_output(remote_bas
 
             # expect 1 container
             Runner(local_store).run(Plan(
-                identifier='run_with_file_input_and_directory_output',
+                identifier='test_run_succeeds_with_params_and_file_input_and_directory_output',
                 workdir=testdir,
                 image="docker://alpine:latest",
                 command='cat $INPUT | tee $INPUT.$TAG.output',
@@ -572,7 +572,7 @@ def test_run_succeeds_with_no_params_and_files_input_and_directory_output(remote
 
             # expect 2 containers
             Runner(local_store).run(Plan(
-                identifier='run_with_file_input_and_directory_output',
+                identifier='test_run_succeeds_with_no_params_and_files_input_and_directory_output',
                 workdir=testdir,
                 image="docker://alpine:latest",
                 command='cat $INPUT | tee $INPUT.output',
@@ -623,7 +623,7 @@ def test_run_succeeds_with_params_and_files_input_and_directory_output(remote_ba
 
             # expect 2 containers
             Runner(local_store).run(Plan(
-                identifier='run_with_file_input_and_directory_output',
+                identifier='test_run_succeeds_with_params_and_files_input_and_directory_output',
                 workdir=testdir,
                 image="docker://alpine:latest",
                 command='cat $INPUT | tee $INPUT.$TAG.output',
@@ -678,7 +678,7 @@ def test_run_succeeds_with_no_params_and_directory_input_and_directory_output(re
 
             # expect 1 container
             Runner(local_store).run(Plan(
-                identifier='run_with_file_input_and_directory_output',
+                identifier='test_run_succeeds_with_no_params_and_directory_input_and_directory_output',
                 workdir=testdir,
                 image="docker://alpine:latest",
                 command='ls $INPUT | tee $INPUT.output',
@@ -726,7 +726,7 @@ def test_run_succeeds_with_params_and_directory_input_and_directory_output(remot
 
             # expect 1 container
             Runner(local_store).run(Plan(
-                identifier='run_with_file_input_and_directory_output',
+                identifier='test_run_succeeds_with_params_and_directory_input_and_directory_output',
                 workdir=testdir,
                 image="docker://alpine:latest",
                 command='ls $INPUT | tee $INPUT.$TAG.output',
@@ -771,7 +771,7 @@ def test_run_fails_with_no_params_and_directory_input_and_directory_output_when_
             # expect exception
             with pytest.raises(PlantitException):
                 Runner(local_store).run(Plan(
-                    identifier='run_with_file_input_and_directory_output',
+                    identifier='test_run_fails_with_no_params_and_directory_input_and_directory_output_when_no_inputs_found',
                     workdir=testdir,
                     image="docker://alpine:latest",
                     command='ls $INPUT | tee $INPUT.output',
@@ -797,7 +797,7 @@ def test_run_fails_with_params_and_directory_input_and_directory_output_when_no_
             # expect exception
             with pytest.raises(PlantitException):
                 Runner(local_store).run(Plan(
-                    identifier='run_with_file_input_and_directory_output',
+                    identifier='test_run_fails_with_params_and_directory_input_and_directory_output_when_no_inputs_found',
                     workdir=testdir,
                     image="docker://alpine:latest",
                     command='ls $INPUT | tee $INPUT.$TAG.output',
@@ -831,7 +831,7 @@ def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_excl
         try:
             # expect 1 container
             Runner(local_store).run(Plan(
-                identifier='run_with_directory_output_with_excludes',
+                identifier='test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_excludes',
                 workdir=testdir,
                 image="docker://alpine:latest",
                 command='touch excluded.output included.output',
@@ -869,7 +869,7 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output_with_exclude
         try:
             # expect 1 container
             Runner(local_store).run(Plan(
-                identifier='run_with_directory_output_with_excludes',
+                identifier='test_run_succeeds_with_params_and_no_input_and_directory_output_with_excludes',
                 workdir=testdir,
                 image="docker://alpine:latest",
                 command='touch excluded.output included.$TAG.output',

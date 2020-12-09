@@ -34,7 +34,7 @@ def test_run_succeeds_with_no_params_and_file_input_and_no_output(terrain_store,
 
         # expect 1 container
         Runner(terrain_store).run(Plan(
-            identifier='run_with_file_input',
+            identifier='test_run_succeeds_with_no_params_and_file_input_and_no_output',
             workdir=testdir,
             image="docker://alpine:latest",
             command='cat "$INPUT" | tee "$INPUT.output"',
@@ -75,7 +75,7 @@ def test_run_succeeds_with_params_and_file_input_and_no_output(terrain_store,
 
         # expect 1 container
         Runner(terrain_store).run(Plan(
-            identifier='run_with_file_input',
+            identifier='test_run_succeeds_with_params_and_file_input_and_no_output',
             workdir=testdir,
             image="docker://alpine:latest",
             command='cat "$INPUT" | tee "$INPUT.$TAG.output"',
@@ -112,7 +112,7 @@ def test_run_fails_with_no_params_and_file_input_and_no_output_when_no_inputs_fo
         # expect exception
         with pytest.raises(PlantitException):
             Runner(terrain_store).run(Plan(
-                identifier='run_with_file_input',
+                identifier='test_run_fails_with_no_params_and_file_input_and_no_output_when_no_inputs_found',
                 workdir=testdir,
                 image="docker://alpine:latest",
                 command='cat "$INPUT" | tee "$INPUT.output"',
@@ -132,7 +132,7 @@ def test_run_fails_with_params_and_file_input_and_no_output_when_no_inputs_found
         # expect exception
         with pytest.raises(PlantitException):
             Runner(terrain_store).run(Plan(
-                identifier='run_with_file_input',
+                identifier='test_run_fails_with_params_and_file_input_and_no_output_when_no_inputs_found',
                 workdir=testdir,
                 image="docker://alpine:latest",
                 command='cat "$INPUT" | tee "$INPUT.$TAG.output"',
@@ -173,7 +173,7 @@ def test_run_succeeds_with_no_params_and_files_input_and_no_output(
 
         # expect 2 containers
         Runner(terrain_store).run(Plan(
-            identifier='run_with_directory_input',
+            identifier='test_run_succeeds_with_no_params_and_files_input_and_no_output',
             workdir=testdir,
             image="docker://alpine:latest",
             command='cat $INPUT | tee $INPUT.output',
@@ -225,7 +225,7 @@ def test_run_succeeds_with_params_and_files_input_and_no_output(
 
         # expect 2 containers
         Runner(terrain_store).run(Plan(
-            identifier='run_with_directory_input',
+            identifier='test_run_succeeds_with_params_and_files_input_and_no_output',
             workdir=testdir,
             image="docker://alpine:latest",
             command='cat $INPUT | tee $INPUT.$TAG.output',
@@ -271,7 +271,7 @@ def test_run_succeeds_with_no_params_and_no_input_and_file_output(terrain_store,
 
         # run
         Runner(terrain_store).run(Plan(
-            identifier='run_with_file_output',
+            identifier='test_run_succeeds_with_no_params_and_no_input_and_file_output',
             workdir=testdir,
             image="docker://alpine:latest",
             command='echo "Hello, world!" >> $OUTPUT',
@@ -304,7 +304,7 @@ def test_run_succeeds_with_params_and_no_input_and_file_output(terrain_store, re
 
         # run
         Runner(terrain_store).run(Plan(
-            identifier='run_with_file_output',
+            identifier='test_run_succeeds_with_params_and_no_input_and_file_output',
             workdir=testdir,
             image="docker://alpine:latest",
             command='echo "Hello, world!" >> $OUTPUT',
@@ -345,7 +345,7 @@ def test_run_succeeds_with_no_params_and_no_input_and_directory_output(terrain_s
 
         # run
         Runner(terrain_store).run(Plan(
-            identifier='run_with_directory_output',
+            identifier='test_run_succeeds_with_no_params_and_no_input_and_directory_output',
             workdir=testdir,
             image="docker://alpine:latest",
             command='echo "Hello, world!" | tee $OUTPUT/t1.txt $OUTPUT/t2.txt',
@@ -384,7 +384,7 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output(terrain_stor
 
         # run
         Runner(terrain_store).run(Plan(
-            identifier='run_with_directory_output',
+            identifier='test_run_succeeds_with_params_and_no_input_and_directory_output',
             workdir=testdir,
             image="docker://alpine:latest",
             command='echo "Hello, world!" | tee $OUTPUT/t1.$TAG.txt $OUTPUT/t2.$TAG.txt',
@@ -437,7 +437,7 @@ def test_run_succeeds_with_no_params_and_file_input_and_directory_output(
 
         # expect 1 container
         Runner(terrain_store).run(Plan(
-            identifier='run_with_file_input_and_directory_output',
+            identifier='test_run_succeeds_with_no_params_and_file_input_and_directory_output',
             workdir=testdir,
             image="docker://alpine:latest",
             command='cat $INPUT | tee $INPUT.output',
@@ -485,7 +485,7 @@ def test_run_succeeds_with_params_and_file_input_and_directory_output(
 
         # expect 1 container
         Runner(terrain_store).run(Plan(
-            identifier='run_with_file_input_and_directory_output',
+            identifier='test_run_succeeds_with_params_and_file_input_and_directory_output',
             workdir=testdir,
             image="docker://alpine:latest",
             command='cat $INPUT | tee $INPUT.$TAG.output',
@@ -543,7 +543,7 @@ def test_run_succeeds_with_no_params_and_directory_input_and_directory_output(
 
         # expect 1 container
         Runner(terrain_store).run(Plan(
-            identifier='run_with_file_input_and_directory_output',
+            identifier='test_run_succeeds_with_no_params_and_directory_input_and_directory_output',
             workdir=testdir,
             image="docker://alpine:latest",
             command='ls $INPUT | tee $INPUT.output',
@@ -598,7 +598,7 @@ def test_run_succeeds_with_params_and_directory_input_and_directory_output(
 
         # expect 1 container
         Runner(terrain_store).run(Plan(
-            identifier='run_with_file_input_and_directory_output',
+            identifier='test_run_succeeds_with_params_and_directory_input_and_directory_output',
             workdir=testdir,
             image="docker://alpine:latest",
             command='ls $INPUT | tee $INPUT.$TAG.output',
@@ -647,7 +647,7 @@ def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_excl
 
         # expect 1 container
         Runner(terrain_store).run(Plan(
-            identifier='run_with_directory_output_with_excludes',
+            identifier='test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_excludes',
             workdir=testdir,
             image="docker://alpine:latest",
             command='touch excluded.output included.output',
@@ -688,7 +688,7 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output_with_exclude
 
         # expect 1 container
         Runner(terrain_store).run(Plan(
-            identifier='run_with_directory_output_with_excludes',
+            identifier='test_run_succeeds_with_params_and_no_input_and_directory_output_with_excludes',
             workdir=testdir,
             image="docker://alpine:latest",
             command='touch excluded.output included.$TAG.output',
