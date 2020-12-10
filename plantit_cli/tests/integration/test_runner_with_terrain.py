@@ -125,6 +125,7 @@ def test_run_fails_with_no_params_and_file_input_and_no_output_when_no_inputs_fo
     # expect exception
     with pytest.raises(PlantitException):
         Runner(TerrainStore(plan)).run(plan)
+    time.sleep(DEFAULT_SLEEP)
 
 
 def test_run_fails_with_params_and_file_input_and_no_output_when_no_inputs_found(remote_base_path,
@@ -149,6 +150,7 @@ def test_run_fails_with_params_and_file_input_and_no_output_when_no_inputs_found
     # expect exception
     with pytest.raises(PlantitException):
         Runner(TerrainStore(plan)).run(plan)
+    time.sleep(DEFAULT_SLEEP)
 
 
 def test_run_succeeds_with_no_params_and_files_input_and_no_output(
