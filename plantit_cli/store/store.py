@@ -1,11 +1,20 @@
 from abc import ABC, abstractmethod
 from typing import List
 
+from plantit_cli.plan import Plan
+
 
 class Store(ABC):
     """
     Models a hierarchical file/object/blob store.
     """
+    @abstractmethod
+    def __init__(self, plan: Plan):
+        self.__plan = plan
+
+    @property
+    def plan(self):
+        return self.__plan
 
     @abstractmethod
     def list_directory(self, path) -> List[str]:
@@ -32,14 +41,14 @@ class Store(ABC):
         pass
 
     @abstractmethod
-    def download_directory(self, from_path, to_path, pattern):
+    def download_directory(self, from_path, to_path, include_pattern):
         """
         Downloads files from the remote directory to the local directory.
 
         Args:
             from_path: The remote directory path.
             to_path: The local directory path.
-            pattern: File pattern(s) to include.
+            include_pattern: File pattern(s) to include.
         """
         pass
 
@@ -55,15 +64,17 @@ class Store(ABC):
         pass
 
     @abstractmethod
-    def upload_directory(self, from_path, to_path, pattern, exclude):
+    def upload_directory(self, from_path, to_path, include_pattern, include, exclude_pattern, exclude):
         """
         Uploads files from the local directory to the remote directory.
 
         Args:
             from_path: The local directory path.
             to_path: The remote directory path.
-            pattern: File pattern(s) to include.
-            exclude: File pattern(s) to exclude.
+            include_pattern: File pattern to include.
+            include: Files to include.
+            exclude_pattern: File pattern to exclude.
+            exclude: Files to exclude.
         """
         pass
 

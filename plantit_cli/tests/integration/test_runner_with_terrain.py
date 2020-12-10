@@ -7,6 +7,7 @@ import pytest
 from plantit_cli.exceptions import PlantitException
 from plantit_cli.runner.runner import Runner
 from plantit_cli.plan import Plan
+from plantit_cli.store.terrain_store import TerrainStore
 from plantit_cli.tests.integration.terrain_test_utils import create_collection, upload_file, delete_collection, \
     list_files
 from plantit_cli.tests.test_utils import clear_dir, check_hello, get_token
@@ -17,11 +18,20 @@ tempdir = tempfile.gettempdir()
 token = get_token()
 
 
-def test_run_succeeds_with_no_params_and_file_input_and_no_output(terrain_store,
-                                                                  remote_base_path,
+def test_run_succeeds_with_no_params_and_file_input_and_no_output(remote_base_path,
                                                                   file_name_1):
     local_path = join(testdir, file_name_1)
     remote_path = join(remote_base_path, "testCollection")
+    plan = Plan(
+        identifier='test_run_succeeds_with_no_params_and_file_input_and_no_output',
+        workdir=testdir,
+        image="docker://alpine:latest",
+        command='cat "$INPUT" | tee "$INPUT.output"',
+        input={
+            'kind': 'file',
+            'from': join(remote_base_path, "testCollection", file_name_1),
+        },
+        cyverse_token=token)
 
     try:
         # prep CyVerse collection
@@ -33,16 +43,7 @@ def test_run_succeeds_with_no_params_and_file_input_and_no_output(terrain_store,
         upload_file(local_path, remote_path, token)
 
         # expect 1 container
-        Runner(terrain_store).run(Plan(
-            identifier='test_run_succeeds_with_no_params_and_file_input_and_no_output',
-            workdir=testdir,
-            image="docker://alpine:latest",
-            command='cat "$INPUT" | tee "$INPUT.output"',
-            input={
-                'kind': 'file',
-                'from': join(remote_base_path, "testCollection", file_name_1),
-            },
-            cyverse_token=token))
+        Runner(TerrainStore(plan)).run(plan)
 
         # check file was pulled
         downloaded_path = join(testdir, 'input', file_name_1)
@@ -58,11 +59,26 @@ def test_run_succeeds_with_no_params_and_file_input_and_no_output(terrain_store,
         delete_collection(remote_path, token)
 
 
-def test_run_succeeds_with_params_and_file_input_and_no_output(terrain_store,
-                                                               remote_base_path,
+def test_run_succeeds_with_params_and_file_input_and_no_output(remote_base_path,
                                                                file_name_1):
     local_path = join(testdir, file_name_1)
     remote_path = join(remote_base_path, "testCollection")
+    plan = Plan(
+        identifier='test_run_succeeds_with_params_and_file_input_and_no_output',
+        workdir=testdir,
+        image="docker://alpine:latest",
+        command='cat "$INPUT" | tee "$INPUT.$TAG.output"',
+        input={
+            'kind': 'file',
+            'from': join(remote_base_path, "testCollection", file_name_1),
+        },
+        cyverse_token=token,
+        params=[
+            {
+                'key': 'TAG',
+                'value': message
+            },
+        ])
 
     try:
         # prep CyVerse collection
@@ -74,22 +90,7 @@ def test_run_succeeds_with_params_and_file_input_and_no_output(terrain_store,
         upload_file(local_path, remote_path, token)
 
         # expect 1 container
-        Runner(terrain_store).run(Plan(
-            identifier='test_run_succeeds_with_params_and_file_input_and_no_output',
-            workdir=testdir,
-            image="docker://alpine:latest",
-            command='cat "$INPUT" | tee "$INPUT.$TAG.output"',
-            input={
-                'kind': 'file',
-                'from': join(remote_base_path, "testCollection", file_name_1),
-            },
-            cyverse_token=token,
-            params=[
-                {
-                    'key': 'TAG',
-                    'value': message
-                },
-            ]))
+        Runner(TerrainStore(plan)).run(plan)
 
         # check file was pulled
         downloaded_path = join(testdir, 'input', file_name_1)
@@ -105,60 +106,64 @@ def test_run_succeeds_with_params_and_file_input_and_no_output(terrain_store,
         delete_collection(remote_path, token)
 
 
-def test_run_fails_with_no_params_and_file_input_and_no_output_when_no_inputs_found(terrain_store,
-                                                                                    remote_base_path,
+def test_run_fails_with_no_params_and_file_input_and_no_output_when_no_inputs_found(remote_base_path,
                                                                                     file_name_1):
-    try:
-        # expect exception
-        with pytest.raises(PlantitException):
-            Runner(terrain_store).run(Plan(
-                identifier='test_run_fails_with_no_params_and_file_input_and_no_output_when_no_inputs_found',
-                workdir=testdir,
-                image="docker://alpine:latest",
-                command='cat "$INPUT" | tee "$INPUT.output"',
-                input={
-                           'kind': 'file',
-                           'from': join(remote_base_path, "testCollection", file_name_1),
-                              },
-                cyverse_token=token))
-    finally:
-        clear_dir(testdir)
+    plan = Plan(
+        identifier='test_run_fails_with_no_params_and_file_input_and_no_output_when_no_inputs_found',
+        workdir=testdir,
+        image="docker://alpine:latest",
+        command='cat "$INPUT" | tee "$INPUT.output"',
+        input={
+            'kind': 'file',
+            'from': join(remote_base_path, "testCollection", file_name_1),
+        },
+        cyverse_token=token)
+
+    # expect exception
+    with pytest.raises(PlantitException):
+        Runner(TerrainStore(plan)).run(plan)
 
 
-def test_run_fails_with_params_and_file_input_and_no_output_when_no_inputs_found(terrain_store,
-                                                                                 remote_base_path,
+def test_run_fails_with_params_and_file_input_and_no_output_when_no_inputs_found(remote_base_path,
                                                                                  file_name_1):
-    try:
-        # expect exception
-        with pytest.raises(PlantitException):
-            Runner(terrain_store).run(Plan(
-                identifier='test_run_fails_with_params_and_file_input_and_no_output_when_no_inputs_found',
-                workdir=testdir,
-                image="docker://alpine:latest",
-                command='cat "$INPUT" | tee "$INPUT.$TAG.output"',
-                input={
-                           'kind': 'file',
-                           'from': join(remote_base_path, "testCollection", file_name_1),
-                              },
-                cyverse_token=token,
-                params=[
-                {
-                    'key': 'TAG',
-                    'value': message
-                },
-            ]))
-    finally:
-        clear_dir(testdir)
+    plan = Plan(
+        identifier='test_run_fails_with_params_and_file_input_and_no_output_when_no_inputs_found',
+        workdir=testdir,
+        image="docker://alpine:latest",
+        command='cat "$INPUT" | tee "$INPUT.$TAG.output"',
+        input={
+            'kind': 'file',
+            'from': join(remote_base_path, "testCollection", file_name_1),
+        },
+        cyverse_token=token,
+        params=[
+            {
+                'key': 'TAG',
+                'value': message
+            },
+        ])
+    # expect exception
+    with pytest.raises(PlantitException):
+        Runner(TerrainStore(plan)).run(plan)
 
 
 def test_run_succeeds_with_no_params_and_files_input_and_no_output(
-        terrain_store,
         remote_base_path,
         file_name_1,
         file_name_2):
     local_path_1 = join(testdir, file_name_1)
     local_path_2 = join(testdir, file_name_2)
     remote_path = join(remote_base_path, "testCollection")
+    plan = Plan(
+        identifier='test_run_succeeds_with_no_params_and_files_input_and_no_output',
+        workdir=testdir,
+        image="docker://alpine:latest",
+        command='cat $INPUT | tee $INPUT.output',
+        input={
+            'kind': 'files',
+            'from': join(remote_base_path, "testCollection"),
+        },
+        cyverse_token=token)
 
     try:
         # prep CyVerse collection
@@ -172,16 +177,7 @@ def test_run_succeeds_with_no_params_and_files_input_and_no_output(
         upload_file(local_path_2, remote_path, token)
 
         # expect 2 containers
-        Runner(terrain_store).run(Plan(
-            identifier='test_run_succeeds_with_no_params_and_files_input_and_no_output',
-            workdir=testdir,
-            image="docker://alpine:latest",
-            command='cat $INPUT | tee $INPUT.output',
-            input={
-                'kind': 'files',
-                'from': join(remote_base_path, "testCollection"),
-            },
-            cyverse_token=token))
+        Runner(TerrainStore(plan)).run(plan)
 
         # check files were pulled
         downloaded_path_1 = join(testdir, 'input', file_name_1)
@@ -204,13 +200,28 @@ def test_run_succeeds_with_no_params_and_files_input_and_no_output(
 
 
 def test_run_succeeds_with_params_and_files_input_and_no_output(
-        terrain_store,
         remote_base_path,
         file_name_1,
         file_name_2):
     local_path_1 = join(testdir, file_name_1)
     local_path_2 = join(testdir, file_name_2)
     remote_path = join(remote_base_path, "testCollection")
+    plan = Plan(
+        identifier='test_run_succeeds_with_params_and_files_input_and_no_output',
+        workdir=testdir,
+        image="docker://alpine:latest",
+        command='cat $INPUT | tee $INPUT.$TAG.output',
+        input={
+            'kind': 'files',
+            'from': join(remote_base_path, "testCollection"),
+        },
+        cyverse_token=token,
+        params=[
+            {
+                'key': 'TAG',
+                'value': message
+            },
+        ])
 
     try:
         # prep CyVerse collection
@@ -224,22 +235,7 @@ def test_run_succeeds_with_params_and_files_input_and_no_output(
         upload_file(local_path_2, remote_path, token)
 
         # expect 2 containers
-        Runner(terrain_store).run(Plan(
-            identifier='test_run_succeeds_with_params_and_files_input_and_no_output',
-            workdir=testdir,
-            image="docker://alpine:latest",
-            command='cat $INPUT | tee $INPUT.$TAG.output',
-            input={
-                'kind': 'files',
-                'from': join(remote_base_path, "testCollection"),
-            },
-            cyverse_token=token,
-            params=[
-                {
-                    'key': 'TAG',
-                    'value': message
-                },
-            ]))
+        Runner(TerrainStore(plan)).run(plan)
 
         # check files were pulled
         downloaded_path_1 = join(testdir, 'input', file_name_1)
@@ -261,25 +257,26 @@ def test_run_succeeds_with_params_and_files_input_and_no_output(
         delete_collection(remote_path, token)
 
 
-def test_run_succeeds_with_no_params_and_no_input_and_file_output(terrain_store, remote_base_path):
+def test_run_succeeds_with_no_params_and_no_input_and_file_output(remote_base_path):
     local_output_path = join(testdir, 'output.txt')
     remote_path = join(remote_base_path, "testCollection")
+    plan = Plan(
+        identifier='test_run_succeeds_with_no_params_and_no_input_and_file_output',
+        workdir=testdir,
+        image="docker://alpine:latest",
+        command='echo "Hello, world!" >> $OUTPUT',
+        output={
+            'to': join(remote_base_path, "testCollection"),
+            'from': 'output.txt',
+        },
+        cyverse_token=token)
 
     try:
         # prep CyVerse collection
         create_collection(remote_path, token)
 
         # run
-        Runner(terrain_store).run(Plan(
-            identifier='test_run_succeeds_with_no_params_and_no_input_and_file_output',
-            workdir=testdir,
-            image="docker://alpine:latest",
-            command='echo "Hello, world!" >> $OUTPUT',
-            output={
-                'to': join(remote_base_path, "testCollection"),
-                'from': 'output.txt',
-            },
-            cyverse_token=token))
+        Runner(TerrainStore(plan)).run(plan)
 
         # check files were written locally
         assert isfile(local_output_path)
@@ -294,31 +291,32 @@ def test_run_succeeds_with_no_params_and_no_input_and_file_output(terrain_store,
         delete_collection(remote_path, token)
 
 
-def test_run_succeeds_with_params_and_no_input_and_file_output(terrain_store, remote_base_path):
+def test_run_succeeds_with_params_and_no_input_and_file_output(remote_base_path):
     local_output_path = join(testdir, f"output.{message}.txt")
     remote_path = join(remote_base_path, "testCollection")
+    plan = Plan(
+        identifier='test_run_succeeds_with_params_and_no_input_and_file_output',
+        workdir=testdir,
+        image="docker://alpine:latest",
+        command='echo "Hello, world!" >> $OUTPUT',
+        output={
+            'to': join(remote_base_path, "testCollection"),
+            'from': f"output.{message}.txt",
+        },
+        cyverse_token=token,
+        params=[
+            {
+                'key': 'TAG',
+                'value': message
+            },
+        ])
 
     try:
         # prep CyVerse collection
         create_collection(remote_path, token)
 
         # run
-        Runner(terrain_store).run(Plan(
-            identifier='test_run_succeeds_with_params_and_no_input_and_file_output',
-            workdir=testdir,
-            image="docker://alpine:latest",
-            command='echo "Hello, world!" >> $OUTPUT',
-            output={
-                'to': join(remote_base_path, "testCollection"),
-                'from': f"output.{message}.txt",
-            },
-            cyverse_token=token,
-            params=[
-                {
-                    'key': 'TAG',
-                    'value': message
-                },
-            ]))
+        Runner(TerrainStore(plan)).run(plan)
 
         # check files were written locally
         assert isfile(local_output_path)
@@ -333,27 +331,28 @@ def test_run_succeeds_with_params_and_no_input_and_file_output(terrain_store, re
         delete_collection(remote_path, token)
 
 
-def test_run_succeeds_with_no_params_and_no_input_and_directory_output(terrain_store, remote_base_path):
+def test_run_succeeds_with_no_params_and_no_input_and_directory_output(remote_base_path):
     local_output_path = testdir
     local_output_file_1 = join(local_output_path, 't1.txt')
     local_output_file_2 = join(local_output_path, 't2.txt')
     remote_path = join(remote_base_path, "testCollection")
+    plan = Plan(
+        identifier='test_run_succeeds_with_no_params_and_no_input_and_directory_output',
+        workdir=testdir,
+        image="docker://alpine:latest",
+        command='echo "Hello, world!" | tee $OUTPUT/t1.txt $OUTPUT/t2.txt',
+        output={
+            'to': join(remote_base_path, "testCollection"),
+            'from': '',
+        },
+        cyverse_token=token)
 
     try:
         # prep CyVerse collection
         create_collection(remote_path, token)
 
         # run
-        Runner(terrain_store).run(Plan(
-            identifier='test_run_succeeds_with_no_params_and_no_input_and_directory_output',
-            workdir=testdir,
-            image="docker://alpine:latest",
-            command='echo "Hello, world!" | tee $OUTPUT/t1.txt $OUTPUT/t2.txt',
-            output={
-                'to': join(remote_base_path, "testCollection"),
-                'from': '',
-            },
-            cyverse_token=token))
+        Runner(TerrainStore(plan)).run(plan)
 
         # check files were written locally
         assert isfile(local_output_file_1)
@@ -372,33 +371,34 @@ def test_run_succeeds_with_no_params_and_no_input_and_directory_output(terrain_s
         delete_collection(remote_path, token)
 
 
-def test_run_succeeds_with_params_and_no_input_and_directory_output(terrain_store, remote_base_path):
+def test_run_succeeds_with_params_and_no_input_and_directory_output(remote_base_path):
     local_output_path = testdir
     local_output_file_1 = join(local_output_path, f"t1.{message}.txt")
     local_output_file_2 = join(local_output_path, f"t2.{message}.txt")
     remote_path = join(remote_base_path, "testCollection")
+    plan = Plan(
+        identifier='test_run_succeeds_with_params_and_no_input_and_directory_output',
+        workdir=testdir,
+        image="docker://alpine:latest",
+        command='echo "Hello, world!" | tee $OUTPUT/t1.$TAG.txt $OUTPUT/t2.$TAG.txt',
+        output={
+            'to': join(remote_base_path, "testCollection"),
+            'from': '',
+        },
+        cyverse_token=token,
+        params=[
+            {
+                'key': 'TAG',
+                'value': message
+            },
+        ])
 
     try:
         # prep CyVerse collection
         create_collection(remote_path, token)
 
         # run
-        Runner(terrain_store).run(Plan(
-            identifier='test_run_succeeds_with_params_and_no_input_and_directory_output',
-            workdir=testdir,
-            image="docker://alpine:latest",
-            command='echo "Hello, world!" | tee $OUTPUT/t1.$TAG.txt $OUTPUT/t2.$TAG.txt',
-            output={
-                'to': join(remote_base_path, "testCollection"),
-                'from': '',
-            },
-            cyverse_token=token,
-            params=[
-                {
-                    'key': 'TAG',
-                    'value': message
-                },
-            ]))
+        Runner(TerrainStore(plan)).run(plan)
 
         # check files were written locally
         assert isfile(local_output_file_1)
@@ -418,13 +418,27 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output(terrain_stor
 
 
 def test_run_succeeds_with_no_params_and_file_input_and_directory_output(
-        terrain_store,
         remote_base_path,
         file_name_1):
     local_input_file_path = join(testdir, file_name_1)
     local_output_path = join(testdir, 'input')  # write output files to input dir
     local_output_file_path = join(local_output_path, f"{file_name_1}.output")
     remote_path = join(remote_base_path, "testCollection")
+    plan = Plan(
+        identifier='test_run_succeeds_with_no_params_and_file_input_and_directory_output',
+        workdir=testdir,
+        image="docker://alpine:latest",
+        command='cat $INPUT | tee $INPUT.output',
+        input={
+            'kind': 'file',
+            'from': join(remote_base_path, "testCollection", file_name_1),
+        },
+        output={
+            'to': join(remote_base_path, "testCollection"),
+            'from': 'input',  # write output files to input dir
+            'include_pattern': 'output'
+        },
+        cyverse_token=token)
 
     try:
         # prep CyVerse collection
@@ -436,21 +450,7 @@ def test_run_succeeds_with_no_params_and_file_input_and_directory_output(
         upload_file(local_input_file_path, remote_path, token)
 
         # expect 1 container
-        Runner(terrain_store).run(Plan(
-            identifier='test_run_succeeds_with_no_params_and_file_input_and_directory_output',
-            workdir=testdir,
-            image="docker://alpine:latest",
-            command='cat $INPUT | tee $INPUT.output',
-            input={
-                'kind': 'file',
-                'from': join(remote_base_path, "testCollection", file_name_1),
-            },
-            output={
-                'to': join(remote_base_path, "testCollection"),
-                'from': 'input',  # write output files to input dir
-                'pattern': 'output'
-            },
-            cyverse_token=token))
+        Runner(TerrainStore(plan)).run(plan)
 
         # check file was written locally
         assert isfile(local_output_file_path)
@@ -466,13 +466,33 @@ def test_run_succeeds_with_no_params_and_file_input_and_directory_output(
 
 
 def test_run_succeeds_with_params_and_file_input_and_directory_output(
-        terrain_store,
         remote_base_path,
         file_name_1):
     local_input_file_path = join(testdir, file_name_1)
     local_output_path = join(testdir, 'input')  # write output files to input dir
     local_output_file_path = join(local_output_path, f"{file_name_1}.{message}.output")
     remote_path = join(remote_base_path, "testCollection")
+    plan = Plan(
+        identifier='test_run_succeeds_with_params_and_file_input_and_directory_output',
+        workdir=testdir,
+        image="docker://alpine:latest",
+        command='cat $INPUT | tee $INPUT.$TAG.output',
+        input={
+            'kind': 'file',
+            'from': join(remote_base_path, "testCollection", file_name_1),
+        },
+        output={
+            'to': join(remote_base_path, "testCollection"),
+            'from': 'input',  # write output files to input dir
+            'include_pattern': 'output'
+        },
+        cyverse_token=token,
+        params=[
+            {
+                'key': 'TAG',
+                'value': message
+            },
+        ])
 
     try:
         # prep CyVerse collection
@@ -484,27 +504,7 @@ def test_run_succeeds_with_params_and_file_input_and_directory_output(
         upload_file(local_input_file_path, remote_path, token)
 
         # expect 1 container
-        Runner(terrain_store).run(Plan(
-            identifier='test_run_succeeds_with_params_and_file_input_and_directory_output',
-            workdir=testdir,
-            image="docker://alpine:latest",
-            command='cat $INPUT | tee $INPUT.$TAG.output',
-            input={
-                'kind': 'file',
-                'from': join(remote_base_path, "testCollection", file_name_1),
-            },
-            output={
-                'to': join(remote_base_path, "testCollection"),
-                'from': 'input',  # write output files to input dir
-                'pattern': 'output'
-            },
-            cyverse_token=token,
-            params=[
-                {
-                    'key': 'TAG',
-                    'value': message
-                },
-            ]))
+        Runner(TerrainStore(plan)).run(plan)
 
         # check file was written locally
         assert isfile(local_output_file_path)
@@ -520,7 +520,6 @@ def test_run_succeeds_with_params_and_file_input_and_directory_output(
 
 
 def test_run_succeeds_with_no_params_and_directory_input_and_directory_output(
-        terrain_store,
         remote_base_path,
         file_name_1,
         file_name_2):
@@ -529,6 +528,21 @@ def test_run_succeeds_with_no_params_and_directory_input_and_directory_output(
     remote_path = join(remote_base_path, "testCollection")
     local_output_dir = join(testdir, 'input')  # write output files to input dir
     local_output_path = join(local_output_dir, f"{join(testdir, 'input')}.output")
+    plan = Plan(
+        identifier='test_run_succeeds_with_no_params_and_directory_input_and_directory_output',
+        workdir=testdir,
+        image="docker://alpine:latest",
+        command='ls $INPUT | tee $INPUT.output',
+        input={
+            'kind': 'directory',
+            'from': remote_path,
+        },
+        output={
+            'to': remote_path,
+            'from': '',
+            'include_pattern': 'output'
+        },
+        cyverse_token=token)
 
     try:
         # prep CyVerse collection
@@ -542,20 +556,7 @@ def test_run_succeeds_with_no_params_and_directory_input_and_directory_output(
         upload_file(local_input_file_path_2, remote_path, token)
 
         # expect 1 container
-        Runner(terrain_store).run(Plan(
-            identifier='test_run_succeeds_with_no_params_and_directory_input_and_directory_output',
-            workdir=testdir,
-            image="docker://alpine:latest",
-            command='ls $INPUT | tee $INPUT.output',
-            input={
-                'kind': 'directory',
-                'from': remote_path,
-            },
-            output={
-                'to': remote_path,
-                'from': '',
-                'pattern': 'output'
-            }))
+        Runner(TerrainStore(plan)).run(plan)
 
         # check file was written locally
         assert isfile(local_output_path)
@@ -575,7 +576,6 @@ def test_run_succeeds_with_no_params_and_directory_input_and_directory_output(
 
 
 def test_run_succeeds_with_params_and_directory_input_and_directory_output(
-        terrain_store,
         remote_base_path,
         file_name_1,
         file_name_2):
@@ -584,6 +584,27 @@ def test_run_succeeds_with_params_and_directory_input_and_directory_output(
     remote_path = join(remote_base_path, "testCollection")
     local_output_dir = join(testdir, 'input')  # write output files to input dir
     local_output_path = join(local_output_dir, f"{join(testdir, 'input')}.{message}.output")
+    plan = Plan(
+        identifier='test_run_succeeds_with_params_and_directory_input_and_directory_output',
+        workdir=testdir,
+        image="docker://alpine:latest",
+        command='ls $INPUT | tee $INPUT.$TAG.output',
+        input={
+            'kind': 'directory',
+            'from': remote_path,
+        },
+        output={
+            'to': remote_path,
+            'from': '',
+            'include_pattern': 'output'
+        },
+        params=[
+            {
+                'key': 'TAG',
+                'value': message
+            },
+        ],
+        cyverse_token=token)
 
     try:
         # prep CyVerse collection
@@ -597,26 +618,7 @@ def test_run_succeeds_with_params_and_directory_input_and_directory_output(
         upload_file(local_input_file_path_2, remote_path, token)
 
         # expect 1 container
-        Runner(terrain_store).run(Plan(
-            identifier='test_run_succeeds_with_params_and_directory_input_and_directory_output',
-            workdir=testdir,
-            image="docker://alpine:latest",
-            command='ls $INPUT | tee $INPUT.$TAG.output',
-            input={
-                'kind': 'directory',
-                'from': remote_path,
-            },
-            output={
-                'to': remote_path,
-                'from': '',
-                'pattern': 'output'
-            },
-            params=[
-                {
-                    'key': 'TAG',
-                    'value': message
-                },
-            ]))
+        Runner(TerrainStore(plan)).run(plan)
 
         # check file was written locally
         assert isfile(local_output_path)
@@ -635,31 +637,32 @@ def test_run_succeeds_with_params_and_directory_input_and_directory_output(
         delete_collection(remote_path, token)
 
 
-def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_excludes(terrain_store, remote_base_path):
+def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_excludes(remote_base_path):
     local_output_path = testdir
     local_output_file_included = join(local_output_path, "included.output")
     local_output_file_excluded = join(local_output_path, "excluded.output")
     remote_path = join(remote_base_path, "testCollection")
+    plan = Plan(
+        identifier='test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_excludes',
+        workdir=testdir,
+        image="docker://alpine:latest",
+        command='touch excluded.output included.output',
+        output={
+            'to': join(remote_base_path, "testCollection"),
+            'from': '',
+            'include_pattern': 'output',
+            'exclude': [
+                'excluded.output'
+            ]
+        },
+        cyverse_token=token)
 
     try:
         # prep CyVerse collection
         create_collection(remote_path, token)
 
         # expect 1 container
-        Runner(terrain_store).run(Plan(
-            identifier='test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_excludes',
-            workdir=testdir,
-            image="docker://alpine:latest",
-            command='touch excluded.output included.output',
-            output={
-                'to': join(remote_base_path, "testCollection"),
-                'from': '',
-                'pattern': 'output',
-                'exclude': [
-                    'excluded.output'
-                ]
-            },
-            cyverse_token=token))
+        Runner(TerrainStore(plan)).run(plan)
 
         # check files were written locally
         assert isfile(local_output_file_included)
@@ -676,37 +679,38 @@ def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_excl
         delete_collection(remote_path, token)
 
 
-def test_run_succeeds_with_params_and_no_input_and_directory_output_with_excludes(terrain_store, remote_base_path):
+def test_run_succeeds_with_params_and_no_input_and_directory_output_with_excludes(remote_base_path):
     local_output_path = testdir
     local_output_file_included = join(local_output_path, f"included.{message}.output")
     local_output_file_excluded = join(local_output_path, "excluded.output")
     remote_path = join(remote_base_path, "testCollection")
+    plan = Plan(
+        identifier='test_run_succeeds_with_params_and_no_input_and_directory_output_with_excludes',
+        workdir=testdir,
+        image="docker://alpine:latest",
+        command='touch excluded.output included.$TAG.output',
+        output={
+            'to': join(remote_base_path, "testCollection"),
+            'from': '',
+            'include_pattern': 'output',
+            'exclude': [
+                'excluded.output'
+            ]
+        },
+        cyverse_token=token,
+        params=[
+            {
+                'key': 'TAG',
+                'value': message
+            },
+        ])
 
     try:
         # prep CyVerse collection
         create_collection(remote_path, token)
 
         # expect 1 container
-        Runner(terrain_store).run(Plan(
-            identifier='test_run_succeeds_with_params_and_no_input_and_directory_output_with_excludes',
-            workdir=testdir,
-            image="docker://alpine:latest",
-            command='touch excluded.output included.$TAG.output',
-            output={
-                'to': join(remote_base_path, "testCollection"),
-                'from': '',
-                'pattern': 'output',
-                'exclude': [
-                    'excluded.output'
-                ]
-            },
-            cyverse_token=token,
-            params=[
-                {
-                    'key': 'TAG',
-                    'value': message
-                },
-            ]))
+        Runner(TerrainStore(plan)).run(plan)
 
         # check files were written locally
         assert isfile(local_output_file_included)
@@ -723,31 +727,32 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output_with_exclude
         delete_collection(remote_path, token)
 
 
-def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes(terrain_store, remote_base_path):
+def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes(remote_base_path):
     local_output_path = testdir
     local_output_file_included = join(local_output_path, "included.output")
     local_output_file_excluded = join(local_output_path, "excluded.output")
     remote_path = join(remote_base_path, "testCollection")
+    plan = Plan(
+        identifier='test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes',
+        workdir=testdir,
+        image="docker://alpine:latest",
+        command='touch excluded.output included.output',
+        output={
+            'to': join(remote_base_path, "testCollection"),
+            'from': '',
+            'include_pattern': 'OUTPUT',
+            'exclude': [
+                'excluded.output'
+            ]
+        },
+        cyverse_token=token)
 
     try:
         # prep CyVerse collection
         create_collection(remote_path, token)
 
         # expect 1 container
-        Runner(terrain_store).run(Plan(
-            identifier='test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes',
-            workdir=testdir,
-            image="docker://alpine:latest",
-            command='touch excluded.output included.output',
-            output={
-                'to': join(remote_base_path, "testCollection"),
-                'from': '',
-                'pattern': 'OUTPUT',
-                'exclude': [
-                    'excluded.output'
-                ]
-            },
-            cyverse_token=token))
+        Runner(TerrainStore(plan)).run(plan)
 
         # check files were written locally
         assert isfile(local_output_file_included)
@@ -764,37 +769,38 @@ def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_non_
         delete_collection(remote_path, token)
 
 
-def test_run_succeeds_with_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes(terrain_store, remote_base_path):
+def test_run_succeeds_with_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes(remote_base_path):
     local_output_path = testdir
     local_output_file_included = join(local_output_path, f"included.{message}.output")
     local_output_file_excluded = join(local_output_path, "excluded.output")
     remote_path = join(remote_base_path, "testCollection")
+    plan = Plan(
+        identifier='test_run_succeeds_with_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes',
+        workdir=testdir,
+        image="docker://alpine:latest",
+        command='touch excluded.output included.$TAG.output',
+        output={
+            'to': join(remote_base_path, "testCollection"),
+            'from': '',
+            'include_pattern': 'OUTPUT',
+            'exclude': [
+                'excluded.output'
+            ]
+        },
+        cyverse_token=token,
+        params=[
+            {
+                'key': 'TAG',
+                'value': message
+            },
+        ])
 
     try:
         # prep CyVerse collection
         create_collection(remote_path, token)
 
         # expect 1 container
-        Runner(terrain_store).run(Plan(
-            identifier='test_run_succeeds_with_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes',
-            workdir=testdir,
-            image="docker://alpine:latest",
-            command='touch excluded.output included.$TAG.output',
-            output={
-                'to': join(remote_base_path, "testCollection"),
-                'from': '',
-                'pattern': 'OUTPUT',
-                'exclude': [
-                    'excluded.output'
-                ]
-            },
-            cyverse_token=token,
-            params=[
-                {
-                    'key': 'TAG',
-                    'value': message
-                },
-            ]))
+        Runner(TerrainStore(plan)).run(plan)
 
         # check files were written locally
         assert isfile(local_output_file_included)

@@ -12,7 +12,6 @@ from plantit_cli.utils import update_status, run_container_for_directory, run_co
 
 
 class Runner(ABC):
-
     def __init__(self, store: Store):
         self.__store = store
 
@@ -46,8 +45,12 @@ class Runner(ABC):
     def __push_output(self, plan: Plan):
         self.__store.upload_directory(join(plan.workdir, plan.output['from']) if 'from' in plan.output else plan.workdir,
                                       plan.output['to'],
-                                      (plan.output['pattern'] if plan.output[
-                                                                    'pattern'] != '' else None) if 'pattern' in plan.output else None,
+                                      (plan.output['include_pattern'] if plan.output[
+                                                                    'include_pattern'] != '' else None) if 'include_pattern' in plan.output else None,
+                                      (plan.output['include'] if plan.output[
+                                                                             'include'] != '' else None) if 'include' in plan.output else None,
+                                      (plan.output['exclude_pattern'] if plan.output[
+                                                                     'exclude_pattern'] != '' else None) if 'exclude_pattern' in plan.output else None,
                                       (plan.output['exclude'] if plan.output[
                                                                     'exclude'] != '' else None) if 'exclude' in plan.output else None)
 

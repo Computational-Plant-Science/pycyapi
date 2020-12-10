@@ -3,9 +3,6 @@ from os import environ
 
 import pytest
 
-from plantit_cli.store.terrain_store import *
-from plantit_cli.tests.test_utils import get_token
-
 message = "Message!"
 testdir = environ.get('TEST_DIRECTORY')
 
@@ -29,7 +26,3 @@ def file_name_1():
 def file_name_2():
     return "test2.txt"
 
-
-@pytest.fixture
-def terrain_store():
-    return TerrainStore(get_token())

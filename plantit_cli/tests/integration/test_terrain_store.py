@@ -12,7 +12,7 @@ testdir = environ.get('TEST_DIRECTORY')
 token = get_token()
 
 
-def _run(remote_base_path):
+def plan(remote_base_path):
     return Plan(
         identifier='workflow_with_directory_input',
         workdir=testdir,
@@ -31,7 +31,7 @@ def test_list_directory(remote_base_path):
     file1_path = join(testdir, file1_name)
     file2_path = join(testdir, file2_name)
     remote_path = join(remote_base_path, "testCollection")
-    store = TerrainStore(token)
+    store = TerrainStore(plan(remote_base_path))
 
     try:
         # prep CyVerse collection
@@ -61,7 +61,7 @@ def test_download_file(remote_base_path):
     file_name = 'f1.txt'
     file_path = join(testdir, file_name)
     remote_path = join(remote_base_path, "testCollection")
-    store = TerrainStore(token)
+    store = TerrainStore(plan(remote_base_path))
 
     try:
         # prep CyVerse collection
@@ -90,7 +90,7 @@ def test_download_directory(remote_base_path):
     file1_path = join(testdir, file1_name)
     file2_path = join(testdir, file2_name)
     remote_path = join(remote_base_path, "testCollection")
-    store = TerrainStore(token)
+    store = TerrainStore(plan(remote_base_path))
 
     try:
         # prep CyVerse collection

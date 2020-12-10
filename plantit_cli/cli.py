@@ -19,4 +19,5 @@ def run(workflow, plantit_token, cyverse_token):
         if 'api_url' not in workflow_def:
             workflow_def['api_url'] = None
 
-        Runner(TerrainStore(cyverse_token)).run(Plan(**workflow_def))
+        plan = Plan(**workflow_def)
+        Runner(TerrainStore(plan)).run(plan)

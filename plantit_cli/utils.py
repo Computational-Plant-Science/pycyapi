@@ -1,7 +1,8 @@
 import os
 import copy
 import subprocess
-from os.path import join
+from os import listdir
+from os.path import join, isfile
 
 import requests
 
@@ -9,16 +10,32 @@ from plantit_cli.exceptions import PlantitException
 from plantit_cli.plan import Plan
 
 
-def update_status(run: Plan, state: int, description: str):
+def list_files(path, include_pattern=None, include=None, exclude_pattern=None, exclude=None):
+    all_paths = [join(path, file) for file in listdir(path) if isfile(join(path, file))]
+    included_by_pattern = [p for p in all_paths if include_pattern.lower() in p.lower()] if include_pattern is not None else all_paths
+    print(f"Included: {included_by_pattern}")
+    included_by_name = [p for p in all_paths if
+                     p.split('/')[-1] in [pi for pi in include]] if include is not None else included_by_pattern
+    included = set(included_by_pattern + included_by_name)
+    print(f"Included: {included}")
+    excluded_by_pattern = [p for p in included if exclude_pattern.lower() not in p.lower()] if exclude_pattern is not None else included
+    print(f"Included: {excluded_by_pattern}")
+    excluded = [p for p in excluded_by_pattern if p.split('/')[-1] not in exclude] if exclude is not None else excluded_by_pattern
+    print(f"Included: {excluded}")
+
+    return excluded
+
+
+def update_status(plan: Plan, state: int, description: str):
     print(description)
-    if run.api_url:
-        requests.post(run.api_url,
+    if plan.api_url:
+        requests.post(plan.api_url,
                       data={
-                          'run_id': run.identifier,
+                          'run_id': plan.identifier,
                           'state': state,
                           'description': description
                       },
-                      headers={"Authorization": f"Token {run.plantit_token}"})
+                      headers={"Authorization": f"Token {plan.plantit_token}"})
 
 
 def __run_container(plan: Plan):

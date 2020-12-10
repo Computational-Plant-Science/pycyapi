@@ -104,13 +104,19 @@ To push files matching a pattern back to the Data Store after your container exe
 
 ```yaml
 output:
-  pattern: xslx                         # optional, single value or list
-  exclude:                              # optional, single value or list
+  include_pattern: xslx                 # optional, pattern to include
+  include:                              # optional, files to include
+    - included.png
+    - included.jpg
+  exclude_pattern: txt                  # optional, pattern to exclude
+  exclude:                              # optional, files to exclude
     - excluded.png
     - excluded.jpg
   from: directory                       # relative to the working directory
   to: /iplant/home/username/collection  # required
 ```
+
+The file list is compiled in the order listed above: all files matching `include_pattern` are appended, then all files under `include`, then all files matching `exclude_pattern` are removed from the list, followed by files under `exclude`.
 
 ### Authenticating with the Terrain API
 
