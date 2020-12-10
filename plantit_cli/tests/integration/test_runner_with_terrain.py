@@ -1,4 +1,5 @@
 import tempfile
+import time
 from os import remove
 from os.path import join, isfile
 
@@ -16,6 +17,7 @@ message = "Message"
 testdir = '/opt/plantit-cli/runs/'
 tempdir = tempfile.gettempdir()
 token = get_token()
+DEFAULT_SLEEP = 50
 
 
 def test_run_succeeds_with_no_params_and_file_input_and_no_output(remote_base_path,
@@ -108,6 +110,7 @@ def test_run_succeeds_with_params_and_file_input_and_no_output(remote_base_path,
 
 def test_run_fails_with_no_params_and_file_input_and_no_output_when_no_inputs_found(remote_base_path,
                                                                                     file_name_1):
+    time.sleep(DEFAULT_SLEEP)
     plan = Plan(
         identifier='test_run_fails_with_no_params_and_file_input_and_no_output_when_no_inputs_found',
         workdir=testdir,
@@ -126,6 +129,7 @@ def test_run_fails_with_no_params_and_file_input_and_no_output_when_no_inputs_fo
 
 def test_run_fails_with_params_and_file_input_and_no_output_when_no_inputs_found(remote_base_path,
                                                                                  file_name_1):
+    time.sleep(DEFAULT_SLEEP)
     plan = Plan(
         identifier='test_run_fails_with_params_and_file_input_and_no_output_when_no_inputs_found',
         workdir=testdir,
