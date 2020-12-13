@@ -139,7 +139,7 @@ A CyVerse access token can be obtained from the Terrain API with a `GET` request
 GET https://de.cyverse.org/terrain/token/cas
 ```
 
-## Bind mounts
+### Bind mounts
 
 To mount a path within your container to a writable filesystem location on the host (e.g., if our code needs to write temporary files), use the `mount` attribute:
 
