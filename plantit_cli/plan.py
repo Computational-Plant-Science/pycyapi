@@ -3,6 +3,7 @@ class Plan(object):
                  identifier: str,
                  workdir: str,
                  image: str,
+                 mount: str = None,
                  api_url: str = None,
                  command: str = None,
                  clone: str = None,
@@ -14,6 +15,7 @@ class Plan(object):
         self.identifier = identifier
         self.workdir = workdir
         self.image = image
+        self.mount = mount
         self.api_url = api_url
         self.command = command
         self.clone = clone

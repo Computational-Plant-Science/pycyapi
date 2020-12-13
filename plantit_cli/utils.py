@@ -39,7 +39,7 @@ def update_status(plan: Plan, state: int, description: str):
 
 
 def __run_container(plan: Plan):
-    cmd = f"singularity exec --home {plan.workdir} {plan.image} {plan.command}"
+    cmd = f"singularity exec --home {plan.workdir}{' --bind $PWD:' + plan.mount if plan.mount is not None and plan.mount is not '' else ''} {plan.image} {plan.command}"
     for param in sorted(plan.params, key=lambda p: len(p['key']), reverse=True):
         cmd = cmd.replace(f"${param['key'].upper()}", param['value'])
     msg = f"Running '{plan.image}' container with command: '{cmd}'"
