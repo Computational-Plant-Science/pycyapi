@@ -115,7 +115,7 @@ Note that by default, the CLI will check whether files already exist on the loca
 input:
   kind: directory
   from: /iplant/home/username/directory
-  overwrite: True
+  overwrite: true
 ```
 
 ### Outputs
