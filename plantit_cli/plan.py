@@ -3,7 +3,7 @@ class Plan(object):
                  identifier: str,
                  workdir: str,
                  image: str,
-                 mount: str = None,
+                 mount: list = None,
                  api_url: str = None,
                  command: str = None,
                  clone: str = None,

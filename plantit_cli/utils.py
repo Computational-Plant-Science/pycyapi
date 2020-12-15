@@ -39,15 +39,22 @@ def update_status(plan: Plan, state: int, description: str):
 
 
 def __run_container(plan: Plan):
-    cmd = f"singularity exec --home {plan.workdir}{' --bind ' + plan.workdir + ':' + plan.mount if plan.mount is not None and plan.mount != '' else ''} {plan.image} {plan.command}"
+    cmd = f"singularity exec --home {plan.workdir}"
+    # ' --bind ' + plan.workdir + ':' + plan.mount if plan.mount is not None and plan.mount != '' else ''
+    if plan.mount is not None:
+        if type(plan.mount) is list:
+            cmd += (' --bind ' + ','.join([plan.workdir + ':' + mp for mp in plan.mount if mp != '']))
+        else:
+            update_status(plan, 3, f"List expected for `mount`")
+    cmd += f" {plan.image} {plan.command}"
     for param in sorted(plan.params, key=lambda p: len(p['key']), reverse=True):
         cmd = cmd.replace(f"${param['key'].upper()}", param['value'])
     msg = f"Running '{cmd}'"
     update_status(plan, 3, msg)
 
-    with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, bufsize=1) as proc:
+    with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, universal_newlines=True) as proc:
         for line in proc.stdout:
-            update_status(plan, 3, line.decode('utf-8'))
+            update_status(plan, 3, line)
 
     if proc.returncode:
         msg = f"Non-zero exit code from container"

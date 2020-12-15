@@ -154,10 +154,12 @@ GET https://de.cyverse.org/terrain/token/cas
 
 ### Bind mounts
 
-To mount a path within your container to a writable filesystem location on the host (e.g., if our code needs to write temporary files), use the `mount` attribute:
+To mount paths within your container to a writable filesystem location on the host (e.g., if our code needs to write temporary files), use the `mount` attribute:
 
 ```yaml
-mount: /path/in/your/container
+mount:
+  - /path/in/your/container
+  - /another/path/in/your/container
 ```
 
 ## Examples
