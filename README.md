@@ -67,6 +67,8 @@ Note that your `command` may fail on some operating systems if it contains `&&`.
 
 The CLI can automatically copy files from the CyVerse Data Store to the local (or network) file system before your code runs, then push output files back to the Data Store afterwards.
 
+#### Input kinds
+
 Runs involving inputs and outputs fall into 3 categories:
 
 - pull a file from the Data Store and spawn a single container to process it
@@ -75,7 +77,7 @@ Runs involving inputs and outputs fall into 3 categories:
 
 To pull a file or directory, add an `input` section (the file or directory name will be substituted for `$INPUT` when `command` is invoked).
 
-#### Input file
+##### Input file
 
 To pull a file from the Data Store and spawn a single container to process it, use `kind: file` and `from: <file path>`:
 
@@ -85,7 +87,7 @@ input:
   from: /iplant/home/username/directory/file
 ```
 
-#### Input files
+##### Input files
 
 To pull a directory from the Data Store and spawn a container for each file, use `kind: files` and `from: <directory path>`:
 
@@ -95,7 +97,7 @@ input:
   from: /iplant/home/username/directory
 ```
 
-#### Input directory
+##### Input directory
 
 To pull the contents of a directory from the Data Store and spawn a single container to process it, use `kind: directory` and `from: <directory path>`:
 
@@ -103,6 +105,17 @@ To pull the contents of a directory from the Data Store and spawn a single conta
 input:
   kind: directory
   from: /iplant/home/username/directory
+```
+
+#### Overwriting existing input files
+
+Note that by default, the CLI will check whether files already exist on the local filesystem, and will not re-download them if they do. To force a download and overwrite, add the flag `overwrite: True` to the `input` section, for instance:
+
+```yaml
+input:
+  kind: directory
+  from: /iplant/home/username/directory
+  overwrite: True
 ```
 
 ### Outputs

@@ -1,5 +1,6 @@
+from os import listdir
 from typing import List
-from os.path import isdir, isfile, basename
+from os.path import isdir, isfile, basename, join
 
 import requests
 
@@ -14,7 +15,6 @@ class TerrainStore(Store):
         super().__init__(plan)
 
     def list_directory(self, path) -> List[str]:
-        update_status(self.plan, 3, f"Listing '{path}'")
         with requests.get(
                 f"https://de.cyverse.org/terrain/secured/filesystem/paged-directory?limit=1000&path={path}",
                 headers={'Authorization': f"Bearer {self.plan.cyverse_token}"}) as response:
@@ -26,7 +26,11 @@ class TerrainStore(Store):
 
     def download_file(self, from_path, to_path):
         to_path_full = f"{to_path}/{from_path.split('/')[-1]}"
-        update_status(self.plan, 3, f"Downloading '{from_path}' to '{to_path_full}'")
+        if isfile(to_path_full) and ('overwrite' not in self.plan.output or ('overwrite' in self.plan and not self.plan.output['overwrite'])):
+            update_status(self.plan, 3, f"File {to_path_full} already exists, skipping download")
+            return
+        else:
+            update_status(self.plan, 3, f"Downloading '{from_path}' to '{to_path_full}'")
         with requests.get(f"https://de.cyverse.org/terrain/secured/fileio/download?path={from_path}",
                           headers={'Authorization': f"Bearer {self.plan.cyverse_token}"}) as response:
             if response.status_code == 500 and response.json()['error_code'] == 'ERR_REQUEST_FAILED':
