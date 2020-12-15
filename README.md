@@ -53,8 +53,6 @@ To run `hello_world.yaml`, use `plantit hello_world.yaml`. The YAML schema shoul
 identifier: a42033c3-9ba1-4d99-83ed-3fdce08c706e # run identifier (required)
 image: docker://alpine                           # Docker or Singularity image (required)
 workdir: /your/working/directory                 # working directory (required)
-mount:
-  - 
 command: echo $MESSAGE                           # command to run in container (required)
 params:                                          # parameters substituted when `command` is run (optional)
 - key: message
@@ -154,12 +152,12 @@ GET https://de.cyverse.org/terrain/token/cas
 
 ### Bind mounts
 
-To mount paths within your container to a writable filesystem location on the host (e.g., if our code needs to write temporary files), use the `mount` attribute:
+If your code needs to write temporary files somewhere other than the (automatically mounted) host working directory, use the `mount` attribute:
 
 ```yaml
 mount:
-  - /path/in/your/container
-  - /another/path/in/your/container
+  - /path/in/your/container # defaults to the host working directory
+  - path/relative/to/host/working/directory:/another/path/in/your/container
 ```
 
 ## Examples

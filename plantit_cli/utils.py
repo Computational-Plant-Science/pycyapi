@@ -38,12 +38,15 @@ def update_status(plan: Plan, state: int, description: str):
                       headers={"Authorization": f"Token {plan.plantit_token}"})
 
 
+def __parse_mount(workdir, mp):
+    return mp.rpartition(':')[0] + ':' + mp.rpartition(':')[2] if ':' in mp else workdir + ':' + mp
+
+
 def __run_container(plan: Plan):
     cmd = f"singularity exec --home {plan.workdir}"
-    # ' --bind ' + plan.workdir + ':' + plan.mount if plan.mount is not None and plan.mount != '' else ''
     if plan.mount is not None:
         if type(plan.mount) is list:
-            cmd += (' --bind ' + ','.join([plan.workdir + ':' + mp for mp in plan.mount if mp != '']))
+            cmd += (' --bind ' + ','.join([__parse_mount(mp, plan.workdir) for mp in plan.mount if mp != '']))
         else:
             update_status(plan, 3, f"List expected for `mount`")
     cmd += f" {plan.image} {plan.command}"
