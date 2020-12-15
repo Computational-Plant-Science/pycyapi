@@ -26,7 +26,7 @@ class TerrainStore(Store):
 
     def download_file(self, from_path, to_path):
         to_path_full = f"{to_path}/{from_path.split('/')[-1]}"
-        if isfile(to_path_full) and ('overwrite' not in self.plan.output or ('overwrite' in self.plan.output and not self.plan.output['overwrite'])):
+        if isfile(to_path_full) and ('overwrite' not in self.plan.input or ('overwrite' in self.plan.input and not self.plan.input['overwrite'])):
             update_status(self.plan, 3, f"File {to_path_full} already exists, skipping download")
             return
         else:
