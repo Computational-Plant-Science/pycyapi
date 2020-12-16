@@ -57,7 +57,7 @@ def __run_container(plan: Plan):
 
     with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, universal_newlines=True) as proc:
         for line in proc.stdout:
-            update_status(plan, 3, line)
+            print(line)
 
     if proc.returncode:
         msg = f"Non-zero exit code from container"
