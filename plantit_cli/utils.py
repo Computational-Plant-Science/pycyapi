@@ -46,7 +46,7 @@ def __run_container(plan: Plan):
     cmd = f"singularity exec --home {plan.workdir}"
     if plan.mount is not None:
         if type(plan.mount) is list:
-            cmd += (' --bind ' + ','.join([__parse_mount(mp, plan.workdir) for mp in plan.mount if mp != '']))
+            cmd += (' --bind ' + ','.join([__parse_mount(plan.workdir, mp) for mp in plan.mount if mp != '']))
         else:
             update_status(plan, 3, f"List expected for `mount`")
     cmd += f" {plan.image} {plan.command}"
