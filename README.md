@@ -125,16 +125,18 @@ To push files matching a pattern back to the Data Store after your container exe
 
 ```yaml
 output:
-  include_pattern: xslx                 # optional, pattern to include
-  include:                              # optional, files to include
+  include_patterns:                     # optional, file patterns to include
+    - xslx
+  include_files:                        # optional, file names to include
     - included.png
     - included.jpg
-  exclude_pattern: txt                  # optional, pattern to exclude
-  exclude:                              # optional, files to exclude
+  exclude_patterns:                     # optional, file patterns to exclude
+    - txt
+  exclude_files:                        # optional, file names to exclude
     - excluded.png
     - excluded.jpg
-  from: directory                       # relative to the working directory
-  to: /iplant/home/username/collection  # required
+  from: directory                       # required, relative to the working directory (leave empty to indicate working directory)
+  to: /iplant/home/username/collection  # required, path in CyVerse Data Store
 ```
 
 The file list is compiled in the order listed above: all files matching `include_pattern` are appended, then all files under `include`, then all files matching `exclude_pattern` are removed from the list, followed by files under `exclude`.
@@ -189,8 +191,8 @@ logging:
 
 Before running tests, run `scripts/bootstrap.sh` (this will pull/build images for a small `docker-compose` SLURM cluster test environment). To run unit tests:
 
-```docker-compose -f docker-compose.test.yml exec slurmctld python3 -m pytest /opt/plantit-cli/plantit_cli/tests/unit -s```
+```docker-compose -f docker-compose.test.yml run slurmctld python3 -m pytest /opt/plantit-cli/plantit_cli/tests/unit -s```
 
 Note that integration tests invoke the Terrain API and may take some time to complete; they're rigged with a delay to allow writes to propagate from Terrain to the CyVerse Data Store (some pass/fail non-determinism occurs otherwise). To run integration tests:
 
-```docker-compose -f docker-compose.test.yml exec slurmctld python3 -m pytest /opt/plantit-cli/plantit_cli/tests/integration -s```
+```docker-compose -f docker-compose.test.yml run slurmctld python3 -m pytest /opt/plantit-cli/plantit_cli/tests/integration -s```

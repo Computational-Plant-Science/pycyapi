@@ -40,9 +40,9 @@ class TerrainStore(Store):
                 for chunk in response.iter_content(chunk_size=8192):
                     file.write(chunk)
 
-    def download_directory(self, from_path, to_path, include_pattern=None):
+    def download_directory(self, from_path, to_path, include_patterns=None):
         from_paths = [p for p in self.list_directory(from_path) if
-                      include_pattern in p] if include_pattern is not None else self.list_directory(from_path)
+                      include_patterns in p] if include_patterns is not None else self.list_directory(from_path)
         update_status(self.plan, 3, f"Downloading directory '{from_path}' with {len(from_paths)} file(s)")
         for path in from_paths:
             self.download_file(path, to_path)

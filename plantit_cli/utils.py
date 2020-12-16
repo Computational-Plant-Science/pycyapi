@@ -13,15 +13,11 @@ from plantit_cli.plan import Plan
 def list_files(path, include_pattern=None, include=None, exclude_pattern=None, exclude=None):
     all_paths = [join(path, file) for file in listdir(path) if isfile(join(path, file))]
     included_by_pattern = [p for p in all_paths if include_pattern.lower() in p.lower()] if include_pattern is not None else all_paths
-    print(f"Included: {included_by_pattern}")
     included_by_name = [p for p in all_paths if
                      p.split('/')[-1] in [pi for pi in include]] if include is not None else included_by_pattern
     included = set(included_by_pattern + included_by_name)
-    print(f"Included: {included}")
     excluded_by_pattern = [p for p in included if exclude_pattern.lower() not in p.lower()] if exclude_pattern is not None else included
-    print(f"Included: {excluded_by_pattern}")
     excluded = [p for p in excluded_by_pattern if p.split('/')[-1] not in exclude] if exclude is not None else excluded_by_pattern
-    print(f"Included: {excluded}")
 
     return excluded
 
@@ -59,7 +55,7 @@ def __run_container(plan: Plan):
         if plan.logging is not None and 'file' in plan.logging:
             log_file_path = plan.logging['file']
             log_file_dir = os.path.split(log_file_path)[0]
-            if log_file_dir is not None and log_file_dir is not '' and not isdir(log_file_dir):
+            if log_file_dir is not None and log_file_dir != '' and not isdir(log_file_dir):
                 raise FileNotFoundError(f"Directory does not exist: {log_file_dir}")
             else:
                 print(f"Logging container output to file '{log_file_path}'")
