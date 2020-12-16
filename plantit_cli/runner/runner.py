@@ -2,7 +2,7 @@ import os
 import subprocess
 import traceback
 from abc import ABC
-from os.path import join
+from os.path import join, isdir
 
 from plantit_cli.exceptions import PlantitException
 from plantit_cli.plan import Plan
@@ -17,10 +17,19 @@ class Runner(ABC):
 
     @staticmethod
     def __clone_repo(plan: Plan):
-        if subprocess.run(f"git clone {plan.clone}",
-                          stdout=subprocess.PIPE,
-                          stderr=subprocess.PIPE,
-                          shell=True).returncode != 0:
+        repo_dir = plan.clone.rpartition('/')[2]
+        if isdir(repo_dir):
+            if subprocess.run(f"cd {repo_dir} && git pull",
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE,
+                              shell=True).returncode != 0:
+                raise PlantitException(f"Repo '{plan.clone}' exists on local filesystem, failed to pull updates")
+            else:
+                update_status(plan, 3, f"Updated repo '{plan.clone}'")
+        elif subprocess.run(f"git clone {plan.clone}",
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            shell=True).returncode != 0:
             raise PlantitException(f"Failed to clone repo '{plan.clone}'")
         else:
             update_status(plan, 3, f"Cloned repo '{plan.clone}'")
@@ -38,21 +47,23 @@ class Runner(ABC):
             raise ValueError(f"'input.kind' must be either 'file' or 'directory'")
         input_files = os.listdir(input_dir)
         if len(input_files) == 0:
-            raise PlantitException(f"No inputs found at path '{plan.input['from']}'" + (f" matching pattern '{plan.input['pattern']}'" if 'pattern' in plan.input else ''))
-        update_status(plan, 3, f"Pulled input(s): {','.join(input_files)}")
+            raise PlantitException(f"No inputs found at path '{plan.input['from']}'" + (
+                f" matching pattern '{plan.input['pattern']}'" if 'pattern' in plan.input else ''))
+        update_status(plan, 3, f"Pulled input(s): {', '.join(input_files)}")
         return input_dir
 
     def __push_output(self, plan: Plan):
-        self.__store.upload_directory(join(plan.workdir, plan.output['from']) if 'from' in plan.output else plan.workdir,
-                                      plan.output['to'],
-                                      (plan.output['include_pattern'] if plan.output[
-                                                                    'include_pattern'] != '' else None) if 'include_pattern' in plan.output else None,
-                                      (plan.output['include'] if plan.output[
-                                                                             'include'] != '' else None) if 'include' in plan.output else None,
-                                      (plan.output['exclude_pattern'] if plan.output[
-                                                                     'exclude_pattern'] != '' else None) if 'exclude_pattern' in plan.output else None,
-                                      (plan.output['exclude'] if plan.output[
-                                                                    'exclude'] != '' else None) if 'exclude' in plan.output else None)
+        self.__store.upload_directory(
+            join(plan.workdir, plan.output['from']) if 'from' in plan.output else plan.workdir,
+            plan.output['to'],
+            (plan.output['include_pattern'] if plan.output[
+                                                   'include_pattern'] != '' else None) if 'include_pattern' in plan.output else None,
+            (plan.output['include'] if plan.output[
+                                           'include'] != '' else None) if 'include' in plan.output else None,
+            (plan.output['exclude_pattern'] if plan.output[
+                                                   'exclude_pattern'] != '' else None) if 'exclude_pattern' in plan.output else None,
+            (plan.output['exclude'] if plan.output[
+                                           'exclude'] != '' else None) if 'exclude' in plan.output else None)
 
         update_status(plan, 3, f"Pushed output(s)")
 

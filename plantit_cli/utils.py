@@ -2,7 +2,7 @@ import os
 import copy
 import subprocess
 from os import listdir
-from os.path import join, isfile
+from os.path import join, isfile, isdir
 
 import requests
 
@@ -56,8 +56,21 @@ def __run_container(plan: Plan):
     update_status(plan, 3, msg)
 
     with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, universal_newlines=True) as proc:
-        for line in proc.stdout:
-            print(line)
+        if plan.logging is not None and 'file' in plan.logging:
+            log_file_path = plan.logging['file']
+            log_file_dir = os.path.split(log_file_path)[0]
+            if log_file_dir is not None and log_file_dir is not '' and not isdir(log_file_dir):
+                raise FileNotFoundError(f"Directory does not exist: {log_file_dir}")
+            else:
+                print(f"Logging container output to file '{log_file_path}'")
+                with open(log_file_path, 'a') as log_file:
+                    for line in proc.stdout:
+                        log_file.write(line + '\n')
+                        print(line)
+        else:
+            print(f"Logging container output to console")
+            for line in proc.stdout:
+                print(line)
 
     if proc.returncode:
         msg = f"Non-zero exit code from container"
@@ -65,16 +78,6 @@ def __run_container(plan: Plan):
         raise PlantitException(msg)
     else:
         msg = f"Successfully ran container"
-
-    # ret = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    # if ret.returncode != 0:
-    #     msg = f"Non-zero exit code from container: {ret.stderr.decode('utf-8') if ret.stderr else ret.stdout.decode('utf-8') if ret.stdout else 'Unknown error'}"
-    #     update_status(plan, 2, msg)
-    #     raise PlantitException(msg)
-    # else:
-    #     msg = ret.stdout.decode('utf-8') + ret.stderr.decode('utf-8')
-    #     update_status(plan, 3, msg)
-    #     msg = f"Successfully ran container with command: '{cmd}'"
 
     return msg
 
@@ -95,7 +98,8 @@ def run_container(plan: Plan):
         params=params,
         input=plan.input,
         output=plan.output,
-        mount=plan.mount
+        mount=plan.mount,
+        logging=plan.logging
     )))
 
 
@@ -116,7 +120,8 @@ def run_container_for_directory(plan: Plan, input_directory: str):
         params=params,
         input=plan.input,
         output=plan.output,
-        mount = plan.mount)))
+        mount=plan.mount,
+        logging=plan.logging)))
 
 
 def run_containers_for_files(plan: Plan, input_directory: str):
@@ -140,4 +145,5 @@ def run_containers_for_files(plan: Plan, input_directory: str):
             params=params,
             input=plan.input,
             output=output,
-            mount = plan.mount)))
+            mount=plan.mount,
+            logging=plan.logging)))

@@ -1,7 +1,0 @@
-identifier: file_input
-workdir: /opt/plantit-cli/runs
-image: docker://alpine
-command: cat "$INPUT" | tee "$INPUT.output"
-input:
-  kind: file
-  path: /iplant/home/wbonelli/analyses/

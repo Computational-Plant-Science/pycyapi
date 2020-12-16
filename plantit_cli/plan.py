@@ -11,7 +11,8 @@ class Plan(object):
                  cyverse_token: str = None,
                  params: list = None,
                  input: dict = None,
-                 output: dict = None):
+                 output: dict = None,
+                 logging: dict = None):
         self.identifier = identifier
         self.workdir = workdir
         self.image = image
@@ -24,3 +25,4 @@ class Plan(object):
         self.params = params
         self.input = input
         self.output = output
+        self.logging = logging

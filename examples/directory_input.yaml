@@ -1,7 +1,0 @@
-identifier: directory_input
-workdir: /opt/plantit-cli/runs
-image: docker://alpine
-command: ls $INPUT | tee output.txt
-input:
-  kind: directory
-  path: /iplant/home/wbonelli/plantit_cli_tests/
