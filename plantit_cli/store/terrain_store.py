@@ -40,9 +40,12 @@ class TerrainStore(Store):
                 for chunk in response.iter_content(chunk_size=8192):
                     file.write(chunk)
 
-    def download_directory(self, from_path, to_path, include_patterns=None):
+    def download_directory(self,
+                           from_path,
+                           to_path,
+                           include_patterns=None):
         from_paths = [p for p in self.list_directory(from_path) if
-                      include_patterns in p] if include_patterns is not None else self.list_directory(from_path)
+                      any(ip in p for ip in include_patterns)] if include_patterns is not None else self.list_directory(from_path)
         update_status(self.plan, 3, f"Downloading directory '{from_path}' with {len(from_paths)} file(s)")
         for path in from_paths:
             self.download_file(path, to_path)
@@ -55,13 +58,19 @@ class TerrainStore(Store):
                                files={'file': (basename(from_path), file, 'application/octet-stream')}) as response:
                 response.raise_for_status()
 
-    def upload_directory(self, from_path, to_path, include_pattern=None, include=None, exclude_pattern=None, exclude=None):
+    def upload_directory(self,
+                         from_path,
+                         to_path,
+                         include_patterns=None,
+                         include_names=None,
+                         exclude_patterns=None,
+                         exclude_names=None):
         is_file = isfile(from_path)
         is_dir = isdir(from_path)
         if not (is_dir or is_file):
             raise FileNotFoundError(f"Local path '{from_path}' does not exist")
         elif is_dir:
-            from_paths = list_files(from_path, include_pattern, include, exclude_pattern, exclude)
+            from_paths = list_files(from_path, include_patterns, include_names, exclude_patterns, exclude_names)
             update_status(self.plan, 3, f"Uploading directory '{from_path}' with {len(from_paths)} files")
             for path in [str(p) for p in from_paths]:
                 self.upload_file(path, to_path)

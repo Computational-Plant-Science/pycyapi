@@ -56,14 +56,10 @@ class Runner(ABC):
         self.__store.upload_directory(
             join(plan.workdir, plan.output['from']) if 'from' in plan.output else plan.workdir,
             plan.output['to'],
-            (plan.output['include_pattern'] if plan.output[
-                                                   'include_pattern'] != '' else None) if 'include_pattern' in plan.output else None,
-            (plan.output['include'] if plan.output[
-                                           'include'] != '' else None) if 'include' in plan.output else None,
-            (plan.output['exclude_pattern'] if plan.output[
-                                                   'exclude_pattern'] != '' else None) if 'exclude_pattern' in plan.output else None,
-            (plan.output['exclude'] if plan.output[
-                                           'exclude'] != '' else None) if 'exclude' in plan.output else None)
+            (plan.output['include']['patterns'] if type(plan.output['include']['patterns']) is list else None) if 'include' in plan.output else None,
+            (plan.output['include']['names'] if type(plan.output['include']['names']) is list else None) if 'include' in plan.output else None,
+            (plan.output['exclude']['patterns'] if type(plan.output['exclude']['patterns']) is list else None) if 'exclude' in plan.output else None,
+            (plan.output['exclude']['names'] if type(plan.output['exclude']['names']) is list else None) if 'exclude' in plan.output else None)
 
         update_status(plan, 3, f"Pushed output(s)")
 

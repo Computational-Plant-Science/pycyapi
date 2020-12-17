@@ -121,25 +121,34 @@ input:
 
 ### Outputs
 
-To push files matching a pattern back to the Data Store after your container executes (the local path will be substituted for `$OUTPUT` when `command` runs):
+To push files back to the Data Store after your container executes, add an `output` section:
 
 ```yaml
 output:
-  include_patterns:                     # optional, file patterns to include
-    - xslx
-  include_files:                        # optional, file names to include
-    - included.png
-    - included.jpg
-  exclude_patterns:                     # optional, file patterns to exclude
-    - txt
-  exclude_files:                        # optional, file names to exclude
-    - excluded.png
-    - excluded.jpg
   from: directory                       # required, relative to the working directory (leave empty to indicate working directory)
   to: /iplant/home/username/collection  # required, path in CyVerse Data Store
 ```
 
-The file list is compiled in the order listed above: all files matching `include_pattern` are appended, then all files under `include`, then all files matching `exclude_pattern` are removed from the list, followed by files under `exclude`.
+The path specified in `from` will be substituted for `$OUTPUT` when `command` runs.
+
+By default, all files in `from` are pushed to the Data Store. To explicitly specify files to include/exclude, add the following to your `output` section:
+
+```yaml
+  ...
+  include:
+    patterns:                           # include excel files
+      - xlsx
+    names:                              # say we want to include a few images,
+      - image.png                       # but not all .jpg or .png files...
+      - image.jpg
+  exclude:
+    patterns:
+      - temp                            # don't include temp files
+    names:
+      - not_important.xlsx              # actually, here's an excel file we want to exclude
+```
+
+If only an `include` section is provided, only the file patterns and names specified will be included. If only an `exclude` section is present, all files except the patterns and names specified will be included. If you provide both `include` and `exclude` sections, the `include` rules will first be applied to generate a subset of files, which will then be filtered by the `exclude` rules.
 
 ### Bind mounts
 

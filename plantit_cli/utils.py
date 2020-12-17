@@ -10,16 +10,19 @@ from plantit_cli.exceptions import PlantitException
 from plantit_cli.plan import Plan
 
 
-def list_files(path, include_pattern=None, include=None, exclude_pattern=None, exclude=None):
+def list_files(path,
+               include_patterns=None,
+               include_names=None,
+               exclude_patterns=None,
+               exclude_names=None):
     all_paths = [join(path, file) for file in listdir(path) if isfile(join(path, file))]
-    included_by_pattern = [p for p in all_paths if include_pattern.lower() in p.lower()] if include_pattern is not None else all_paths
-    included_by_name = [p for p in all_paths if
-                     p.split('/')[-1] in [pi for pi in include]] if include is not None else included_by_pattern
+    included_by_pattern = [pth for pth in all_paths if any(pattern.lower() in pth.lower() for pattern in include_patterns)] if include_patterns is not None else all_paths
+    included_by_name = [pth for pth in all_paths if pth.split('/')[-1] in [name for name in include_names]] if include_names is not None else included_by_pattern
     included = set(included_by_pattern + included_by_name)
-    excluded_by_pattern = [p for p in included if exclude_pattern.lower() not in p.lower()] if exclude_pattern is not None else included
-    excluded = [p for p in excluded_by_pattern if p.split('/')[-1] not in exclude] if exclude is not None else excluded_by_pattern
+    excluded_by_pattern = [name for name in included if all(pattern.lower() not in name.lower() for pattern in exclude_patterns)] if exclude_patterns is not None else included
+    excluded_by_name = [pattern for pattern in excluded_by_pattern if pattern.split('/')[-1] not in exclude_names] if exclude_names is not None else excluded_by_pattern
 
-    return excluded
+    return excluded_by_name
 
 
 def update_status(plan: Plan, state: int, description: str):
@@ -51,7 +54,8 @@ def __run_container(plan: Plan):
     msg = f"Running '{cmd}'"
     update_status(plan, 3, msg)
 
-    with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, universal_newlines=True) as proc:
+    with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True,
+                          universal_newlines=True) as proc:
         if plan.logging is not None and 'file' in plan.logging:
             log_file_path = plan.logging['file']
             log_file_dir = os.path.split(log_file_path)[0]
