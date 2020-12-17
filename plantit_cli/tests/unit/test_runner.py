@@ -18,7 +18,7 @@ testdir = environ.get('TEST_DIRECTORY')
 
 def test_run_logs_to_file_when_file_logging_enabled():
     with TemporaryDirectory() as temp_dir:
-        log_file_name = 'test_run_logs_to_file_when_file_logging_enabled.log'
+        log_file_name = 'test_run_logs_to_file_when_file_logging_enabled.txt'
         plan = Plan(
             identifier='test_run_succeeds_with_params_and_no_input_and_no_output',
             workdir=testdir,
