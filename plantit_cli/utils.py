@@ -92,11 +92,11 @@ def validate_plan(plan: Plan):
     errors = []
 
     # identifier
-    if plan.identifier is '':
+    if plan.identifier == '':
         errors.append('Attribute \'identifier\' must not be empty')
 
     # image
-    if plan.image is '':
+    if plan.image == '':
         errors.append('Attribute \'image\' must not be empty')
     else:
         container_split = plan.image.split('/')
@@ -106,22 +106,22 @@ def validate_plan(plan: Plan):
             errors.append(f"Image '{plan.image}' not found on Docker Hub")
 
     # working directory
-    if plan.workdir is '':
+    if plan.workdir == '':
         errors.append('Attribute \'workdir\' must not be empty')
     elif not isdir(plan.workdir):
         errors.append(f"Working directory '{plan.workdir}' does not exist")
 
     # command
-    if plan.command is '':
+    if plan.command == '':
         errors.append('Attribute \'command\' must not be empty')
 
     # params
     if plan.params is not None and not all(['key' in param and
                                             param['key'] is not None and
-                                            param['key'] is not '' and
+                                            param['key'] != '' and
                                             'value' in param and
                                             param['value'] is not None and
-                                            param['value'] is not ''
+                                            param['value'] != ''
                                             for param in plan.params]):
         errors.append('Every parameter must have a non-empty \'key\' and \'value\'')
 
