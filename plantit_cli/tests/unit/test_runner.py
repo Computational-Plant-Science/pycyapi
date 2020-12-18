@@ -895,6 +895,67 @@ def test_run_fails_with_params_and_directory_input_and_directory_output_when_no_
             Runner(store).run(plan)
 
 
+def test_run_succeeds_with_params_and_directory_input_and_filetypes_and_directory_output(remote_base_path, file_name_1, file_name_2):
+    with TemporaryDirectory() as temp_dir:
+        input_file_path_1 = join(testdir, file_name_1)
+        input_file_path_2 = join(testdir, file_name_2)
+        remote_path = join(remote_base_path[1:], "testCollection")
+        plan = Plan(
+            identifier='test_run_succeeds_with_params_and_directory_input_and_directory_output',
+            workdir=testdir,
+            image="docker://alpine:latest",
+            command='ls $INPUT/*.$FILETYPES | tee $INPUT.$TAG.output',
+            input={
+                'kind': 'directory',
+                'from': remote_path,
+                'filetypes': [
+                    'txt'
+                ]
+            },
+            output={
+                'to': remote_path,
+                'from': '',
+                'include': {
+                    'patterns': ['output'],
+                    'names': []
+                }
+            },
+            params=[
+                {
+                    'key': 'TAG',
+                    'value': message
+                },
+            ])
+        store = LocalStore(temp_dir, plan)
+        output_path = join(store.dir, f"{join(testdir, 'input')}.{message}.output")
+
+        try:
+            # prep file
+            with open(input_file_path_1, "w") as file1, open(input_file_path_2, "w") as file2:
+                file1.write('Hello, 1!')
+                file2.write('Hello, 2!')
+            store.upload_file(input_file_path_1, remote_path)
+            store.upload_file(input_file_path_2, remote_path)
+
+            # expect 1 container
+            Runner(store).run(plan)
+
+            # check file was written locally
+            assert isfile(output_path)
+            with open(output_path) as file:
+                lines = file.readlines()
+                assert len(lines) == 2
+                assert input_file_path_1.split('/')[-1] in lines[0]
+                assert input_file_path_2.split('/')[-1] in lines[1]
+            remove(output_path)
+
+            # check file was pushed to store
+            files = store.list_directory(remote_path)
+            assert join(store.dir, remote_path, output_path.split('/')[-1]) in files
+        finally:
+            clear_dir(testdir)
+
+
 def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_include_patterns_and_exclude_names(
         remote_base_path):
     with TemporaryDirectory() as temp_dir:

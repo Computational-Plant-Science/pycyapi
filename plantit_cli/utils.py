@@ -212,8 +212,11 @@ def __run_container(plan: Plan):
     cmd += f" {plan.image} {plan.command}"
     for param in sorted(plan.params, key=lambda p: len(p['key']), reverse=True):
         cmd = cmd.replace(f"${param['key'].upper()}", param['value'])
-    if len(plan.input['filetypes']) > 0:
-        cmd = cmd.replace("$FILETYPES", ','.join(plan.input['filetypes']))
+    if plan.input is not None and 'filetypes' in plan.input and plan.input['filetypes'] is not None:
+        if len(plan.input['filetypes']) > 0:
+            cmd = cmd.replace("$FILETYPES", ','.join(plan.input['filetypes']))
+        else:
+            cmd = cmd.replace("$FILETYPES", '')
     msg = f"Running '{cmd}'"
     update_status(plan, 3, msg)
 
