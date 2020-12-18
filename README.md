@@ -131,10 +131,12 @@ output:
 
 The path specified in `from` will be substituted for `$OUTPUT` when `command` runs.
 
-By default, all files in `from` are pushed to the Data Store. To explicitly specify files to include/exclude, add the following to your `output` section:
+By default, all files in `from` are pushed to the location specified in `to` in the CyVerse Data Store (collections will be created as necessary if they do not already exist). To explicitly specify files to include/exclude, add the following to your `output` section:
 
 ```yaml
-  ...
+output:
+  from: directory                       
+  to: /iplant/home/username/collection  
   include:
     patterns:                           # include excel files
       - xlsx

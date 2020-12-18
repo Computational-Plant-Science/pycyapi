@@ -491,7 +491,7 @@ def test_run_succeeds_with_params_and_file_input_and_directory_output(
         output={
             'to': join(remote_base_path, "testCollection"),
             'from': 'input',  # write output files to input dir
-            'include': {'pattern': ['output'], 'names': []}
+            'include': {'patterns': ['output'], 'names': []}
         },
         cyverse_token=token,
         params=[
@@ -547,7 +547,7 @@ def test_run_succeeds_with_no_params_and_directory_input_and_directory_output(
         output={
             'to': remote_path,
             'from': '',
-            'include': {'pattern': ['output'], 'names': []}
+            'include': {'patterns': ['output'], 'names': []}
         },
         cyverse_token=token)
 
@@ -657,8 +657,8 @@ def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_excl
         output={
             'to': join(remote_base_path, "testCollection"),
             'from': '',
-            'include': {'pattern': ['output'], 'names': []},
-            'exclude': {'pattern': [], 'names': [
+            'include': {'patterns': ['output'], 'names': []},
+            'exclude': {'patterns': [], 'names': [
                 'excluded.output'
             ]}
         },
@@ -699,8 +699,8 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output_with_exclude
         output={
             'to': join(remote_base_path, "testCollection"),
             'from': '',
-            'include': {'pattern': ['output'], 'names': []},
-            'exclude': {'pattern': [], 'names': [
+            'include': {'patterns': ['output'], 'names': []},
+            'exclude': {'patterns': [], 'names': [
                 'excluded.output'
             ]}
         },
@@ -748,8 +748,8 @@ def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_non_
         output={
             'to': join(remote_base_path, "testCollection"),
             'from': '',
-            'include': {'pattern': ['output'], 'names': []},
-            'exclude': {'pattern': [], 'names': [
+            'include': {'patterns': ['output'], 'names': []},
+            'exclude': {'patterns': [], 'names': [
                 'excluded.output'
             ]}
         },
@@ -791,8 +791,8 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output_with_non_mat
         output={
             'to': join(remote_base_path, "testCollection"),
             'from': '',
-            'include': {'pattern': ['OUTPUT'], 'names': []},
-            'exclude': {'pattern': [], 'names': [
+            'include': {'patterns': ['OUTPUT'], 'names': []},
+            'exclude': {'patterns': [], 'names': [
                 'excluded.output'
             ]}
         },

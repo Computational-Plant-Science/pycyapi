@@ -7,7 +7,7 @@ message = "Message!"
 testdir = environ.get('TEST_DIRECTORY')
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def remote_base_path():
     cyverse_username = os.environ.get('CYVERSE_USERNAME', None)
 

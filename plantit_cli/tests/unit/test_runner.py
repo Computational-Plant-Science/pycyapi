@@ -31,7 +31,7 @@ def test_run_logs_to_file_when_file_logging_enabled():
                 },
                 {
                     'key': 'MESSAGE_FILE',
-                    'value': join(testdir, 'message.txt')
+                    'value': 'message.txt'
                 },
             ],
             logging={
@@ -938,51 +938,6 @@ def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_incl
             clear_dir(testdir)
 
 
-def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_include_patterns_and_exclude_names(
-        remote_base_path):
-    with TemporaryDirectory() as temp_dir:
-        output_path = testdir
-        output_file_included = join(output_path, "included.output")
-        output_file_excluded = join(output_path, "excluded.output")
-        remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Plan(
-            identifier='test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_excludes',
-            workdir=testdir,
-            image="docker://alpine:latest",
-            command='touch excluded.output included.output',
-            output={
-                'to': remote_path,
-                'from': '',
-                'include': {
-                    'patterns': ['output'],
-                    'names': []
-                },
-                'exclude': {
-                    'patterns': [],
-                    'names': ['excluded.output']
-                }
-            }
-        )
-        store = LocalStore(temp_dir, plan)
-
-        try:
-            # expect 1 container
-            Runner(store).run(plan)
-
-            # check files were written locally
-            assert isfile(output_file_included)
-            assert isfile(output_file_excluded)
-            remove(output_file_included)
-            remove(output_file_excluded)
-
-            # check files were pushed to store
-            files = store.list_directory(remote_path)
-            assert len(files) == 1
-            assert join(store.dir, remote_path, 'included.output') in files
-        finally:
-            clear_dir(testdir)
-
-
 def test_run_succeeds_with_params_and_no_input_and_directory_output_with_excludes(remote_base_path):
     with TemporaryDirectory() as temp_dir:
         output_path = testdir
@@ -1056,8 +1011,7 @@ def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_non_
                     'patterns': [],
                     'names': ['excluded.output']
                 }
-            }
-        )
+            })
         store = LocalStore(temp_dir, plan)
 
         try:

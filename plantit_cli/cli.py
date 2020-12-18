@@ -4,6 +4,7 @@ import yaml
 from plantit_cli.runner.runner import Runner
 from plantit_cli.plan import Plan
 from plantit_cli.store.terrain_store import TerrainStore
+from plantit_cli.utils import validate_plan
 
 
 @click.command()
@@ -20,4 +21,9 @@ def run(workflow, plantit_token, cyverse_token):
             workflow_def['api_url'] = None
 
         plan = Plan(**workflow_def)
+        plan_validation_result = validate_plan(plan)
+        if type(plan_validation_result) is not bool:
+            raise ValueError(f"Invalid run plan: {', '.join(plan_validation_result[1])}")
+        else:
+            print(f"Validated run plan.")
         Runner(TerrainStore(plan)).run(plan)
