@@ -205,6 +205,57 @@ def test_run_succeeds_with_no_params_and_files_input_and_no_output(
         delete_collection(remote_path, token)
 
 
+def test_run_succeeds_with_no_params_and_files_input_and_patterns_and_no_output(
+        remote_base_path,
+        file_name_1,
+        file_name_2):
+    local_path_1 = join(testdir, file_name_1)
+    local_path_2 = join(testdir, file_name_2)
+    remote_path = join(remote_base_path, "testCollection")
+    plan = Plan(
+        identifier='test_run_succeeds_with_no_params_and_files_input_and_no_output',
+        workdir=testdir,
+        image="docker://alpine:latest",
+        command='cat $INPUT | tee $INPUT.output',
+        input={
+            'kind': 'files',
+            'from': join(remote_base_path, "testCollection"),
+            'patterns': [
+                file_name_1
+            ]
+        },
+        cyverse_token=token)
+
+    try:
+        # prep CyVerse collection
+        create_collection(remote_path, token)
+
+        # prep files
+        with open(local_path_1, "w") as file1, open(local_path_2, "w") as file2:
+            file1.write('Hello, 1!')
+            file2.write('Hello, 2!')
+        upload_file(local_path_1, remote_path, token)
+        upload_file(local_path_2, remote_path, token)
+
+        # expect 2 containers
+        Runner(TerrainStore(plan)).run(plan)
+
+        # check files were pulled
+        downloaded_path_1 = join(testdir, 'input', file_name_1)
+        downloaded_path_2 = join(testdir, 'input', file_name_2)
+        assert not isfile(downloaded_path_2)
+        check_hello(downloaded_path_1, 1)
+        remove(downloaded_path_1)
+
+        # check local output files were written
+        output_1 = f"{downloaded_path_1}.output"
+        check_hello(output_1, 1)
+        remove(output_1)
+    finally:
+        clear_dir(testdir)
+        delete_collection(remote_path, token)
+
+
 def test_run_succeeds_with_params_and_files_input_and_no_output(
         remote_base_path,
         file_name_1,
@@ -443,7 +494,7 @@ def test_run_succeeds_with_no_params_and_file_input_and_directory_output(
         output={
             'to': join(remote_base_path, "testCollection"),
             'from': 'input',  # write output files to input dir
-            'include': {'pattern': ['output'], 'names': []}
+            'include': {'patterns': ['output'], 'names': []}
         },
         cyverse_token=token)
 
@@ -603,7 +654,7 @@ def test_run_succeeds_with_params_and_directory_input_and_directory_output(
         output={
             'to': remote_path,
             'from': '',
-            'include': {'pattern': ['output'], 'names': []}
+            'include': {'patterns': ['output'], 'names': []}
         },
         params=[
             {

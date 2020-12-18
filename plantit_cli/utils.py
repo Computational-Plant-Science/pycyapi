@@ -130,26 +130,34 @@ def validate_plan(plan: Plan):
         # token
         if plan.cyverse_token is None or plan.cyverse_token == '':
             errors.append(f"CyVerse token must be provided")
+
         # kind
         if 'kind' not in plan.input:
             errors.append('Attribute \'input\' must include attribute \'kind\'')
         elif type(plan.input['kind']) is not str or not (
                 plan.input['kind'] == 'file' or plan.input['kind'] == 'files' or plan.input['kind'] == 'directory'):
             errors.append('Attribute \'input.kind\' must be either \'file\', \'files\', or \'directory\'')
+
         # from
         if 'from' not in plan.input:
             errors.append('Attribute \'input\' must include attribute \'from\'')
         elif type(plan.input['from']) is not str or not cyverse_path_exists(plan.input['from'], plan.cyverse_token):
             errors.append(f"Attribute 'input.from' must be a valid path in the CyVerse Data Store")
+
         # overwrite
         if 'overwrite' in plan.input and type(plan.input['overwrite']) is not bool:
             errors.append('Attribute \'input.overwrite\' must be a bool')
-        # pattern
-        if 'pattern' in plan.input and (type(plan.input['pattern']) is not str or plan.input['pattern'] == ''):
-            errors.append('Attribute \'input.pattern\' must be a non-empty str')
+
+        # patterns
+        if 'patterns' in plan.input and not all(type(pattern) is str and pattern != '' for pattern in plan.input['patterns']):
+            errors.append('Attribute \'input.patterns\' must be a non-empty str')
 
     # output
     if plan.output is not None:
+        # token
+        if plan.cyverse_token is None or plan.cyverse_token == '':
+            errors.append(f"CyVerse token must be provided")
+
         # from
         if 'from' not in plan.output:
             errors.append('Attribute \'output\' must include attribute \'from\'')

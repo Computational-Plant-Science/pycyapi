@@ -41,14 +41,14 @@ class Store(ABC):
         pass
 
     @abstractmethod
-    def download_directory(self, from_path, to_path, include_pattern):
+    def download_directory(self, from_path, to_path, patterns):
         """
         Downloads files from the remote directory to the local directory.
 
         Args:
             from_path: The remote directory path.
             to_path: The local directory path.
-            include_pattern: File pattern(s) to include.
+            patterns: File patterns to include.
         """
         pass
 

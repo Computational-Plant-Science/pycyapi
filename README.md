@@ -24,6 +24,7 @@ Deploy workflows on laptops, servers, or HPC/HTC clusters.
       - [Input file](#input-file)
       - [Input files](#input-files)
       - [Input directory](#input-directory)
+    - [Input patterns](#input-patterns)
     - [Overwriting existing input files](#overwriting-existing-input-files)
   - [Outputs](#outputs)
   - [Bind mounts](#bind-mounts)
@@ -108,6 +109,34 @@ input:
   from: /iplant/home/username/directory
 ```
 
+#### Input patterns
+
+To match and pull only certain input files `from` an input directory, use attribute `patterns`:
+
+```yaml
+input:
+  kind: directory
+  from: /iplant/home/username/directory
+  patterns:
+    - jpg
+    - png
+```
+
+<!--#### Verifying input file checksums
+
+To verify checksums associated with input files, add a `checksums` attribute to the `input` section, with a list of `name`/`md5` pairs. For instance:
+
+```yaml
+input:
+  kind: directory
+  from: /iplant/home/username/directory
+  checksums: 
+    - name: file1.txt
+      md5: 94fc3699a0f99317534736f0ec982dea
+    - name: file2.txt
+      md5: 8540f05638ac10899e8bc31c13d5074a
+```-->
+
 #### Overwriting existing input files
 
 Note that by default, the CLI will check whether files already exist on the local filesystem, and will not re-download them if they do. To force a download and overwrite, add the flag `overwrite: True` to the `input` section, for instance:
@@ -116,7 +145,7 @@ Note that by default, the CLI will check whether files already exist on the loca
 input:
   kind: directory
   from: /iplant/home/username/directory
-  overwrite: true
+  overwrite: True
 ```
 
 ### Outputs

@@ -12,7 +12,8 @@ class Plan(object):
                  params: list = None,
                  input: dict = None,
                  output: dict = None,
-                 logging: dict = None):
+                 logging: dict = None,
+                 checksums: list = None):
         self.identifier = identifier
         self.workdir = workdir
         self.image = image
@@ -26,3 +27,4 @@ class Plan(object):
         self.input = input
         self.output = output
         self.logging = logging
+        self.checksums = checksums

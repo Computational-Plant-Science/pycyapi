@@ -1,11 +1,7 @@
 from os import environ
 from os.path import join
 
-import pytest
-
 from plantit_cli.plan import Plan
-from plantit_cli.tests.integration.terrain_test_utils import create_collection, delete_collection
-from plantit_cli.tests.test_utils import get_token
 from plantit_cli.utils import validate_plan
 
 message = "Message"

@@ -1,4 +1,8 @@
+import multiprocessing
+from contextlib import closing
+from multiprocessing import Pool
 from os import listdir
+from pprint import pprint
 from typing import List
 from os.path import isdir, isfile, basename, join
 
@@ -22,11 +26,14 @@ class TerrainStore(Store):
                 raise PlantitException(f"Path {path} does not exist")
             response.raise_for_status()
             content = response.json()
+            for file in content['files']:
+                pprint(file)
             return [file['path'] for file in content['files']]
 
     def download_file(self, from_path, to_path):
         to_path_full = f"{to_path}/{from_path.split('/')[-1]}"
-        if isfile(to_path_full) and ('overwrite' not in self.plan.input or ('overwrite' in self.plan.input and not self.plan.input['overwrite'])):
+        if isfile(to_path_full) and ('overwrite' not in self.plan.input or (
+                'overwrite' in self.plan.input and not self.plan.input['overwrite'])):
             update_status(self.plan, 3, f"File {to_path_full} already exists, skipping download")
             return
         else:
@@ -40,15 +47,36 @@ class TerrainStore(Store):
                 for chunk in response.iter_content(chunk_size=8192):
                     file.write(chunk)
 
+    def __verify_inputs(self, from_path, paths):
+        with requests.post('https://de.cyverse.org/terrain/secured/filesystem/stat',
+                           headers={'Authorization': f"Bearer {self.plan.cyverse_token}"},
+                           data={'paths': paths}) as response:
+            response.raise_for_status()
+            pairs = [(path[join(from_path, path)]['label'], path[join(from_path, path)]['md5']) for path in
+                     response.json()['paths']]
+            if len(pairs) != len(self.plan.checksums):
+                raise PlantitException(
+                    f"{len(self.plan.checksums)} checksum pairs provided but {len(pairs)} files exist")
+            for actual in pairs:
+                expected = [pair for pair in self.plan.checksums if pair['name'] == actual[0]][0]
+                assert expected['name'] == actual[0]
+                assert expected['md5'] == actual[1]
+
     def download_directory(self,
                            from_path,
                            to_path,
-                           include_patterns=None):
-        from_paths = [p for p in self.list_directory(from_path) if
-                      any(ip in p for ip in include_patterns)] if include_patterns is not None else self.list_directory(from_path)
+                           patterns=None):
+        from_paths = [path for path in self.list_directory(from_path) if any(pattern in path for pattern in patterns)] if patterns is not None else self.list_directory(from_path)
+
+        if self.plan.checksums is not None and len(self.plan.checksums) > 0:
+            self.__verify_inputs(from_path, from_paths)
+
         update_status(self.plan, 3, f"Downloading directory '{from_path}' with {len(from_paths)} file(s)")
-        for path in from_paths:
-            self.download_file(path, to_path)
+        with closing(Pool(processes=multiprocessing.cpu_count())) as pool:
+            pool.starmap(self.download_file, [(path, to_path) for path in from_paths])
+
+        if self.plan.checksums is not None and len(self.plan.checksums) > 0:
+            self.__verify_inputs(from_path, from_paths)
 
     def upload_file(self, from_path, to_path):
         update_status(self.plan, 3, f"Uploading '{from_path}' to '{to_path}'")
@@ -72,8 +100,8 @@ class TerrainStore(Store):
         elif is_dir:
             from_paths = list_files(from_path, include_patterns, include_names, exclude_patterns, exclude_names)
             update_status(self.plan, 3, f"Uploading directory '{from_path}' with {len(from_paths)} files")
-            for path in [str(p) for p in from_paths]:
-                self.upload_file(path, to_path)
+            with closing(Pool(processes=multiprocessing.cpu_count())) as pool:
+                pool.starmap(self.upload_file, [(path, to_path) for path in [str(p) for p in from_paths]])
         elif is_file:
             self.upload_file(from_path, to_path)
         else:
