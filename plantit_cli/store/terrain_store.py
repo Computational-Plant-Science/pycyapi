@@ -84,7 +84,10 @@ class TerrainStore(Store):
             with requests.post(f"https://de.cyverse.org/terrain/secured/fileio/upload?dest={to_path}",
                                headers={'Authorization': f"Bearer {self.plan.cyverse_token}"},
                                files={'file': (basename(from_path), file, 'application/octet-stream')}) as response:
-                response.raise_for_status()
+                if response.status_code == 500 and response.json()['error_code'] == 'ERR_EXISTS':
+                    update_status(self.plan, 3, f"File '{to_path}' already exists, skipping upload")
+                else:
+                    response.raise_for_status()
 
     def upload_directory(self,
                          from_path,

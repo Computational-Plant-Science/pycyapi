@@ -875,3 +875,57 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output_with_non_mat
     finally:
         clear_dir(testdir)
         delete_collection(remote_path, token)
+
+
+def test_run_succeeds_with_params_and_no_input_and_directory_output_with_already_existing_output(remote_base_path, file_name_1):
+    local_output_path = testdir
+    local_input_file_path_1 = join(testdir, file_name_1)
+    local_output_file_included = join(local_output_path, f"included.{message}.output")
+    local_output_file_excluded = join(local_output_path, "excluded.output")
+    remote_path = join(remote_base_path, "testCollection")
+    plan = Plan(
+        identifier='test_run_succeeds_with_params_and_no_input_and_directory_output_with_excludes',
+        workdir=testdir,
+        image="docker://alpine:latest",
+        command='touch excluded.output included.$TAG.output',
+        output={
+            'to': join(remote_base_path, "testCollection"),
+            'from': '',
+            'include': {'patterns': ['output', file_name_1], 'names': []},
+            'exclude': {'patterns': [], 'names': [
+                'excluded.output'
+            ]}
+        },
+        cyverse_token=token,
+        params=[
+            {
+                'key': 'TAG',
+                'value': message
+            },
+        ])
+
+    try:
+        # prep CyVerse collection
+        create_collection(remote_path, token)
+
+        # prep file
+        with open(local_input_file_path_1, "w") as file1:
+            file1.write('Hello, 1!')
+        upload_file(local_input_file_path_1, remote_path, token)
+
+        # expect 1 container
+        Runner(TerrainStore(plan)).run(plan)
+
+        # check files were written locally
+        assert isfile(local_output_file_included)
+        assert isfile(local_output_file_excluded)
+        remove(local_output_file_included)
+        remove(local_output_file_excluded)
+
+        # check files were pushed to CyVerse
+        files = list_files(remote_path, token)
+        assert len(files) == 2
+        assert join(remote_path, f"included.{message}.output") in [file['path'] for file in files]
+    finally:
+        clear_dir(testdir)
+        delete_collection(remote_path, token)
