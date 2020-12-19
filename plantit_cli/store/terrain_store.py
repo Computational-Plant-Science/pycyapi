@@ -85,7 +85,7 @@ class TerrainStore(Store):
                                headers={'Authorization': f"Bearer {self.plan.cyverse_token}"},
                                files={'file': (basename(from_path), file, 'application/octet-stream')}) as response:
                 if response.status_code == 500 and response.json()['error_code'] == 'ERR_EXISTS':
-                    update_status(self.plan, 3, f"File '{to_path}' already exists, skipping upload")
+                    update_status(self.plan, 3, f"File '{join(to_path, basename(file.name))}' already exists, skipping upload")
                 else:
                     response.raise_for_status()
 
