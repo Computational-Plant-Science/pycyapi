@@ -66,7 +66,7 @@ class TerrainStore(Store):
                            from_path,
                            to_path,
                            patterns=None):
-        from_paths = [path for path in self.list_directory(from_path) if any(pattern in path for pattern in patterns)] if patterns is not None else self.list_directory(from_path)
+        from_paths = [path for path in self.list_directory(from_path) if any(pattern.lower() in path.lower() for pattern in patterns)] if patterns is not None else self.list_directory(from_path)
 
         if self.plan.checksums is not None and len(self.plan.checksums) > 0:
             self.__verify_inputs(from_path, from_paths)

@@ -117,7 +117,7 @@ To match and pull only certain input files `from` an input directory, use attrib
 input:
   kind: directory
   from: /iplant/home/username/directory
-  patterns:
+  filetypes:
     - jpg
     - png
 ```

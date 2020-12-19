@@ -39,14 +39,14 @@ class Runner(ABC):
         input_kind = plan.input['kind'].lower()
         os.makedirs(input_dir, exist_ok=True)
         if input_kind == 'directory' or input_kind == 'files':
-            self.__store.download_directory(plan.input['from'], input_dir, plan.input['patterns'] if 'patterns' in plan.input else None)
+            self.__store.download_directory(plan.input['from'], input_dir, plan.input['filetypes'] if 'filetypes' in plan.input else None)
         elif input_kind == 'file':
             self.__store.download_file(plan.input['from'], input_dir)
         else:
             raise ValueError(f"'input.kind' must be either 'file' or 'directory'")
         input_files = os.listdir(input_dir)
         if len(input_files) == 0:
-            raise PlantitException(f"No inputs found at path '{plan.input['from']}'" + (f" matching patterns '{plan.input['patterns']}'" if 'patterns' in plan.input else ''))
+            raise PlantitException(f"No inputs found at path '{plan.input['from']}'" + (f" matching filetypes '{plan.input['filetypes']}'" if 'filetypes' in plan.input else ''))
         update_status(plan, 3, f"Pulled input(s): {', '.join(input_files)}")
         return input_dir
 

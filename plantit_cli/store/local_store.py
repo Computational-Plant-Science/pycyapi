@@ -26,8 +26,9 @@ class LocalStore(Store):
             copyfileobj(from_file, to_file)
 
     def download_directory(self, from_path, to_path, patterns):
-        from_paths = [p for p in self.list_directory(from_path) if
-                      patterns.lower() in p.lower()] if patterns is not None else self.list_directory(from_path)
+        from_paths = [path for path in self.list_directory(from_path) if any(
+            pattern.lower() in path.lower() for pattern in patterns)] if patterns is not None else self.list_directory(
+            from_path)
         for path in from_paths:
             self.download_file(path, to_path)
 
