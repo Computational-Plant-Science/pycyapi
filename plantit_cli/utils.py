@@ -102,8 +102,9 @@ def validate_plan(plan: Plan):
         container_split = plan.image.split('/')
         container_name = container_split[-1]
         container_owner = None if container_split[-2] == '' else container_split[-2]
-        if not docker_container_exists(container_name, container_owner):
-            errors.append(f"Image '{plan.image}' not found on Docker Hub")
+        if 'docker' in plan.image:
+            if not docker_container_exists(container_name, container_owner):
+                errors.append(f"Image '{plan.image}' not found on Docker Hub")
 
     # working directory
     if plan.workdir == '':
