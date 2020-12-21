@@ -2,6 +2,11 @@ import os
 from os import environ
 from os.path import join, isfile
 
+import pytest
+
+from tenacity import RetryError
+
+from plantit_cli.exceptions import PlantitException
 from plantit_cli.store.terrain_store import TerrainStore
 from plantit_cli.plan import Plan
 from plantit_cli.tests.integration.terrain_test_utils import delete_collection, upload_file, create_collection
@@ -23,6 +28,19 @@ def plan(remote_base_path):
             'from': join(remote_base_path, "testCollection"),
         },
         cyverse_token=token)
+
+
+def bad_plan(remote_base_path):
+    return Plan(
+        identifier='workflow_with_directory_input',
+        workdir=testdir,
+        image="docker://alpine:latest",
+        command='ls $INPUT | tee $INPUT.output',
+        input={
+            'kind': 'directory',
+            'from': join(remote_base_path, "testCollection"),
+        },
+        cyverse_token='bad_token')
 
 
 def test_list_directory(remote_base_path):
@@ -55,6 +73,22 @@ def test_list_directory(remote_base_path):
     finally:
         clear_dir(testdir)
         delete_collection(remote_path, token)
+
+
+def test_list_directory_no_retries_when_path_does_not_exist(remote_base_path):
+    remote_path = join(remote_base_path, "badCollection")
+    store = TerrainStore(plan(remote_base_path))
+
+    with pytest.raises(PlantitException):
+        store.list_directory(remote_path)
+
+
+def test_list_directory_retries_when_token_invalid(remote_base_path):
+    remote_path = join(remote_base_path, "testCollection")
+    store = TerrainStore(bad_plan(remote_base_path))
+
+    with pytest.raises(RetryError):
+        store.list_directory(remote_path)
 
 
 def test_download_file(remote_base_path):

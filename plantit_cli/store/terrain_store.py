@@ -1,12 +1,13 @@
 import multiprocessing
 from contextlib import closing
 from multiprocessing import Pool
-from os import listdir
+from os.path import isdir, isfile, basename, join
 from pprint import pprint
 from typing import List
-from os.path import isdir, isfile, basename, join
 
 import requests
+from requests import ReadTimeout, Timeout, HTTPError, RequestException
+from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
 
 from plantit_cli.exceptions import PlantitException
 from plantit_cli.plan import Plan
@@ -18,6 +19,12 @@ class TerrainStore(Store):
     def __init__(self, plan: Plan):
         super().__init__(plan)
 
+    @retry(
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        stop=stop_after_attempt(3),
+        retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
+            RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
+            Timeout) | retry_if_exception_type(HTTPError)))
     def list_directory(self, path) -> List[str]:
         with requests.get(
                 f"https://de.cyverse.org/terrain/secured/filesystem/paged-directory?limit=1000&path={path}",
@@ -30,6 +37,12 @@ class TerrainStore(Store):
                 pprint(file)
             return [file['path'] for file in content['files']]
 
+    @retry(
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        stop=stop_after_attempt(3),
+        retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
+            RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
+            Timeout) | retry_if_exception_type(HTTPError)))
     def download_file(self, from_path, to_path):
         to_path_full = f"{to_path}/{from_path.split('/')[-1]}"
         if isfile(to_path_full) and ('overwrite' not in self.plan.input or (
@@ -47,6 +60,12 @@ class TerrainStore(Store):
                 for chunk in response.iter_content(chunk_size=8192):
                     file.write(chunk)
 
+    @retry(
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        stop=stop_after_attempt(3),
+        retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
+            RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
+            Timeout) | retry_if_exception_type(HTTPError)))
     def __verify_inputs(self, from_path, paths):
         with requests.post('https://de.cyverse.org/terrain/secured/filesystem/stat',
                            headers={'Authorization': f"Bearer {self.plan.cyverse_token}"},
@@ -66,7 +85,9 @@ class TerrainStore(Store):
                            from_path,
                            to_path,
                            patterns=None):
-        from_paths = [path for path in self.list_directory(from_path) if any(pattern.lower() in path.lower() for pattern in patterns)] if patterns is not None else self.list_directory(from_path)
+        from_paths = [path for path in self.list_directory(from_path) if any(
+            pattern.lower() in path.lower() for pattern in patterns)] if patterns is not None else self.list_directory(
+            from_path)
 
         if self.plan.checksums is not None and len(self.plan.checksums) > 0:
             self.__verify_inputs(from_path, from_paths)
@@ -78,6 +99,12 @@ class TerrainStore(Store):
         if self.plan.checksums is not None and len(self.plan.checksums) > 0:
             self.__verify_inputs(from_path, from_paths)
 
+    @retry(
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        stop=stop_after_attempt(3),
+        retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
+            RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
+            Timeout) | retry_if_exception_type(HTTPError)))
     def upload_file(self, from_path, to_path):
         update_status(self.plan, 3, f"Uploading '{from_path}' to '{to_path}'")
         with open(from_path, 'rb') as file:
@@ -85,7 +112,8 @@ class TerrainStore(Store):
                                headers={'Authorization': f"Bearer {self.plan.cyverse_token}"},
                                files={'file': (basename(from_path), file, 'application/octet-stream')}) as response:
                 if response.status_code == 500 and response.json()['error_code'] == 'ERR_EXISTS':
-                    update_status(self.plan, 3, f"File '{join(to_path, basename(file.name))}' already exists, skipping upload")
+                    update_status(self.plan, 3,
+                                  f"File '{join(to_path, basename(file.name))}' already exists, skipping upload")
                 else:
                     response.raise_for_status()
 
