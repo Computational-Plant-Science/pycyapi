@@ -7,6 +7,7 @@ class Plan(object):
                  mount: list = None,
                  api_url: str = None,
                  clone: str = None,
+                 branch: str = None,
                  plantit_token: str = None,
                  cyverse_token: str = None,
                  params: list = None,
@@ -21,6 +22,7 @@ class Plan(object):
         self.api_url = api_url
         self.command = command
         self.clone = clone
+        self.branch = branch
         self.plantit_token = plantit_token
         self.cyverse_token = cyverse_token
         self.params = params
