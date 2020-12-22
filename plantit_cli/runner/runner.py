@@ -35,7 +35,7 @@ class Runner(ABC):
             update_status(plan, 3, f"Cloned repo '{plan.clone}'")
 
         if plan.branch is not None:
-            if subprocess.run(f"git checkout {plan.branch}",
+            if subprocess.run(f"cd {repo_dir} && git checkout {plan.branch}",
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE,
                               shell=True).returncode != 0:
