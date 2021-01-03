@@ -191,6 +191,28 @@ mount:
   - path/relative/to/host/working/directory:/another/path/in/your/container
 ```
 
+### SLURM parallelism
+
+To parallelize multi-container runs on a SLURM cluster, add a section like the following:
+
+```yaml
+slurm:
+  cores: 1
+  processes: 10,
+  project: '<allocation>'
+  walltime: '01:00:00'
+  queue: 'normal'
+```
+
+For clusters with virtual memory, you may need to use `header_skip`:
+
+```yaml
+slurm:
+  ...
+  header_skip: # for clusters with virtual memory
+    - '--mem'
+```
+
 ### Authenticating with the Terrain API
 
 The CLI uses the Terrain API to access the CyVerse Data Store. Runs with inputs and outputs must provide a `--cyverse_token` argument. For instance, to run `hello_world.yaml`:

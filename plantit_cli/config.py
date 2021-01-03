@@ -1,4 +1,4 @@
-class Plan(object):
+class Config(object):
     def __init__(self,
                  identifier: str,
                  workdir: str,
@@ -14,7 +14,8 @@ class Plan(object):
                  input: dict = None,
                  output: dict = None,
                  logging: dict = None,
-                 checksums: list = None):
+                 checksums: list = None,
+                 slurm: dict = None):
         self.identifier = identifier
         self.workdir = workdir
         self.image = image
@@ -30,3 +31,4 @@ class Plan(object):
         self.output = output
         self.logging = logging
         self.checksums = checksums
+        self.slurm = slurm

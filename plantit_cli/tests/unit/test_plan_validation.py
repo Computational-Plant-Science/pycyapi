@@ -1,15 +1,15 @@
 from os import environ
 from os.path import join
 
-from plantit_cli.plan import Plan
-from plantit_cli.utils import validate_plan
+from plantit_cli.config import Config
+from plantit_cli.utils import validate_config
 
 message = "Message"
 testdir = environ.get('TEST_DIRECTORY')
 
 
 def test_validate_plan_with_params_and_no_input_and_no_output_and_file_logging():
-    plan = Plan(
+    plan = Config(
         identifier='test_run_succeeds_with_params_and_no_input_and_no_output',
         workdir=testdir,
         image="docker://alpine",
@@ -27,12 +27,12 @@ def test_validate_plan_with_params_and_no_input_and_no_output_and_file_logging()
         logging={
             'file': 'logfile.txt'
         })
-    result = validate_plan(plan)
+    result = validate_config(plan)
     assert type(result) is bool and result
 
 
 def test_validate_plan_with_params_and_no_input_and_no_output():
-    plan = Plan(
+    plan = Config(
         identifier='test_run_succeeds_with_params_and_no_input_and_no_output',
         workdir=testdir,
         image="docker://alpine",
@@ -47,6 +47,6 @@ def test_validate_plan_with_params_and_no_input_and_no_output():
                 'value': join(testdir, 'message.txt')
             },
         ])
-    result = validate_plan(plan)
+    result = validate_config(plan)
     assert type(result) is bool and result
 

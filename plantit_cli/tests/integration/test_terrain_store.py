@@ -8,7 +8,7 @@ from tenacity import RetryError
 
 from plantit_cli.exceptions import PlantitException
 from plantit_cli.store.terrain_store import TerrainStore
-from plantit_cli.plan import Plan
+from plantit_cli.config import Config
 from plantit_cli.tests.integration.terrain_test_utils import delete_collection, upload_file, create_collection
 from plantit_cli.tests.test_utils import clear_dir, get_token
 
@@ -18,7 +18,7 @@ token = get_token()
 
 
 def plan(remote_base_path):
-    return Plan(
+    return Config(
         identifier='workflow_with_directory_input',
         workdir=testdir,
         image="docker://alpine:latest",
@@ -31,7 +31,7 @@ def plan(remote_base_path):
 
 
 def bad_plan(remote_base_path):
-    return Plan(
+    return Config(
         identifier='workflow_with_directory_input',
         workdir=testdir,
         image="docker://alpine:latest",

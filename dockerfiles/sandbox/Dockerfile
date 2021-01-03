@@ -110,20 +110,19 @@ RUN mkdir /var/run/sshd \
 #     && update-rc.d slurmd defaults
 
 RUN mkdir -p /opt/plantit-cli/scripts \
-    && mkdir -p /opt/plantit-cli/examples \
     && mkdir -p /opt/plantit-cli/runs
 
 COPY ./setup.py /opt/plantit-cli
 COPY ./LICENSE /opt/plantit-cli
 COPY ./README.md /opt/plantit-cli
 COPY ./MANIFEST.in /opt/plantit-cli
-COPY ./examples /opt/plantit-cli/examples
 COPY ./plantit_cli /opt/plantit-cli/plantit_cli
-COPY ./plantit_cli/executor/slurm_job.sh /opt/plantit-cli/runs
+COPY ./plantit_cli/runner/slurm_job.sh /opt/plantit-cli/runs
 
 RUN pip3 install coveralls \
     && pip3 install pytest \
     && pip3 install dask[distributed] \
+    && pip3 install dask-jobqueue \
     && pip3 install -e /opt/plantit-cli
 
 SHELL ["/bin/bash", "-c"]

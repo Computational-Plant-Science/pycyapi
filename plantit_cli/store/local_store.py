@@ -3,13 +3,13 @@ from pathlib import Path
 from shutil import copyfileobj
 from typing import List
 
-from plantit_cli.plan import Plan
+from plantit_cli.config import Config
 from plantit_cli.store.store import Store
 from plantit_cli.utils import update_status, list_files
 
 
 class LocalStore(Store):
-    def __init__(self, temp_dir, plan: Plan):
+    def __init__(self, temp_dir, plan: Config):
         self.__files = {}
         self.__dir = temp_dir
         super().__init__(plan)

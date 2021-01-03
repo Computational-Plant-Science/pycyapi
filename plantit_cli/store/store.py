@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from plantit_cli.plan import Plan
+from plantit_cli.config import Config
 
 
 class Store(ABC):
@@ -9,7 +9,7 @@ class Store(ABC):
     Models a hierarchical file/object/blob store.
     """
     @abstractmethod
-    def __init__(self, plan: Plan):
+    def __init__(self, plan: Config):
         self.__plan = plan
 
     @property

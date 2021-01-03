@@ -10,13 +10,13 @@ from requests import ReadTimeout, Timeout, HTTPError, RequestException
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
 
 from plantit_cli.exceptions import PlantitException
-from plantit_cli.plan import Plan
+from plantit_cli.config import Config
 from plantit_cli.store.store import Store
 from plantit_cli.utils import update_status, list_files
 
 
 class TerrainStore(Store):
-    def __init__(self, plan: Plan):
+    def __init__(self, plan: Config):
         super().__init__(plan)
 
     @retry(
