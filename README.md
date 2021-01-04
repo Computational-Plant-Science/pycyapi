@@ -28,6 +28,7 @@ Deploy workflows on laptops, servers, or HPC/HTC clusters.
     - [Overwriting existing input files](#overwriting-existing-input-files)
   - [Outputs](#outputs)
   - [Bind mounts](#bind-mounts)
+  - [SLURM parallelism](#slurm-parallelism)
   - [Authenticating with the Terrain API](#authenticating-with-the-terrain-api)
   - [Authenticating with PlantIT](#authenticating-with-plantit)
   - [Logging](#logging)
