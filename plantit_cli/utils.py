@@ -347,10 +347,12 @@ def run_containers_for_files(config: Config, input_directory: str):
 
 def run_containers_for_files_slurm(config: Config, input_directory: str):
     files = os.listdir(input_directory)
-    update_status(config, 3,
-                  f"Using {len(files)} container(s) for '{config.identifier}' on {len(files)} file(s) in input directory '{input_directory}'")
-
     cluster = SLURMCluster(**config.slurm)
+    nodes = len(files)
+    cluster.scale(nodes)
+    update_status(config, 3,
+                  f"Requesting {nodes}-node cluster to process {nodes} files in '{input_directory}' with job script: {cluster.job_script()}")
+
     with Client(cluster) as client:
         futures = []
         for file in files:
@@ -375,7 +377,9 @@ def run_containers_for_files_slurm(config: Config, input_directory: str):
                 mount=config.mount,
                 logging=config.logging)
 
-            futures.append(client.submit(__run_container, new_config))
+            update_status(config, 3, f"Submitting container for file '{file}'")
+            future = client.submit(__run_container, new_config)
+            futures.append(future)
 
-            for future in as_completed(futures):
-                update_status(new_config, 3, future.result())
+        for future in as_completed(futures):
+            update_status(new_config, 3, future.result())

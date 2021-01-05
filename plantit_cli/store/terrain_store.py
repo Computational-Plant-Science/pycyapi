@@ -33,9 +33,11 @@ class TerrainStore(Store):
                 raise PlantitException(f"Path {path} does not exist")
             response.raise_for_status()
             content = response.json()
-            for file in content['files']:
-                pprint(file)
-            return [file['path'] for file in content['files']]
+            files = content['files']
+            # print(f"Directory '{path}' contains {len(files)} files:")
+            # for file in files:
+            #     pprint(file['label'])
+            return [file['path'] for file in files]
 
     @retry(
         wait=wait_exponential(multiplier=1, min=4, max=10),
