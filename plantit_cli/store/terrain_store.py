@@ -47,10 +47,12 @@ class TerrainStore(Store):
         to_path_full = f"{to_path}/{from_path.split('/')[-1]}"
         if isfile(to_path_full) and ('overwrite' not in self.plan.input or (
                 'overwrite' in self.plan.input and not self.plan.input['overwrite'])):
-            update_status(self.plan, 3, f"File {to_path_full} already exists, skipping download")
+            print(f"File {to_path_full} already exists, skipping download")
+            # update_status(self.plan, 3, f"File {to_path_full} already exists, skipping download")
             return
         else:
-            update_status(self.plan, 3, f"Downloading '{from_path}' to '{to_path_full}'")
+            print(f"Downloading '{from_path}' to '{to_path_full}'")
+            # update_status(self.plan, 3, f"Downloading '{from_path}' to '{to_path_full}'")
         with requests.get(f"https://de.cyverse.org/terrain/secured/fileio/download?path={from_path}",
                           headers={'Authorization': f"Bearer {self.plan.cyverse_token}"}) as response:
             if response.status_code == 500 and response.json()['error_code'] == 'ERR_REQUEST_FAILED':
