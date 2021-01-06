@@ -241,7 +241,7 @@ def __run_container(config: Config):
         else:
             cmd = cmd.replace("$FILETYPES", '')
 
-    msg = f"Running '{cmd}'"
+    msg = f"Running container with command: '{cmd}'"
     update_status(config, 3, msg)
 
     with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True,
@@ -252,22 +252,22 @@ def __run_container(config: Config):
             if log_file_dir is not None and log_file_dir != '' and not isdir(log_file_dir):
                 raise FileNotFoundError(f"Directory does not exist: {log_file_dir}")
             else:
-                print(f"Logging container output to file '{log_file_path}'")
+                print(f"Logging output to file '{log_file_path}'")
                 with open(log_file_path, 'a') as log_file:
                     for line in proc.stdout:
                         log_file.write(line + '\n')
                         print(line)
         else:
-            print(f"Logging container output to console")
+            print(f"Logging output to console")
             for line in proc.stdout:
                 print(line)
 
     if proc.returncode:
-        msg = f"Non-zero exit code from container"
+        msg = f"Non-zero exit code from command: '{cmd}'"
         update_status(config, 2, msg)
         raise PlantitException(msg)
     else:
-        msg = f"Successfully ran container"
+        msg = f"Successfully ran command: '{cmd}'"
 
     return msg
 
@@ -350,8 +350,9 @@ def run_containers_for_files_slurm(config: Config, input_directory: str):
     cluster = SLURMCluster(**config.slurm)
     nodes = len(files)
     cluster.scale(nodes)
+    print(f"Using job script: {cluster.job_script()}")
     update_status(config, 3,
-                  f"Requesting {nodes}-node cluster to process {nodes} files in '{input_directory}' with job script: {cluster.job_script()}")
+                  f"Requesting {nodes}-node cluster to process {nodes} files in '{input_directory}'")
 
     with Client(cluster) as client:
         futures = []
@@ -377,9 +378,9 @@ def run_containers_for_files_slurm(config: Config, input_directory: str):
                 mount=config.mount,
                 logging=config.logging)
 
-            update_status(config, 3, f"Submitting container for file '{file}'")
             future = client.submit(__run_container, new_config)
+            update_status(config, 3, f"Submitted file '{file}' for processing")
             futures.append(future)
 
         for future in as_completed(futures):
-            update_status(new_config, 3, future.result())
+            update_status(config, 3, future.result())
