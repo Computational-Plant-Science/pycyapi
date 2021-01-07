@@ -192,9 +192,9 @@ mount:
   - path/relative/to/host/working/directory:/another/path/in/your/container
 ```
 
-### SLURM parallelism
+### SLURM deployments
 
-To parallelize multi-container runs on a SLURM cluster, add a section like the following:
+When using `plantit-cli` on SLURM clusters, you can parallelize multi-file runs by adding a section like the following:
 
 ```yaml
 slurm:
@@ -205,6 +205,8 @@ slurm:
   queue: 'normal'
 ```
 
+#### Virtual memory
+
 For clusters with virtual memory, you may need to use `header_skip`:
 
 ```yaml
@@ -214,11 +216,30 @@ slurm:
     - '--mem'
 ```
 
+#### Other resource requests
+
+You can add other cluster-specific resource requests, like GPU-enabled nodes, with an `extra` section:
+
+```yaml
+slurm:
+  ...
+  extra:
+    - '--gres=gpu:1'
+```
+
+### Authenticating with Docker
+
+Docker Hub pull rate limits are quickly reached for large datasets. To authenticate and bypass rate limits, provide a `--docker_username` and `--docker_password`. For instance:
+
+```shell
+plantit hello_world.yaml --docker_username <your username> --docker_password <your password>
+```
+
 ### Authenticating with the Terrain API
 
 The CLI uses the Terrain API to access the CyVerse Data Store. Runs with inputs and outputs must provide a `--cyverse_token` argument. For instance, to run `hello_world.yaml`:
 
-```shell script
+```shell
 plantit hello_world.yaml --cyverse_token 'eyJhbGciOiJSUzI1N...'
 ```
 

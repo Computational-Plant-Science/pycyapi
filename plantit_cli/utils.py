@@ -1,8 +1,10 @@
 import os
 import copy
 import subprocess
+import traceback
 from os import listdir
 from os.path import join, isfile, isdir
+from time import sleep
 
 import requests
 from dask_jobqueue.slurm import SLURMCluster
@@ -45,14 +47,27 @@ def list_files(path,
 def update_status(config: Config, state: int, description: str):
     print(description)
     if config.api_url:
-        requests.post(
-            config.api_url,
-            data={
-                'run_id': config.identifier,
-                'state': state,
-                'description': description
-            },
-            headers={"Authorization": f"Token {config.plantit_token}"})
+        count = 1
+        max = 4
+        while count <= max:
+            try:
+                requests.post(
+                    config.api_url,
+                    data={
+                        'run_id': config.identifier,
+                        'state': state,
+                        'description': description
+                    },
+                    headers={"Authorization": f"Token {config.plantit_token}"})
+                break
+            except Exception:
+                print(traceback.format_exc())
+                if count > max:
+                    print('Failed to report status to PlantIT')
+                    break
+                sleep(count * 0.5)
+                count += 1
+
 
 
 def docker_container_exists(name, owner=None):
@@ -225,7 +240,13 @@ def __parse_mount(workdir, mp):
 
 
 def __run_container(config: Config):
-    cmd = f"singularity exec --home {config.workdir}"
+    cmd = ""
+
+    if config.docker_username is not None and config.docker_password is not None:
+        print(f"Authenticating with Docker username: {config.docker_username}")
+        cmd = f"SINGULARITY_DOCKER_USERNAME={config.docker_username} SINGULARITY_DOCKER_PASSWORD={config.docker_password} "
+
+    cmd += f"singularity exec --home {config.workdir}"
     if config.mount is not None:
         if type(config.mount) is list:
             cmd += (' --bind ' + ','.join([__parse_mount(config.workdir, mp) for mp in config.mount if mp != '']))
@@ -265,7 +286,7 @@ def __run_container(config: Config):
     if proc.returncode:
         msg = f"Non-zero exit code from command: '{cmd}'"
         update_status(config, 2, msg)
-        raise PlantitException(msg)
+        # raise PlantitException(msg)
     else:
         msg = f"Successfully ran command: '{cmd}'"
 
@@ -283,6 +304,8 @@ def run_container(config: Config):
     update_status(config, 3, __run_container(Config(
         identifier=config.identifier,
         plantit_token=config.plantit_token,
+        docker_username=config.docker_username,
+        docker_password=config.docker_password,
         api_url=config.api_url,
         workdir=config.workdir,
         image=config.image,
@@ -306,6 +329,8 @@ def run_container_for_directory(config: Config, input_directory: str):
     update_status(config, 3, __run_container(Config(
         identifier=config.identifier,
         plantit_token=config.plantit_token,
+        docker_username=config.docker_username,
+        docker_password=config.docker_password,
         api_url=config.api_url,
         workdir=config.workdir,
         image=config.image,
@@ -334,6 +359,8 @@ def run_containers_for_files(config: Config, input_directory: str):
         update_status(config, 3, __run_container(Config(
             identifier=config.identifier,
             plantit_token=config.plantit_token,
+            docker_username=config.docker_username,
+            docker_password=config.docker_password,
             api_url=config.api_url,
             workdir=config.workdir,
             image=config.image,
@@ -368,6 +395,8 @@ def run_containers_for_files_slurm(config: Config, input_directory: str):
             new_config = Config(
                 identifier=config.identifier,
                 plantit_token=config.plantit_token,
+                docker_username=config.docker_username,
+                docker_password=config.docker_password,
                 api_url=config.api_url,
                 workdir=config.workdir,
                 image=config.image,
