@@ -4,6 +4,7 @@ import subprocess
 import traceback
 from abc import ABC
 from os.path import join, isdir
+from time import sleep
 
 from dask_jobqueue import SLURMCluster
 from distributed import Client, as_completed
@@ -83,13 +84,7 @@ class Runner(ABC):
 
     @staticmethod
     def __run_command(config: Config):
-        cmd = ""
-
-        if config.docker_username is not None and config.docker_password is not None:
-            print(f"Authenticating with Docker username: {config.docker_username}")
-            cmd = f"SINGULARITY_DOCKER_USERNAME={config.docker_username} SINGULARITY_DOCKER_PASSWORD={config.docker_password} "
-
-        cmd += f"singularity exec --home {config.workdir}"
+        cmd = f"singularity exec --home {config.workdir}"
         if config.mount is not None:
             if type(config.mount) is list:
                 cmd += (' --bind ' + ','.join([parse_mount(config.workdir, mp) for mp in config.mount if mp != '']))
@@ -108,7 +103,16 @@ class Runner(ABC):
         msg = f"Running container with command: '{cmd}'"
         update_status(config, 3, msg)
 
-        with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True,
+        if config.docker_username is not None and config.docker_password is not None:
+            print(f"Authenticating with Docker username: {config.docker_username}")
+            cmd_with_docker = f"SINGULARITY_DOCKER_USERNAME={config.docker_username} SINGULARITY_DOCKER_PASSWORD={config.docker_password} " + cmd
+        else:
+            cmd_with_docker = cmd
+
+        with subprocess.Popen(cmd_with_docker,
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT,
+                              shell=True,
                               universal_newlines=True) as proc:
             if config.logging is not None and 'file' in config.logging:
                 log_file_path = config.logging['file']
@@ -127,11 +131,11 @@ class Runner(ABC):
                     print(line)
 
         if proc.returncode:
-            msg = f"Non-zero exit code from command: '{cmd}'"
+            msg = f"Non-zero exit code from command: {cmd}"
             update_status(config, 2, msg)
             # raise PlantitException(msg)
         else:
-            msg = f"Successfully ran command: '{cmd}'"
+            msg = f"Successfully ran command: {cmd}"
 
         return msg
 
@@ -250,6 +254,7 @@ class Runner(ABC):
                     mount=config.mount,
                     logging=config.logging)
 
+                sleep(0.5)
                 future = client.submit(Runner.__run_command, new_config)
                 update_status(config, 3, f"Submitted file '{file}' for processing")
                 futures.append(future)
