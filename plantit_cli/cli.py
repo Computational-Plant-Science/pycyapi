@@ -24,6 +24,9 @@ def run(workflow, plantit_token, cyverse_token, docker_username, docker_password
         if 'api_url' not in config_yaml:
             config_yaml['api_url'] = None
 
+        if 'gpu' in config_yaml:
+            del config_yaml['gpu']
+
         config = Config(**config_yaml)
         config_valid = validate_config(config)
         if type(config_valid) is not bool:

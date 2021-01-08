@@ -4,7 +4,7 @@ import subprocess
 import traceback
 from abc import ABC
 from os.path import join, isdir
-from time import sleep
+from pprint import pprint
 
 from dask_jobqueue import SLURMCluster
 from distributed import Client, as_completed
@@ -109,35 +109,45 @@ class Runner(ABC):
         else:
             cmd_with_docker = cmd
 
-        with subprocess.Popen(cmd_with_docker,
-                              stdout=subprocess.PIPE,
-                              stderr=subprocess.STDOUT,
-                              shell=True,
-                              universal_newlines=True) as proc:
-            if config.logging is not None and 'file' in config.logging:
-                log_file_path = config.logging['file']
-                log_file_dir = os.path.split(log_file_path)[0]
-                if log_file_dir is not None and log_file_dir != '' and not isdir(log_file_dir):
-                    raise FileNotFoundError(f"Directory does not exist: {log_file_dir}")
-                else:
-                    print(f"Logging output to file '{log_file_path}'")
-                    with open(log_file_path, 'a') as log_file:
+        failures = 0
+        max = 3
+        while failures < max:
+            try:
+                with subprocess.Popen(cmd_with_docker,
+                                      stdout=subprocess.PIPE,
+                                      stderr=subprocess.STDOUT,
+                                      shell=True,
+                                      universal_newlines=True) as proc:
+                    if config.logging is not None and 'file' in config.logging:
+                        log_file_path = config.logging['file']
+                        log_file_dir = os.path.split(log_file_path)[0]
+                        if log_file_dir is not None and log_file_dir != '' and not isdir(log_file_dir):
+                            raise FileNotFoundError(f"Directory does not exist: {log_file_dir}")
+                        else:
+                            print(f"Logging output to file '{log_file_path}'")
+                            with open(log_file_path, 'a') as log_file:
+                                for line in proc.stdout:
+                                    log_file.write(line + '\n')
+                                    print(line)
+                    else:
+                        print(f"Logging output to console")
                         for line in proc.stdout:
-                            log_file.write(line + '\n')
                             print(line)
-            else:
-                print(f"Logging output to console")
-                for line in proc.stdout:
-                    print(line)
 
-        if proc.returncode:
-            msg = f"Non-zero exit code from command: {cmd}"
-            update_status(config, 2, msg)
-            # raise PlantitException(msg)
-        else:
-            msg = f"Successfully ran command: {cmd}"
+                if proc.returncode:
+                    msg = f"Non-zero exit code from command: {cmd}"
+                    raise PlantitException(msg)
+                else:
+                    update_status(config, 3, f"Successfully ran command: {cmd}")
+                    break
+            except:
+                failures += 1
+                update_status(config, 3,
+                              f"Failed to run container for '{config.identifier}', retrying {max - failures} more time(s)")
+                pass
 
-        return msg
+        update_status(config, 2,
+                      f"Failed to run container for '{config.identifier}' after {max} retries")
 
     @staticmethod
     def __run_container(config: Config):
@@ -147,8 +157,7 @@ class Runner(ABC):
             output_path = join(config.workdir, config.output['from']) if 'from' in config.output else config.workdir
             params += [{'key': 'OUTPUT', 'value': output_path}]
 
-        update_status(config, 3, f"Using 1 container for '{config.identifier}'")
-        update_status(config, 3, Runner.__run_command(Config(
+        new_config = Config(
             identifier=config.identifier,
             plantit_token=config.plantit_token,
             docker_username=config.docker_username,
@@ -161,8 +170,10 @@ class Runner(ABC):
             input=config.input,
             output=config.output,
             mount=config.mount,
-            logging=config.logging
-        )))
+            logging=config.logging)
+
+        update_status(config, 3, f"Running '{config.image}' instance with config: {pprint(new_config)}")
+        Runner.__run_command(new_config)
 
     @staticmethod
     def __run_container_for_directory(config: Config, input_directory: str):
@@ -254,13 +265,28 @@ class Runner(ABC):
                     mount=config.mount,
                     logging=config.logging)
 
-                sleep(0.5)
-                future = client.submit(Runner.__run_command, new_config)
-                update_status(config, 3, f"Submitted file '{file}' for processing")
-                futures.append(future)
+                failures = 0
+                max = 3
+                while failures < max:
+                    try:
+                        future = client.submit(Runner.__run_container, new_config)
+                        update_status(config, 3, f"Submitted file '{file}'")
+                        futures.append(future)
+                        break
+                    except:
+                        update_status(config, 3,
+                                      f"Failed to submit file '{file}', retrying {max - failures} more time(s)")
+                        failures += 1
+                        pass
 
-            for future in as_completed(futures):
-                update_status(config, 3, future.result())
+                if failures >= max:
+                    update_status(config, 2,
+                                  f"Failed to submit file '{file}' after {max} retries")
+
+            finished = 0
+            for _ in as_completed(futures):
+                finished += 1
+                update_status(config, 3, f"Finished {finished} of {len(futures)}")
 
     def run(self, config: Config):
         update_status(config, 3, f"Starting '{config.identifier}'")
