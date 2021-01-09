@@ -139,15 +139,15 @@ class Runner(ABC):
                     raise PlantitException(msg)
                 else:
                     update_status(config, 3, f"Successfully ran command: {cmd}")
-                    break
+                    return
             except:
                 failures += 1
-                update_status(config, 3,
-                              f"Failed to run container for '{config.identifier}', retrying {max - failures} more time(s)")
+                msg = f"Failed to run command '{cmd}', retrying {max - failures} more time(s): {traceback.format_exc()}"
+                update_status(config, 3, msg)
                 pass
 
         update_status(config, 2,
-                      f"Failed to run container for '{config.identifier}' after {max} retries")
+                      f"Failed to run command '{cmd}' after {failures} retries: {traceback.format_exc()}")
 
     @staticmethod
     def __run_container(config: Config):
