@@ -110,7 +110,7 @@ class TerrainStore(Store):
             RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
             Timeout) | retry_if_exception_type(HTTPError)))
     def upload_file(self, from_path, to_path):
-        update_status(self.plan, 3, f"Uploading '{from_path}' to '{to_path}'")
+        print(f"Uploading '{from_path}' to '{to_path}'")
         with open(from_path, 'rb') as file:
             with requests.post(f"https://de.cyverse.org/terrain/secured/fileio/upload?dest={to_path}",
                                headers={'Authorization': f"Bearer {self.plan.cyverse_token}"},
@@ -134,7 +134,7 @@ class TerrainStore(Store):
             raise FileNotFoundError(f"Local path '{from_path}' does not exist")
         elif is_dir:
             from_paths = list_files(from_path, include_patterns, include_names, exclude_patterns, exclude_names)
-            update_status(self.plan, 3, f"Uploading directory '{from_path}' with {len(from_paths)} files")
+            update_status(self.plan, 3, f"Uploading directory '{from_path}' with {len(from_paths)} file(s) to '{to_path}'")
             with closing(Pool(processes=multiprocessing.cpu_count())) as pool:
                 pool.starmap(self.upload_file, [(path, to_path) for path in [str(p) for p in from_paths]])
         elif is_file:

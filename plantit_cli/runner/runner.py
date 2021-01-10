@@ -60,7 +60,7 @@ class Runner(ABC):
         if len(input_files) == 0:
             raise PlantitException(f"No inputs found at path '{config.input['from']}'" + (
                 f" matching filetypes '{config.input['filetypes']}'" if 'filetypes' in config.input else ''))
-        update_status(config, 3, f"Pulled input(s): {', '.join(input_files)}")
+        print(f"Pulled input(s): {', '.join(input_files)}")
         return input_dir
 
     def __push_output(self, config: Config):
@@ -80,7 +80,7 @@ class Runner(ABC):
                 config.output['exclude']['names']) is list else None) if 'exclude' in config.output and 'names' in
                                                                          config.output['exclude'] else None)
 
-        update_status(config, 3, f"Pushed output(s)")
+        print(f"Pushed output(s)")
 
     @staticmethod
     def __run_command(config: Config):
