@@ -138,7 +138,6 @@ class Runner(ABC):
                     msg = f"Non-zero exit code from command: {cmd}"
                     raise PlantitException(msg)
                 else:
-                    update_status(config, 3, f"Successfully ran command: {cmd}")
                     return
             except:
                 failures += 1
@@ -172,7 +171,6 @@ class Runner(ABC):
             mount=config.mount,
             logging=config.logging)
 
-        update_status(config, 3, f"Running '{config.image}' instance with config: {pprint(new_config)}")
         Runner.__run_command(new_config)
 
     @staticmethod
