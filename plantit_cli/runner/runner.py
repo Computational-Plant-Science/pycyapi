@@ -127,7 +127,7 @@ class Runner(ABC):
                             print(f"Logging output to file '{log_file_path}'")
                             with open(log_file_path, 'a') as log_file:
                                 for line in proc.stdout:
-                                    log_file.write(line + '\n')
+                                    log_file.write(line)
                                     print(line)
                     else:
                         print(f"Logging output to console")
