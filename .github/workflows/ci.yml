@@ -6,14 +6,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Slack start notification
-      uses: rtCamp/action-slack-notify@v2
-      env:
-        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        SLACK_CHANNEL: plantit
-        SLACK_ICON: https://raw.githubusercontent.com/Computational-Plant-Science/plantit/master/plantit/front_end/src/assets/logo.png
-        SLACK_MESSAGE: 'Build triggered'
-        SLACK_TITLE: PlantIT CLI CI
-        SLACK_USERNAME: plantit-cli
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: plantit
+          SLACK_ICON: https://raw.githubusercontent.com/Computational-Plant-Science/plantit/master/plantit/front_end/src/assets/logo.png
+          SLACK_MESSAGE: 'Build triggered'
+          SLACK_TITLE: PlantIT CLI CI
+          SLACK_USERNAME: plantit-cli
   unit-tests:
     runs-on: ubuntu-latest
     strategy:
