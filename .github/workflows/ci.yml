@@ -8,6 +8,15 @@ jobs:
         python-version: [3.6, 3.7, 3.8]
     steps:
       - uses: actions/checkout@v2
+      - name: Slack start notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: plantit
+          SLACK_ICON: https://raw.githubusercontent.com/Computational-Plant-Science/plantit/master/plantit/front_end/src/assets/logo.png
+          SLACK_MESSAGE: 'Build triggered'
+          SLACK_TITLE: PlantIT CLI CI
+          SLACK_USERNAME: plantit-cli
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -127,3 +136,12 @@ jobs:
         run: |
           python setup.py sdist bdist_wheel
           twine upload dist/*
+      - name: Slack end notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: plantit
+          SLACK_ICON: https://raw.githubusercontent.com/Computational-Plant-Science/plantit/master/plantit/front_end/src/assets/logo.png
+          SLACK_MESSAGE: 'Build finished'
+          SLACK_TITLE: PlantIT CLI CI
+          SLACK_USERNAME: plantit-cli
