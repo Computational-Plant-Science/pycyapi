@@ -9,9 +9,9 @@ jobs:
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_CHANNEL: plantit
+          SLACK_CHANNEL: plantit-dev
           SLACK_ICON: https://raw.githubusercontent.com/Computational-Plant-Science/plantit/master/plantit/front_end/src/assets/logo-favicon.png
-          SLACK_MESSAGE: 'Build triggered'
+          SLACK_MESSAGE: 'Build started'
           SLACK_TITLE: PlantIT CLI CI
           SLACK_USERNAME: plantit-cli
   unit-tests:
@@ -140,12 +140,12 @@ jobs:
         run: |
           python setup.py sdist bdist_wheel
           twine upload dist/*
-      - name: Slack end notification
+      - name: Slack success notification
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_CHANNEL: plantit
+          SLACK_CHANNEL: plantit-dev
           SLACK_ICON: https://raw.githubusercontent.com/Computational-Plant-Science/plantit/master/plantit/front_end/src/assets/logo-favicon.png
-          SLACK_MESSAGE: 'Build finished'
+          SLACK_MESSAGE: 'Build succeeded'
           SLACK_TITLE: PlantIT CLI CI
           SLACK_USERNAME: plantit-cli
