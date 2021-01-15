@@ -66,7 +66,6 @@ class Runner(ABC):
 
     def __zip_output(self, config: Config):
         from_path = join(config.workdir, config.output['from']) if 'from' in config.output else config.workdir
-        to_path = config.output['to']
         include_patterns = (config.output['include']['patterns'] if type(
             config.output['include']['patterns']) is list else None) if 'include' in config.output and 'patterns' in \
                                                                         config.output['include'] else None
