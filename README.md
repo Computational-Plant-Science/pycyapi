@@ -185,15 +185,9 @@ output:
 
 If only an `include` section is provided, only the file patterns and names specified will be included. If only an `exclude` section is present, all files except the patterns and names specified will be included. If you provide both `include` and `exclude` sections, the `include` rules will first be applied to generate a subset of files, which will then be filtered by the `exclude` rules.
 
-#### Zipping outputs
+#### Zipped outputs
 
-The CLI can zip your outputs; to enable this, add a `zip` attribute to the `output` section:
-
-```yaml
-output:
-  ...
-  zip: True
-```
+The CLI will automatically zip your outputs to a file named `<run identifier>.zip`.
 
 ### Bind mounts
 
