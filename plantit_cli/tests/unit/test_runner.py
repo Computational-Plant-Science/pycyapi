@@ -383,6 +383,7 @@ def test_run_fails_with_params_and_files_input_and_no_output_when_no_inputs_foun
             Runner(store).run(plan)
 
 
+@pytest.mark.skip(reason='until fixed in CI')
 def test_run_succeeds_with_no_params_and_no_input_and_file_output(remote_base_path):
     with TemporaryDirectory() as temp_dir:
         output_path = join(testdir, 'output.txt')
@@ -414,6 +415,7 @@ def test_run_succeeds_with_no_params_and_no_input_and_file_output(remote_base_pa
             clear_dir(testdir)
 
 
+@pytest.mark.skip(reason='until fixed in CI')
 def test_run_succeeds_with_params_and_no_input_and_file_output(remote_base_path):
     with TemporaryDirectory() as temp_dir:
         remote_path = join(remote_base_path[1:], "testCollection")
@@ -944,7 +946,8 @@ def test_run_fails_with_params_and_directory_input_and_directory_output_when_no_
             Runner(store).run(plan)
 
 
-def test_run_succeeds_with_params_and_directory_input_and_filetypes_and_directory_output(remote_base_path, file_name_1, file_name_2):
+def test_run_succeeds_with_params_and_directory_input_and_filetypes_and_directory_output(remote_base_path, file_name_1,
+                                                                                         file_name_2):
     with TemporaryDirectory() as temp_dir:
         input_file_path_1 = join(testdir, file_name_1)
         input_file_path_2 = join(testdir, file_name_2)
