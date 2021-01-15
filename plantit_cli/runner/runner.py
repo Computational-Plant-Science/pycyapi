@@ -5,6 +5,7 @@ import traceback
 from abc import ABC
 from os.path import join, isdir
 from pprint import pprint
+import zipfile
 
 from dask_jobqueue import SLURMCluster
 from distributed import Client, as_completed
@@ -12,7 +13,7 @@ from distributed import Client, as_completed
 from plantit_cli.exceptions import PlantitException
 from plantit_cli.config import Config
 from plantit_cli.store.store import Store
-from plantit_cli.utils import update_status, parse_mount
+from plantit_cli.utils import update_status, parse_mount, list_files
 
 
 class Runner(ABC):
@@ -64,21 +65,27 @@ class Runner(ABC):
         return input_dir
 
     def __push_output(self, config: Config):
+        from_path = join(config.workdir, config.output['from']) if 'from' in config.output else config.workdir
+        to_path = config.output['to']
+        include_patterns = (config.output['include']['patterns'] if type(config.output['include']['patterns']) is list else None) if 'include' in config.output and 'patterns' in config.output['include'] else None
+        include_names = (config.output['include']['names'] if type(config.output['include']['names']) is list else None) if 'include' in config.output and 'names' in config.output['include'] else None
+        exclude_patterns = (config.output['exclude']['patterns'] if type(config.output['exclude']['patterns']) is list else None) if 'exclude' in config.output and 'patterns' in config.output['exclude'] else None
+        exclude_names = (config.output['exclude']['names'] if type(config.output['exclude']['names']) is list else None) if 'exclude' in config.output and 'names' in config.output['exclude'] else None
+
+        if 'zip' in config.output and config.output['zip']:
+            zipped_name = f"{config.identifier}.zip"
+            with zipfile.ZipFile(zipped_name, 'w', zipfile.ZIP_DEFLATED) as zipped:
+                for file in list_files(from_path, include_patterns, include_names, exclude_patterns, exclude_names):
+                    zipped.write(file)
+            include_names = include_names + [zipped_name]
+
         self.__store.upload_directory(
-            join(config.workdir, config.output['from']) if 'from' in config.output else config.workdir,
-            config.output['to'],
-            (config.output['include']['patterns'] if type(
-                config.output['include']['patterns']) is list else None) if 'include' in config.output and 'patterns' in
-                                                                            config.output['include'] else None,
-            (config.output['include']['names'] if type(
-                config.output['include']['names']) is list else None) if 'include' in config.output and 'names' in
-                                                                         config.output['include'] else None,
-            (config.output['exclude']['patterns'] if type(
-                config.output['exclude']['patterns']) is list else None) if 'exclude' in config.output and 'patterns' in
-                                                                            config.output['exclude'] else None,
-            (config.output['exclude']['names'] if type(
-                config.output['exclude']['names']) is list else None) if 'exclude' in config.output and 'names' in
-                                                                         config.output['exclude'] else None)
+            from_path=from_path,
+            to_path=to_path,
+            include_pattern=include_patterns,
+            include=include_names,
+            exclude_pattern=exclude_patterns,
+            exclude=exclude_names)
 
         print(f"Pushed output(s)")
 
