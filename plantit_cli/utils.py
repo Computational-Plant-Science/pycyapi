@@ -199,10 +199,8 @@ def validate_config(config: Config):
             errors.append(f"Attribute 'output.from' must be a str")
 
         # to
-        if 'to' not in config.output:
-            errors.append('Attribute \'output\' must include attribute \'to\'')
-        elif type(config.output['to']) is not str:
-            errors.append(f"Attribute 'output.from' must be a valid path in the CyVerse Data Store")
+        if 'to' in config.output and type(config.output['to']) is not str:
+            errors.append(f"Attribute 'output.to' must be a valid path in the CyVerse Data Store")
 
         # include
         if 'include' in config.output:

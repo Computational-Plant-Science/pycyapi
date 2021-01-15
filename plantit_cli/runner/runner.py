@@ -64,6 +64,31 @@ class Runner(ABC):
         print(f"Pulled input(s): {', '.join(input_files)}")
         return input_dir
 
+    def __zip_output(self, config: Config):
+        from_path = join(config.workdir, config.output['from']) if 'from' in config.output else config.workdir
+        to_path = config.output['to']
+        include_patterns = (config.output['include']['patterns'] if type(
+            config.output['include']['patterns']) is list else None) if 'include' in config.output and 'patterns' in \
+                                                                        config.output['include'] else None
+        include_names = (config.output['include']['names'] if type(
+            config.output['include']['names']) is list else None) if 'include' in config.output and 'names' in \
+                                                                     config.output['include'] else None
+        exclude_patterns = (config.output['exclude']['patterns'] if type(
+            config.output['exclude']['patterns']) is list else None) if 'exclude' in config.output and 'patterns' in \
+                                                                        config.output['exclude'] else None
+        exclude_names = (config.output['exclude']['names'] if type(
+            config.output['exclude']['names']) is list else None) if 'exclude' in config.output and 'names' in \
+                                                                     config.output['exclude'] else None
+
+        zipped_name = join(from_path, f"{config.identifier}.zip")
+        with zipfile.ZipFile(zipped_name, 'w', zipfile.ZIP_DEFLATED) as zipped:
+            files = list_files(from_path, include_patterns, include_names, exclude_patterns, exclude_names)
+            for file in files:
+                print(f"Zipping: {file}")
+                zipped.write(file)
+
+        print(f"Zipped {len(files)} output file(s)")
+
     def __push_output(self, config: Config):
         from_path = join(config.workdir, config.output['from']) if 'from' in config.output else config.workdir
         to_path = config.output['to']
@@ -72,22 +97,11 @@ class Runner(ABC):
         exclude_patterns = (config.output['exclude']['patterns'] if type(config.output['exclude']['patterns']) is list else None) if 'exclude' in config.output and 'patterns' in config.output['exclude'] else None
         exclude_names = (config.output['exclude']['names'] if type(config.output['exclude']['names']) is list else None) if 'exclude' in config.output and 'names' in config.output['exclude'] else None
 
-        zipped_name = join(from_path, f"{config.identifier}.zip")
-        with zipfile.ZipFile(zipped_name, 'w', zipfile.ZIP_DEFLATED) as zipped:
-            files = list_files(from_path, include_patterns, include_names, exclude_patterns, exclude_names)
-            for file in files:
-                print(f"Zipping: {file}")
-                zipped.write(file)
-        print(f"Zipped {len(files)} output file(s)")
-
-        included = (include_names + [zipped_name]) if include_names is not None else [zipped_name]
-        print(included)
-
         self.__store.upload_directory(
             from_path=from_path,
             to_path=to_path,
             include_pattern=include_patterns,
-            include=included,
+            include=include_names,
             exclude_pattern=exclude_patterns,
             exclude=exclude_names)
 
@@ -321,8 +335,9 @@ class Runner(ABC):
                 Runner.__run_container(config)
 
             if config.output:
-                print(f"Pushing output(s)")
-                self.__push_output(config)
+                self.__zip_output(config)
+                if 'to' in config.output:
+                    self.__push_output(config)
         except Exception as e:
             update_status(config, 2, f"'{config.identifier}' failed: {traceback.format_exc()}")
             raise e
