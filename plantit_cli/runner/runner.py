@@ -67,10 +67,10 @@ class Runner(ABC):
     def __push_output(self, config: Config):
         from_path = join(config.workdir, config.output['from']) if 'from' in config.output else config.workdir
         to_path = config.output['to']
-        include_patterns = (config.output['include']['patterns'] if type(config.output['include']['patterns']) is list else []) if 'include' in config.output and 'patterns' in config.output['include'] else []
-        include_names = (config.output['include']['names'] if type(config.output['include']['names']) is list else []) if 'include' in config.output and 'names' in config.output['include'] else []
-        exclude_patterns = (config.output['exclude']['patterns'] if type(config.output['exclude']['patterns']) is list else []) if 'exclude' in config.output and 'patterns' in config.output['exclude'] else []
-        exclude_names = (config.output['exclude']['names'] if type(config.output['exclude']['names']) is list else []) if 'exclude' in config.output and 'names' in config.output['exclude'] else []
+        include_patterns = (config.output['include']['patterns'] if type(config.output['include']['patterns']) is list else None) if 'include' in config.output and 'patterns' in config.output['include'] else None
+        include_names = (config.output['include']['names'] if type(config.output['include']['names']) is list else None) if 'include' in config.output and 'names' in config.output['include'] else None
+        exclude_patterns = (config.output['exclude']['patterns'] if type(config.output['exclude']['patterns']) is list else None) if 'exclude' in config.output and 'patterns' in config.output['exclude'] else None
+        exclude_names = (config.output['exclude']['names'] if type(config.output['exclude']['names']) is list else None) if 'exclude' in config.output and 'names' in config.output['exclude'] else None
 
         zipped_name = f"{config.identifier}.zip"
         with zipfile.ZipFile(zipped_name, 'w', zipfile.ZIP_DEFLATED) as zipped:
@@ -82,7 +82,7 @@ class Runner(ABC):
             from_path=from_path,
             to_path=to_path,
             include_pattern=include_patterns,
-            include=include_names + [zipped_name],
+            include=(include_names + [zipped_name]) if include_names is not None else [zipped_name],
             exclude_pattern=exclude_patterns,
             exclude=exclude_names)
 

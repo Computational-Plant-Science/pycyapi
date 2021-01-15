@@ -370,10 +370,13 @@ def test_run_succeeds_with_no_params_and_no_input_and_file_output(remote_base_pa
             identifier='test_run_succeeds_with_no_params_and_no_input_and_file_output',
             workdir=testdir,
             image="docker://alpine:latest",
-            command='echo "Hello, world!" >> $OUTPUT',
+            command='echo "Hello, world!" >> output.txt',
             output={
                 'to': remote_path,
-                'from': 'output.txt',
+                'from': '',
+                'include': {
+                    'names': ['output.txt']
+                }
             })
         store = LocalStore(temp_dir, plan)
 
@@ -395,16 +398,19 @@ def test_run_succeeds_with_no_params_and_no_input_and_file_output(remote_base_pa
 
 def test_run_succeeds_with_params_and_no_input_and_file_output(remote_base_path):
     with TemporaryDirectory() as temp_dir:
-        output_path = join(testdir, f"output.{message}.txt")
+        output_path = join(testdir, f"{message}.txt")
         remote_path = join(remote_base_path[1:], "testCollection")
         plan = Config(
             identifier='test_run_succeeds_with_params_and_no_input_and_file_output',
             workdir=testdir,
             image="docker://alpine:latest",
-            command='echo "Hello, world!" >> $OUTPUT',
+            command='echo "Hello, world!" >> "$TAG".txt',
             output={
                 'to': remote_path,
-                'from': f"output.{message}.txt",
+                'from': '',
+                'include': {
+                    'patterns': ["txt"]
+                }
             },
             params=[
                 {
@@ -425,7 +431,7 @@ def test_run_succeeds_with_params_and_no_input_and_file_output(remote_base_path)
 
             # check file was pushed
             files = store.list_directory(remote_path)
-            assert join(store.dir, remote_path, f"output.{message}.txt") in files
+            assert join(store.dir, remote_path, f"{message}.txt") in files
         finally:
             clear_dir(testdir)
 
@@ -952,6 +958,7 @@ def test_run_succeeds_with_params_and_directory_input_and_filetypes_and_director
             # check file was pushed to store
             files = store.list_directory(remote_path)
             assert join(store.dir, remote_path, output_path.split('/')[-1]) in files
+            assert join(store.dir, remote_path, f"{plan.identifier}.zip") in files
         finally:
             clear_dir(testdir)
 
@@ -992,10 +999,11 @@ def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_incl
             remove(output_file_included)
             remove(output_file_excluded)
 
-            # check files were pushed to store
+            # check files (including zipped) were pushed to store
             files = store.list_directory(remote_path)
-            assert len(files) == 1
+            assert len(files) == 2
             assert join(store.dir, remote_path, 'included.output') in files
+            assert join(store.dir, remote_path, f"{plan.identifier}.zip") in files
         finally:
             clear_dir(testdir)
 
@@ -1042,10 +1050,11 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output_with_exclude
             remove(output_file_included)
             remove(output_file_excluded)
 
-            # check files were pushed to store
+            # check files (including zipped) were pushed to store
             files = store.list_directory(remote_path)
-            assert len(files) == 1
+            assert len(files) == 2
             assert join(store.dir, remote_path, f"included.{message}.output") in files
+            assert join(store.dir, remote_path, f"{plan.identifier}.zip") in files
         finally:
             clear_dir(testdir)
 
@@ -1086,10 +1095,11 @@ def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_non_
             remove(output_file_included)
             remove(output_file_excluded)
 
-            # check files were pushed to store
+            # check files (including zipped) were pushed to store
             files = store.list_directory(remote_path)
-            assert len(files) == 1
+            assert len(files) == 2
             assert join(store.dir, remote_path, 'included.output') in files
+            assert join(store.dir, remote_path, f"{plan.identifier}.zip") in files
         finally:
             clear_dir(testdir)
 
@@ -1137,9 +1147,10 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output_with_non_mat
             remove(output_file_included)
             remove(output_file_excluded)
 
-            # check files were pushed to store
+            # check files (included zipped) were pushed to store
             files = store.list_directory(remote_path)
-            assert len(files) == 1
+            assert len(files) == 2
             assert join(store.dir, remote_path, f"included.{message}.output") in files
+            assert join(store.dir, remote_path, f"{plan.identifier}.zip") in files
         finally:
             clear_dir(testdir)
