@@ -26,8 +26,10 @@ def list_files(path,
         pattern.lower() in pth.lower() for pattern in include_patterns)] if include_patterns is not None else all_paths
 
     # add files included by name
-    included_by_name = [pth for pth in all_paths if pth.split('/')[-1] in [name for name in
+    included_by_name = [pth for pth in all_paths if pth.rpartition('/')[2] in [name for name in
                                                                            include_names]] if include_names is not None else included_by_pattern
+    included_by_name = included_by_name + [pth for pth in all_paths if pth in [name for name in
+                                                                               include_names]] if include_names is not None else included_by_pattern
 
     # gather all included files
     included = set(included_by_pattern + included_by_name)

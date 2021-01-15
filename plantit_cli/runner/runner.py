@@ -72,17 +72,22 @@ class Runner(ABC):
         exclude_patterns = (config.output['exclude']['patterns'] if type(config.output['exclude']['patterns']) is list else None) if 'exclude' in config.output and 'patterns' in config.output['exclude'] else None
         exclude_names = (config.output['exclude']['names'] if type(config.output['exclude']['names']) is list else None) if 'exclude' in config.output and 'names' in config.output['exclude'] else None
 
-        zipped_name = join(config.workdir, f"{config.identifier}.zip")
+        zipped_name = join(from_path, f"{config.identifier}.zip")
         with zipfile.ZipFile(zipped_name, 'w', zipfile.ZIP_DEFLATED) as zipped:
-            for file in list_files(from_path, include_patterns, include_names, exclude_patterns, exclude_names):
+            files = list_files(from_path, include_patterns, include_names, exclude_patterns, exclude_names)
+            for file in files:
+                print(f"Zipping: {file}")
                 zipped.write(file)
-        print(f"Zipped output(s)")
+        print(f"Zipped {len(files)} output file(s)")
+
+        included = (include_names + [zipped_name]) if include_names is not None else [zipped_name]
+        print(included)
 
         self.__store.upload_directory(
             from_path=from_path,
             to_path=to_path,
             include_pattern=include_patterns,
-            include=(include_names + [zipped_name]) if include_names is not None else [zipped_name],
+            include=included,
             exclude_pattern=exclude_patterns,
             exclude=exclude_names)
 

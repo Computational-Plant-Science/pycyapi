@@ -49,6 +49,7 @@ class LocalStore(Store):
             raise FileNotFoundError(f"Path '{from_path}' does not exist")
         elif is_dir:
             from_paths = list_files(from_path, include_pattern, include, exclude_pattern, exclude)
+            print(f"Uploading files: {from_paths}")
             for path in [str(p) for p in from_paths]:
                 self.upload_file(path, to_path)
         elif is_file:

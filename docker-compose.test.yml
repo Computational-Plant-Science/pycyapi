@@ -23,6 +23,8 @@ services:
       - CYVERSE_PASSWORD=${CYVERSE_PASSWORD}
       - COVERALLS_REPO_TOKEN=${COVERALLS_REPO_TOKEN}
       - TEST_DIRECTORY=${TEST_DIRECTORY}
+      - DOCKER_USERNAME
+      - DOCKER_PASSWORD
     volumes:
       - .:/opt/plantit-cli/
       - ./config/dask/:/root/.config/dask/
