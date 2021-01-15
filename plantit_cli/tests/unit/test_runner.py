@@ -1108,10 +1108,8 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output_with_non_mat
                 'from': '',
                 'include': {
                     'patterns': ['OUTPUT'],
-                    'names': []
                 },
                 'exclude': {
-                    'patterns': [],
                     'names': ['excluded.output']
                 }
             }
