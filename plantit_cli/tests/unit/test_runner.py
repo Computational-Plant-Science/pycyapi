@@ -384,11 +384,6 @@ def test_run_succeeds_with_no_params_and_no_input_and_file_output(remote_base_pa
             # expect 1 container
             Runner(store).run(plan)
 
-            # check files were written locally
-            assert isfile(output_path)
-            check_hello(output_path, 'world')
-            # os.remove(output_file)
-
             # check file was pushed
             files = store.list_directory(remote_path)
             assert join(store.dir, remote_path, 'output.txt') in files
@@ -423,11 +418,6 @@ def test_run_succeeds_with_params_and_no_input_and_file_output(remote_base_path)
         try:
             # expect 1 container
             Runner(store).run(plan)
-
-            # check files were written locally
-            assert isfile(output_path)
-            check_hello(output_path, 'world')
-            # os.remove(output_file)
 
             # check file was pushed
             files = store.list_directory(remote_path)
@@ -923,7 +913,6 @@ def test_run_succeeds_with_params_and_directory_input_and_filetypes_and_director
                 'from': '',
                 'include': {
                     'patterns': ['output'],
-                    'names': []
                 }
             },
             params=[
@@ -980,7 +969,6 @@ def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_incl
                 'from': '',
                 'include': {
                     'patterns': ['output'],
-                    'names': []
                 },
                 'exclude': {
                     'patterns': [],
@@ -1024,7 +1012,6 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output_with_exclude
                 'from': '',
                 'include': {
                     'patterns': ['output'],
-                    'names': []
                 },
                 'exclude': {
                     'patterns': [],
