@@ -2,7 +2,7 @@ import click
 import yaml
 
 from plantit_cli.runner.runner import Runner
-from plantit_cli.config import Config
+from plantit_cli.options import PlantITCLIOptions
 from plantit_cli.store.terrain_store import TerrainStore
 from plantit_cli.utils import validate_config
 
@@ -27,7 +27,7 @@ def run(workflow, plantit_token, cyverse_token, docker_username, docker_password
         if 'gpu' in config_yaml:
             del config_yaml['gpu']
 
-        config = Config(**config_yaml)
+        config = PlantITCLIOptions(**config_yaml)
         config_valid = validate_config(config)
         if type(config_valid) is not bool:
             raise ValueError(f"Invalid configuration: {', '.join(config_valid[1])}")

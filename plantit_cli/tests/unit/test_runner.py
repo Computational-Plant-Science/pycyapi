@@ -7,7 +7,7 @@ import pytest
 
 from plantit_cli.exceptions import PlantitException
 from plantit_cli.runner.runner import Runner
-from plantit_cli.config import Config
+from plantit_cli.options import PlantITCLIOptions
 from plantit_cli.store.local_store import LocalStore
 from plantit_cli.tests.test_utils import clear_dir, check_hello
 
@@ -21,7 +21,7 @@ testdir = environ.get('TEST_DIRECTORY')
 def test_run_logs_to_file_when_file_logging_enabled():
     with TemporaryDirectory() as temp_dir:
         log_file_name = 'test_run_logs_to_file_when_file_logging_enabled.txt'
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_succeeds_with_params_and_no_input_and_no_output',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -65,7 +65,7 @@ def test_run_logs_to_file_when_file_logging_enabled():
 
 def test_run_succeeds_with_params_and_no_input_and_no_output():
     with TemporaryDirectory() as temp_dir:
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_succeeds_with_params_and_no_input_and_no_output',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -102,7 +102,7 @@ def test_run_succeeds_with_no_params_and_file_input_and_no_output(remote_base_pa
     with TemporaryDirectory() as temp_dir:
         local_path = join(testdir, file_name_1)
         remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_succeeds_with_no_params_and_file_input_and_no_output',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -141,7 +141,7 @@ def test_run_succeeds_with_params_and_file_input_and_no_output(remote_base_path,
     with TemporaryDirectory() as temp_dir:
         local_path = join(testdir, file_name_1)
         remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_succeeds_with_params_and_file_input_and_no_output',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -185,7 +185,7 @@ def test_run_succeeds_with_params_and_file_input_and_no_output(remote_base_path,
 def test_run_fails_with_no_params_and_file_input_and_no_output_when_no_inputs_found(remote_base_path, file_name_1):
     with TemporaryDirectory() as temp_dir:
         remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_fails_with_no_params_and_file_input_and_no_output_when_no_inputs_found',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -199,14 +199,14 @@ def test_run_fails_with_no_params_and_file_input_and_no_output_when_no_inputs_fo
         store = LocalStore(temp_dir, plan)
 
         # expect exception
-        with pytest.raises(FileNotFoundError):
+        with pytest.raises(ValueError):
             Runner(store).run(plan)
 
 
 def test_run_fails_with_params_and_file_input_and_no_output_when_no_inputs_found(remote_base_path, file_name_1):
     with TemporaryDirectory() as temp_dir:
         remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_fails_with_params_and_file_input_and_no_output_when_no_inputs_found',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -227,7 +227,7 @@ def test_run_fails_with_params_and_file_input_and_no_output_when_no_inputs_found
 
         try:
             # expect exception
-            with pytest.raises(FileNotFoundError):
+            with pytest.raises(ValueError):
                 Runner(store).run(plan)
         finally:
             clear_dir(testdir)
@@ -238,7 +238,7 @@ def test_run_succeeds_with_no_params_and_files_input_and_no_output(remote_base_p
         local_path_1 = join(testdir, file_name_1)
         local_path_2 = join(testdir, file_name_2)
         remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_succeeds_with_no_params_and_files_input_and_no_output',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -286,7 +286,7 @@ def test_run_succeeds_with_params_and_files_input_and_no_output(remote_base_path
         local_path_1 = join(testdir, file_name_1)
         local_path_2 = join(testdir, file_name_2)
         remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_succeeds_with_params_and_files_input_and_no_output',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -338,7 +338,7 @@ def test_run_succeeds_with_params_and_files_input_and_no_output(remote_base_path
 def test_run_fails_with_no_params_and_files_input_and_no_output_when_no_inputs_found(remote_base_path):
     with TemporaryDirectory() as temp_dir:
         remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_fails_with_no_params_and_files_input_and_no_output_when_no_inputs_found',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -352,14 +352,14 @@ def test_run_fails_with_no_params_and_files_input_and_no_output_when_no_inputs_f
         store = LocalStore(temp_dir, plan)
 
         # expect exception
-        with pytest.raises(PlantitException):
+        with pytest.raises(ValueError):
             Runner(store).run(plan)
 
 
 def test_run_fails_with_params_and_files_input_and_no_output_when_no_inputs_found(remote_base_path):
     with TemporaryDirectory() as temp_dir:
         remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_fails_with_params_and_files_input_and_no_output_when_no_inputs_found',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -379,7 +379,7 @@ def test_run_fails_with_params_and_files_input_and_no_output_when_no_inputs_foun
         store = LocalStore(temp_dir, plan)
 
         # expect exception
-        with pytest.raises(PlantitException):
+        with pytest.raises(ValueError):
             Runner(store).run(plan)
 
 
@@ -388,7 +388,7 @@ def test_run_succeeds_with_no_params_and_no_input_and_file_output(remote_base_pa
     with TemporaryDirectory() as temp_dir:
         output_path = join(testdir, 'output.txt')
         remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_succeeds_with_no_params_and_no_input_and_file_output',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -419,7 +419,7 @@ def test_run_succeeds_with_no_params_and_no_input_and_file_output(remote_base_pa
 def test_run_succeeds_with_params_and_no_input_and_file_output(remote_base_path):
     with TemporaryDirectory() as temp_dir:
         remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_succeeds_with_params_and_no_input_and_file_output',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -458,7 +458,7 @@ def test_run_succeeds_with_no_params_and_no_input_and_directory_output(remote_ba
         output_file_1 = join(output_path, 't1.txt')
         output_file_2 = join(output_path, 't2.txt')
         remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_succeeds_with_no_params_and_no_input_and_directory_output',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -498,7 +498,7 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output(remote_base_
         output_file_1 = join(output_path, f"t1.{message}.txt")
         output_file_2 = join(output_path, f"t2.{message}.txt")
         remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_succeeds_with_params_and_no_input_and_directory_output',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -544,7 +544,7 @@ def test_run_succeeds_with_no_params_and_file_input_and_directory_output(remote_
         output_path = join(testdir, 'input')  # write output files to input dir
         output_file_path = join(output_path, f"{file_name_1}.output")
         remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_succeeds_with_no_params_and_file_input_and_directory_output',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -592,7 +592,7 @@ def test_run_succeeds_with_params_and_file_input_and_directory_output(remote_bas
         output_path = join(testdir, 'input')  # write output files to input dir
         output_file_path = join(output_path, f"{file_name_1}.{message}.output")
         remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_succeeds_with_params_and_file_input_and_directory_output',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -651,7 +651,7 @@ def test_run_succeeds_with_no_params_and_files_input_and_directory_output(remote
         output_file_path_1 = join(output_path, f"{file_name_1}.output")
         output_file_path_2 = join(output_path, f"{file_name_2}.output")
         remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_succeeds_with_no_params_and_files_input_and_directory_output',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -709,7 +709,7 @@ def test_run_succeeds_with_params_and_files_input_and_directory_output(remote_ba
         output_file_path_1 = join(output_path, f"{file_name_1}.{message}.output")
         output_file_path_2 = join(output_path, f"{file_name_2}.{message}.output")
         remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_succeeds_with_params_and_files_input_and_directory_output',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -770,7 +770,7 @@ def test_run_succeeds_with_no_params_and_directory_input_and_directory_output(re
         input_file_path_1 = join(testdir, file_name_1)
         input_file_path_2 = join(testdir, file_name_2)
         remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_succeeds_with_no_params_and_directory_input_and_directory_output',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -825,7 +825,7 @@ def test_run_succeeds_with_params_and_directory_input_and_directory_output(remot
         input_file_path_1 = join(testdir, file_name_1)
         input_file_path_2 = join(testdir, file_name_2)
         remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_succeeds_with_params_and_directory_input_and_directory_output',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -884,7 +884,7 @@ def test_run_succeeds_with_params_and_directory_input_and_directory_output(remot
 def test_run_fails_with_no_params_and_directory_input_and_directory_output_when_no_inputs_found(remote_base_path):
     with TemporaryDirectory() as temp_dir:
         remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_fails_with_no_params_and_directory_input_and_directory_output_when_no_inputs_found',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -906,14 +906,14 @@ def test_run_fails_with_no_params_and_directory_input_and_directory_output_when_
         store = LocalStore(temp_dir, plan)
 
         # expect exception
-        with pytest.raises(PlantitException):
+        with pytest.raises(ValueError):
             Runner(store).run(plan)
 
 
 def test_run_fails_with_params_and_directory_input_and_directory_output_when_no_inputs_found(remote_base_path):
     with TemporaryDirectory() as temp_dir:
         remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_fails_with_params_and_directory_input_and_directory_output_when_no_inputs_found',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -942,17 +942,16 @@ def test_run_fails_with_params_and_directory_input_and_directory_output_when_no_
         store = LocalStore(temp_dir, plan)
 
         # expect exception
-        with pytest.raises(PlantitException):
+        with pytest.raises(ValueError):
             Runner(store).run(plan)
 
 
-def test_run_succeeds_with_params_and_directory_input_and_filetypes_and_directory_output(remote_base_path, file_name_1,
-                                                                                         file_name_2):
+def test_run_succeeds_with_params_and_directory_input_and_filetypes_and_directory_output(remote_base_path, file_name_1, file_name_2):
     with TemporaryDirectory() as temp_dir:
         input_file_path_1 = join(testdir, file_name_1)
         input_file_path_2 = join(testdir, file_name_2)
         remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_succeeds_with_params_and_directory_input_and_directory_output',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -1017,7 +1016,7 @@ def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_incl
         output_file_included = join(output_path, "included.output")
         output_file_excluded = join(output_path, "excluded.output")
         remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_excludes',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -1060,7 +1059,7 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output_with_exclude
     with TemporaryDirectory() as temp_dir:
         output_path = testdir
         remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_succeeds_with_params_and_no_input_and_directory_output_with_excludes',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -1111,7 +1110,7 @@ def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_non_
         output_file_included = join(output_path, "included.output")
         output_file_excluded = join(output_path, "excluded.output")
         remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes',
             workdir=testdir,
             image="docker://alpine:latest",
@@ -1158,7 +1157,7 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output_with_non_mat
         output_file_included = join(output_path, f"included.{message}.output")
         output_file_excluded = join(output_path, "excluded.output")
         remote_path = join(remote_base_path[1:], "testCollection")
-        plan = Config(
+        plan = PlantITCLIOptions(
             identifier='test_run_succeeds_with_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes',
             workdir=testdir,
             image="docker://alpine:latest",

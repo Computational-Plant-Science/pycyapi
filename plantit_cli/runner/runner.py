@@ -4,16 +4,16 @@ import subprocess
 import traceback
 from abc import ABC
 from os.path import join, isdir
-from pprint import pprint
-import zipfile
 
 from dask_jobqueue import SLURMCluster
 from distributed import Client, as_completed
+from plantit_cli import commands
+from plantit_cli.commands import clone
 
 from plantit_cli.exceptions import PlantitException
-from plantit_cli.config import Config
+from plantit_cli.options import PlantITCLIOptions
 from plantit_cli.store.store import Store
-from plantit_cli.utils import update_status, parse_mount, list_files
+from plantit_cli.utils import update_status, parse_mount
 
 
 class Runner(ABC):
@@ -21,93 +21,7 @@ class Runner(ABC):
         self.__store = store
 
     @staticmethod
-    def __clone_repo(config: Config):
-        repo_dir = config.clone.rpartition('/')[2]
-        if isdir(repo_dir):
-            if subprocess.run(f"cd {repo_dir} && git pull",
-                              stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE,
-                              shell=True).returncode != 0:
-                raise PlantitException(f"Repo '{config.clone}' exists on local filesystem, failed to pull updates")
-            else:
-                update_status(config, 3, f"Updated repo '{config.clone}'")
-        elif subprocess.run(f"git clone {config.clone}",
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE,
-                            shell=True).returncode != 0:
-            raise PlantitException(f"Failed to clone repo '{config.clone}'")
-        else:
-            update_status(config, 3, f"Cloned repo '{config.clone}'")
-
-        if config.branch is not None:
-            if subprocess.run(f"cd {repo_dir} && git checkout {config.branch}",
-                              stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE,
-                              shell=True).returncode != 0:
-                raise PlantitException(f"Failed to switch to branch '{config.branch}'")
-
-    def __pull_input(self, config: Config) -> str:
-        input_dir = join(config.workdir, 'input')
-        input_kind = config.input['kind'].lower()
-        os.makedirs(input_dir, exist_ok=True)
-        if input_kind == 'directory' or input_kind == 'files':
-            self.__store.download_directory(config.input['from'], input_dir,
-                                            config.input['filetypes'] if 'filetypes' in config.input else None)
-        elif input_kind == 'file':
-            self.__store.download_file(config.input['from'], input_dir)
-        else:
-            raise ValueError(f"'input.kind' must be either 'file' or 'directory'")
-        input_files = os.listdir(input_dir)
-        if len(input_files) == 0:
-            raise PlantitException(f"No inputs found at path '{config.input['from']}'" + (
-                f" matching filetypes '{config.input['filetypes']}'" if 'filetypes' in config.input else ''))
-        print(f"Pulled input(s): {', '.join(input_files)}")
-        return input_dir
-
-    def __zip_output(self, config: Config):
-        from_path = join(config.workdir, config.output['from']) if 'from' in config.output else config.workdir
-        include_patterns = (config.output['include']['patterns'] if type(
-            config.output['include']['patterns']) is list else None) if 'include' in config.output and 'patterns' in \
-                                                                        config.output['include'] else None
-        include_names = (config.output['include']['names'] if type(
-            config.output['include']['names']) is list else None) if 'include' in config.output and 'names' in \
-                                                                     config.output['include'] else None
-        exclude_patterns = (config.output['exclude']['patterns'] if type(
-            config.output['exclude']['patterns']) is list else None) if 'exclude' in config.output and 'patterns' in \
-                                                                        config.output['exclude'] else None
-        exclude_names = (config.output['exclude']['names'] if type(
-            config.output['exclude']['names']) is list else None) if 'exclude' in config.output and 'names' in \
-                                                                     config.output['exclude'] else None
-
-        zipped_name = join(from_path, f"{config.identifier}.zip")
-        with zipfile.ZipFile(zipped_name, 'w', zipfile.ZIP_DEFLATED) as zipped:
-            files = list_files(from_path, include_patterns, include_names, exclude_patterns, exclude_names)
-            for file in files:
-                print(f"Zipping: {file}")
-                zipped.write(file)
-
-        print(f"Zipped {len(files)} output file(s)")
-
-    def __push_output(self, config: Config):
-        from_path = join(config.workdir, config.output['from']) if 'from' in config.output else config.workdir
-        to_path = config.output['to']
-        include_patterns = (config.output['include']['patterns'] if type(config.output['include']['patterns']) is list else None) if 'include' in config.output and 'patterns' in config.output['include'] else None
-        include_names = (config.output['include']['names'] if type(config.output['include']['names']) is list else None) if 'include' in config.output and 'names' in config.output['include'] else None
-        exclude_patterns = (config.output['exclude']['patterns'] if type(config.output['exclude']['patterns']) is list else None) if 'exclude' in config.output and 'patterns' in config.output['exclude'] else None
-        exclude_names = (config.output['exclude']['names'] if type(config.output['exclude']['names']) is list else None) if 'exclude' in config.output and 'names' in config.output['exclude'] else None
-
-        self.__store.upload_directory(
-            from_path=from_path,
-            to_path=to_path,
-            include_pattern=include_patterns,
-            include=include_names,
-            exclude_pattern=exclude_patterns,
-            exclude=exclude_names)
-
-        print(f"Pushed output(s)")
-
-    @staticmethod
-    def __run_command(config: Config):
+    def __run_command(config: PlantITCLIOptions):
         cmd = f"singularity exec --home {config.workdir}"
         if config.mount is not None:
             if type(config.mount) is list:
@@ -173,14 +87,14 @@ class Runner(ABC):
                       f"Failed to run command '{cmd}' after {failures} retries: {traceback.format_exc()}")
 
     @staticmethod
-    def __run_container(config: Config):
+    def __run_container(config: PlantITCLIOptions):
         params = config.params.copy() if config.params else []
 
         if config.output:
             output_path = join(config.workdir, config.output['from']) if 'from' in config.output else config.workdir
             params += [{'key': 'OUTPUT', 'value': output_path}]
 
-        new_config = Config(
+        new_config = PlantITCLIOptions(
             identifier=config.identifier,
             plantit_token=config.plantit_token,
             docker_username=config.docker_username,
@@ -198,7 +112,7 @@ class Runner(ABC):
         Runner.__run_command(new_config)
 
     @staticmethod
-    def __run_container_for_directory(config: Config, input_directory: str):
+    def __run_container_for_directory(config: PlantITCLIOptions, input_directory: str):
         params = (config.params.copy() if config.params else []) + [{'key': 'INPUT', 'value': input_directory}]
 
         if config.output:
@@ -206,7 +120,7 @@ class Runner(ABC):
             params += [{'key': 'OUTPUT', 'value': output_path}]
 
         update_status(config, 3, f"Using 1 container for '{config.identifier}' on input directory '{input_directory}'")
-        update_status(config, 3, Runner.__run_command(Config(
+        update_status(config, 3, Runner.__run_command(PlantITCLIOptions(
             identifier=config.identifier,
             plantit_token=config.plantit_token,
             docker_username=config.docker_username,
@@ -222,7 +136,7 @@ class Runner(ABC):
             logging=config.logging)))
 
     @staticmethod
-    def __run_containers_for_files(config: Config, input_directory: str):
+    def __run_containers_for_files(config: PlantITCLIOptions, input_directory: str):
         files = os.listdir(input_directory)
         update_status(config, 3,
                       f"Using {len(files)} container(s) for '{config.identifier}' on {len(files)} file(s) in input directory '{input_directory}'")
@@ -236,7 +150,7 @@ class Runner(ABC):
                 output = copy.deepcopy(config.output)
                 params += [{'key': 'OUTPUT', 'value': join(config.workdir, output['from'])}]
 
-            update_status(config, 3, Runner.__run_command(Config(
+            update_status(config, 3, Runner.__run_command(PlantITCLIOptions(
                 identifier=config.identifier,
                 plantit_token=config.plantit_token,
                 docker_username=config.docker_username,
@@ -252,7 +166,7 @@ class Runner(ABC):
                 logging=config.logging)))
 
     @staticmethod
-    def __run_containers_for_files_slurm(config: Config, input_directory: str):
+    def __run_containers_for_files_slurm(config: PlantITCLIOptions, input_directory: str):
         files = os.listdir(input_directory)
         cluster = SLURMCluster(**config.slurm)
         nodes = len(files)
@@ -272,7 +186,7 @@ class Runner(ABC):
                     output = copy.deepcopy(config.output)
                     params += [{'key': 'OUTPUT', 'value': join(config.workdir, output['from'])}]
 
-                new_config = Config(
+                new_config = PlantITCLIOptions(
                     identifier=config.identifier,
                     plantit_token=config.plantit_token,
                     docker_username=config.docker_username,
@@ -310,16 +224,20 @@ class Runner(ABC):
                 finished += 1
                 update_status(config, 3, f"Finished {finished} of {len(futures)}")
 
-    def run(self, config: Config):
+    def run(self, config: PlantITCLIOptions):
         update_status(config, 3, f"Starting '{config.identifier}'")
 
         try:
             if config.clone is not None and config.clone != '':
-                Runner.__clone_repo(config)
+                clone(config)
 
             if config.input:
                 print(f"Pulling input(s)")
-                input_dir = self.__pull_input(config)
+                input_dir = commands.pull(
+                    self.__store,
+                    config.input['from'],
+                    join(config.workdir, 'input'),
+                    config.input['patterns'] if 'patterns' in config.input else None)
                 input_kind = config.input['kind'].lower()
                 if input_kind == 'directory':
                     Runner.__run_container_for_directory(config, input_dir)
@@ -334,9 +252,25 @@ class Runner(ABC):
                 Runner.__run_container(config)
 
             if config.output:
-                self.__zip_output(config)
+                from_path = join(config.workdir, config.output['from']) if 'from' in config.output else config.workdir
+                commands.zip(
+                    path=from_path,
+                    name=config.identifier,
+                    include_patterns=config.output['include']['patterns'] if 'include' in config.output and 'patterns' in config.output[
+                        'include'] else None,
+                    include_names=config.output['include']['names'] if 'include' in config.output and 'names' in config.output['include'] else None,
+                    exclude_patterns=config.output['exclude']['patterns'] if 'exclude' in config.output and 'patterns' in config.output[
+                        'exclude'] else None,
+                    exclude_names=config.output['exclude']['names'] if 'exclude' in config.output and 'names' in config.output['exclude'] else None)
                 if 'to' in config.output:
-                    self.__push_output(config)
+                    commands.push(
+                        store=self.__store,
+                        from_path=from_path,
+                        to_path=config.output['to'],
+                        include_patterns=config.output['include']['patterns'] if 'include' in config.output and 'patterns' in config.output['include'] else None,
+                        include_names=config.output['include']['names'] if 'include' in config.output and 'names' in config.output['include'] else None,
+                        exclude_patterns=config.output['exclude']['patterns'] if 'exclude' in config.output and 'patterns' in config.output['exclude'] else None,
+                        exclude_names=config.output['exclude']['names'] if 'exclude' in config.output and 'names' in config.output['exclude'] else None)
         except Exception as e:
             update_status(config, 2, f"'{config.identifier}' failed: {traceback.format_exc()}")
             raise e

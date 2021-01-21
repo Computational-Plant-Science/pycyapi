@@ -1,4 +1,4 @@
-class Config(object):
+class PlantITCLIOptions(object):
     def __init__(self,
                  identifier: str,
                  workdir: str,

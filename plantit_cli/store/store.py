@@ -1,20 +1,29 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from plantit_cli.config import Config
+from plantit_cli.options import PlantITCLIOptions
 
 
 class Store(ABC):
     """
     Models a hierarchical file/object/blob store.
     """
+
     @abstractmethod
-    def __init__(self, plan: Config):
+    def __init__(self, plan: PlantITCLIOptions):
         self.__plan = plan
 
     @property
     def plan(self):
         return self.__plan
+
+    @abstractmethod
+    def directory_exists(self, path) -> bool:
+        pass
+
+    @abstractmethod
+    def file_exists(self, path) -> bool:
+        pass
 
     @abstractmethod
     def list_directory(self, path) -> List[str]:
@@ -77,4 +86,3 @@ class Store(ABC):
             exclude: Files to exclude.
         """
         pass
-

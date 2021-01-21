@@ -1,16 +1,11 @@
-import copy
-import os
-import subprocess
 import traceback
 from os import listdir
 from os.path import join, isfile, isdir
 from time import sleep
 
 import requests
-from dask_jobqueue.slurm import SLURMCluster
-from distributed import Client, as_completed
 
-from plantit_cli.config import Config
+from plantit_cli.options import PlantITCLIOptions
 
 
 def list_files(path,
@@ -26,12 +21,12 @@ def list_files(path,
         pattern.lower() in pth.lower() for pattern in include_patterns)] if include_patterns is not None else all_paths
 
     # add files included by name
-    included_by_name = [pth for pth in all_paths if pth.rpartition('/')[2] in [name for name in
-                                                                           include_names]] if include_names is not None else included_by_pattern
-    included_by_name = included_by_name + [pth for pth in all_paths if pth in [name for name in
-                                                                               include_names]] if include_names is not None else included_by_pattern
+    included_by_name = ([pth for pth in all_paths if pth.rpartition('/')[2] in [name for name in include_names]] \
+                            if include_names is not None else included_by_pattern) + \
+                       [pth for pth in all_paths if pth in [name for name in include_names]] \
+        if include_names is not None else included_by_pattern
 
-    # gather all included files
+    # gather only included files
     included = set(included_by_pattern + included_by_name)
 
     # remove files matched excluded patterns
@@ -45,7 +40,7 @@ def list_files(path,
     return excluded_by_name
 
 
-def update_status(config: Config, state: int, description: str):
+def update_status(config: PlantITCLIOptions, state: int, description: str):
     print(description)
     if config.api_url:
         count = 1
@@ -68,7 +63,6 @@ def update_status(config: Config, state: int, description: str):
                     break
                 sleep(count * 0.5)
                 count += 1
-
 
 
 def docker_container_exists(name, owner=None):
@@ -118,7 +112,7 @@ def cyverse_path_exists(path, token):
     return True, input_type
 
 
-def validate_config(config: Config):
+def validate_config(config: PlantITCLIOptions):
     errors = []
 
     # identifier
@@ -236,3 +230,69 @@ def validate_config(config: Config):
 
 def parse_mount(workdir, mp):
     return mp.rpartition(':')[0] + ':' + mp.rpartition(':')[2] if ':' in mp else workdir + ':' + mp
+
+
+SYMBOLS = {
+    'customary': ('B', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'),
+    'customary_ext': ('byte', 'kilo', 'mega', 'giga', 'tera', 'peta', 'exa',
+                      'zetta', 'iotta'),
+    'iec': ('Bi', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi', 'Yi'),
+    'iec_ext': ('byte', 'kibi', 'mebi', 'gibi', 'tebi', 'pebi', 'exbi',
+                'zebi', 'yobi'),
+}
+
+
+def readable_bytes(n, format='%(value).1f %(symbol)s', symbols='customary'):
+    """
+    Convert n bytes into a human readable string based on format.
+    symbols can be either "customary", "customary_ext", "iec", or "iec_ext".
+
+    Referenced from https://stackoverflow.com/a/13449587.
+
+      >>> readable_bytes(0)
+      '0.0 B'
+      >>> readable_bytes(0.9)
+      '0.0 B'
+      >>> readable_bytes(1)
+      '1.0 B'
+      >>> readable_bytes(1.9)
+      '1.0 B'
+      >>> readable_bytes(1024)
+      '1.0 K'
+      >>> readable_bytes(1048576)
+      '1.0 M'
+      >>> readable_bytes(1099511627776127398123789121)
+      '909.5 Y'
+
+      >>> readable_bytes(9856, symbols="customary")
+      '9.6 K'
+      >>> readable_bytes(9856, symbols="customary_ext")
+      '9.6 kilo'
+      >>> readable_bytes(9856, symbols="iec")
+      '9.6 Ki'
+      >>> readable_bytes(9856, symbols="iec_ext")
+      '9.6 kibi'
+
+      >>> readable_bytes(10000, "%(value).1f %(symbol)s/sec")
+      '9.8 K/sec'
+
+      >>> # precision can be adjusted by playing with %f operator
+      >>> readable_bytes(10000, format="%(value).5f %(symbol)s")
+      '9.76562 K'
+    """
+
+    n = int(n)
+    if n < 0:
+        raise ValueError("n < 0")
+
+    symbols = SYMBOLS[symbols]
+    prefix = {}
+    for i, s in enumerate(symbols[1:]):
+        prefix[s] = 1 << (i + 1) * 10
+
+    for symbol in reversed(symbols[1:]):
+        if n >= prefix[symbol]:
+            value = float(n) / prefix[symbol]
+            return format % locals()
+
+    return format % dict(symbol=symbols[0], value=n)

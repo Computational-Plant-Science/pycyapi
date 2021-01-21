@@ -3,7 +3,7 @@ from os.path import join
 
 import pytest
 
-from plantit_cli.config import Config
+from plantit_cli.options import PlantITCLIOptions
 from plantit_cli.tests.integration.terrain_test_utils import create_collection, delete_collection, upload_file
 from plantit_cli.tests.test_utils import get_token, clear_dir
 from plantit_cli.utils import validate_config
@@ -21,7 +21,7 @@ def remote_path(remote_base_path):
 
 def test_validate_plan_with_no_params_and_file_input_and_no_output(remote_path, file_name_1):
     local_path = join(testdir, file_name_1)
-    plan = Config(
+    plan = PlantITCLIOptions(
         identifier='test_run_succeeds_with_no_params_and_file_input_and_no_output',
         workdir=testdir,
         image="docker://alpine",
@@ -50,7 +50,7 @@ def test_validate_plan_with_no_params_and_file_input_and_no_output(remote_path, 
 
 def test_validate_plan_with_params_and_file_input_and_no_output(remote_path, file_name_1):
     local_path = join(testdir, file_name_1)
-    plan = Config(
+    plan = PlantITCLIOptions(
         identifier='test_run_succeeds_with_params_and_file_input_and_no_output',
         workdir=testdir,
         image="docker://alpine",
@@ -85,7 +85,7 @@ def test_validate_plan_with_params_and_file_input_and_no_output(remote_path, fil
 
 def test_validate_plan_with_no_params_and_file_input_and_no_output_when_no_inputs_found(remote_path, file_name_1):
     local_path = join(testdir, file_name_1)
-    plan = Config(
+    plan = PlantITCLIOptions(
         identifier='test_run_fails_with_no_params_and_file_input_and_no_output_when_no_inputs_found',
         workdir=testdir,
         image="docker://alpine",
@@ -114,7 +114,7 @@ def test_validate_plan_with_no_params_and_file_input_and_no_output_when_no_input
 
 def test_validate_plan_with_params_and_file_input_and_no_output_when_no_inputs_found(remote_path, file_name_1):
     local_path = join(testdir, file_name_1)
-    plan = Config(
+    plan = PlantITCLIOptions(
         identifier='test_run_fails_with_params_and_file_input_and_no_output_when_no_inputs_found',
         workdir=testdir,
         image="docker://alpine",
@@ -150,7 +150,7 @@ def test_validate_plan_with_params_and_file_input_and_no_output_when_no_inputs_f
 def test_validate_plan_with_no_params_and_files_input_and_no_output(remote_path, file_name_1, file_name_2):
     local_path_1 = join(testdir, file_name_1)
     local_path_2 = join(testdir, file_name_2)
-    plan = Config(
+    plan = PlantITCLIOptions(
         identifier='test_run_succeeds_with_no_params_and_files_input_and_no_output',
         workdir=testdir,
         image="docker://alpine",
@@ -182,7 +182,7 @@ def test_validate_plan_with_no_params_and_files_input_and_no_output(remote_path,
 def test_validate_plan_with_params_and_files_input_and_no_output(remote_path, file_name_1, file_name_2):
     local_path_1 = join(testdir, file_name_1)
     local_path_2 = join(testdir, file_name_2)
-    plan = Config(
+    plan = PlantITCLIOptions(
         identifier='test_run_succeeds_with_params_and_files_input_and_no_output',
         workdir=testdir,
         image="docker://alpine",
@@ -218,7 +218,7 @@ def test_validate_plan_with_params_and_files_input_and_no_output(remote_path, fi
 
 
 def test_validate_plan_with_params_and_no_input_and_file_output(remote_path, file_name_1):
-    plan = Config(
+    plan = PlantITCLIOptions(
         identifier='test_run_succeeds_with_params_and_no_input_and_file_output',
         workdir=testdir,
         image="docker://alpine",
@@ -247,7 +247,7 @@ def test_validate_plan_with_params_and_no_input_and_file_output(remote_path, fil
 
 
 def test_validate_plan_with_no_params_and_no_input_and_directory_output(remote_path, file_name_1):
-    plan = Config(
+    plan = PlantITCLIOptions(
         identifier='test_run_succeeds_with_no_params_and_no_input_and_directory_output',
         workdir=testdir,
         image="docker://alpine",
@@ -270,7 +270,7 @@ def test_validate_plan_with_no_params_and_no_input_and_directory_output(remote_p
 
 
 def test_validate_plan_with_params_and_no_input_and_directory_output(remote_path, file_name_1):
-    plan = Config(
+    plan = PlantITCLIOptions(
         identifier='test_run_succeeds_with_params_and_no_input_and_directory_output',
         workdir=testdir,
         image="docker://alpine",
@@ -300,7 +300,7 @@ def test_validate_plan_with_params_and_no_input_and_directory_output(remote_path
 
 def test_validate_plan_with_no_params_and_file_input_and_directory_output(remote_path, file_name_1):
     local_path = join(testdir, file_name_1)
-    plan = Config(
+    plan = PlantITCLIOptions(
         identifier='test_run_succeeds_with_no_params_and_file_input_and_directory_output',
         workdir=testdir,
         image="docker://alpine",
@@ -336,7 +336,7 @@ def test_validate_plan_with_no_params_and_file_input_and_directory_output(remote
 
 def test_validate_plan_with_params_and_file_input_and_directory_output(remote_path, file_name_1):
     local_path = join(testdir, file_name_1)
-    plan = Config(
+    plan = PlantITCLIOptions(
         identifier='test_run_succeeds_with_params_and_file_input_and_directory_output',
         workdir=testdir,
         image="docker://alpine",
@@ -382,7 +382,7 @@ def test_validate_plan_with_no_params_and_files_input_and_directory_output(remot
                                                                            file_name_2):
     local_input_file_path_1 = join(testdir, file_name_1)
     local_input_file_path_2 = join(testdir, file_name_2)
-    plan = Config(
+    plan = PlantITCLIOptions(
         identifier='test_run_succeeds_with_no_params_and_files_input_and_directory_output',
         workdir=testdir,
         image="docker://alpine",
@@ -424,7 +424,7 @@ def test_validate_plan_with_params_and_files_input_and_directory_output(remote_p
                                                                         file_name_2):
     local_input_file_path_1 = join(testdir, file_name_1)
     local_input_file_path_2 = join(testdir, file_name_2)
-    plan = Config(
+    plan = PlantITCLIOptions(
         identifier='test_run_succeeds_with_params_and_files_input_and_directory_output',
         workdir=testdir,
         image="docker://alpine",
@@ -472,7 +472,7 @@ def test_validate_plan_with_params_and_files_input_with_pattern_and_directory_ou
                                                                                      file_name_2):
     local_input_file_path_1 = join(testdir, file_name_1)
     local_input_file_path_2 = join(testdir, file_name_2)
-    plan = Config(
+    plan = PlantITCLIOptions(
         identifier='test_validate_plan_with_params_and_files_input_with_pattern_and_directory_output',
         workdir=testdir,
         image="docker://alpine",
@@ -523,7 +523,7 @@ def test_validate_plan_with_no_params_and_directory_input_and_directory_output(r
                                                                                file_name_2):
     local_input_file_path_1 = join(testdir, file_name_1)
     local_input_file_path_2 = join(testdir, file_name_2)
-    plan = Config(
+    plan = PlantITCLIOptions(
         identifier='test_run_succeeds_with_no_params_and_directory_input_and_directory_output',
         workdir=testdir,
         image="docker://alpine",
@@ -565,7 +565,7 @@ def test_validate_plan_with_params_and_directory_input_and_directory_output(remo
                                                                             file_name_2):
     local_input_file_path_1 = join(testdir, file_name_1)
     local_input_file_path_2 = join(testdir, file_name_2)
-    plan = Config(
+    plan = PlantITCLIOptions(
         identifier='test_run_succeeds_with_params_and_directory_input_and_directory_output',
         workdir=testdir,
         image="docker://alpine",
@@ -613,7 +613,7 @@ def test_validate_plan_with_no_params_and_directory_input_and_directory_output_w
                                                                                                     file_name_2):
     local_input_file_path_1 = join(testdir, file_name_1)
     local_input_file_path_2 = join(testdir, file_name_2)
-    plan = Config(
+    plan = PlantITCLIOptions(
         identifier='test_run_fails_with_no_params_and_directory_input_and_directory_output_when_no_inputs_found',
         workdir=testdir,
         image="docker://alpine",
@@ -656,7 +656,7 @@ def test_validate_plan_with_params_and_directory_input_and_directory_output_when
         file_name_2):
     local_input_file_path_1 = join(testdir, file_name_1)
     local_input_file_path_2 = join(testdir, file_name_2)
-    plan = Config(
+    plan = PlantITCLIOptions(
         identifier='test_run_fails_with_params_and_directory_input_and_directory_output_when_no_inputs_found',
         workdir=testdir,
         image="docker://alpine",
@@ -701,7 +701,7 @@ def test_validate_plan_with_params_and_directory_input_and_directory_output_when
 
 def test_validate_plan_with_no_params_and_no_input_and_directory_output_with_include_patterns_and_exclude_names(
         remote_path):
-    plan = Config(
+    plan = PlantITCLIOptions(
         identifier='test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_excludes',
         workdir=testdir,
         image="docker://alpine",
@@ -732,7 +732,7 @@ def test_validate_plan_with_no_params_and_no_input_and_directory_output_with_inc
 
 
 def test_validate_plan_with_params_and_no_input_and_directory_output_with_excludes(remote_path):
-    plan = Config(
+    plan = PlantITCLIOptions(
         identifier='test_run_succeeds_with_params_and_no_input_and_directory_output_with_excludes',
         workdir=testdir,
         image="docker://alpine",
@@ -770,7 +770,7 @@ def test_validate_plan_with_params_and_no_input_and_directory_output_with_exclud
 
 def test_validate_plan_with_no_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes(
         remote_path):
-    plan = Config(
+    plan = PlantITCLIOptions(
         identifier='test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes',
         workdir=testdir,
         image="docker://alpine",
@@ -802,7 +802,7 @@ def test_validate_plan_with_no_params_and_no_input_and_directory_output_with_non
 
 def test_validate_plan_with_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes(
         remote_path):
-    plan = Config(
+    plan = PlantITCLIOptions(
         identifier='test_run_succeeds_with_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes',
         workdir=testdir,
         image="docker://alpine",

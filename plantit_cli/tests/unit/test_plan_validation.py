@@ -1,7 +1,7 @@
 from os import environ
 from os.path import join
 
-from plantit_cli.config import Config
+from plantit_cli.options import PlantITCLIOptions
 from plantit_cli.utils import validate_config
 
 message = "Message"
@@ -9,7 +9,7 @@ testdir = environ.get('TEST_DIRECTORY')
 
 
 def test_validate_plan_with_params_and_no_input_and_no_output_and_file_logging():
-    plan = Config(
+    plan = PlantITCLIOptions(
         identifier='test_run_succeeds_with_params_and_no_input_and_no_output',
         workdir=testdir,
         image="docker://alpine",
@@ -32,7 +32,7 @@ def test_validate_plan_with_params_and_no_input_and_no_output_and_file_logging()
 
 
 def test_validate_plan_with_params_and_no_input_and_no_output():
-    plan = Config(
+    plan = PlantITCLIOptions(
         identifier='test_run_succeeds_with_params_and_no_input_and_no_output',
         workdir=testdir,
         image="docker://alpine",

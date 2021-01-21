@@ -3,13 +3,13 @@ from pathlib import Path
 from shutil import copyfileobj
 from typing import List
 
-from plantit_cli.config import Config
+from plantit_cli.options import PlantITCLIOptions
 from plantit_cli.store.store import Store
 from plantit_cli.utils import update_status, list_files
 
 
 class LocalStore(Store):
-    def __init__(self, temp_dir, plan: Config):
+    def __init__(self, temp_dir, plan: PlantITCLIOptions):
         self.__files = {}
         self.__dir = temp_dir
         super().__init__(plan)
@@ -17,6 +17,12 @@ class LocalStore(Store):
     @property
     def dir(self):
         return self.__dir
+
+    def directory_exists(self, path) -> bool:
+        return Path(join(self.__dir, path)).is_dir()
+
+    def file_exists(self, path) -> bool:
+        return Path(join(self.__dir, path)).is_file()
 
     def download_file(self, from_path, to_path):
         from_path_file = join(self.__dir, from_path)

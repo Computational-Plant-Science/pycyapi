@@ -8,7 +8,7 @@ from tenacity import RetryError
 
 from plantit_cli.exceptions import PlantitException
 from plantit_cli.store.terrain_store import TerrainStore
-from plantit_cli.config import Config
+from plantit_cli.options import PlantITCLIOptions
 from plantit_cli.tests.integration.terrain_test_utils import delete_collection, upload_file, create_collection
 from plantit_cli.tests.test_utils import clear_dir, get_token
 
@@ -18,7 +18,7 @@ token = get_token()
 
 
 def plan(remote_base_path):
-    return Config(
+    return PlantITCLIOptions(
         identifier='workflow_with_directory_input',
         workdir=testdir,
         image="docker://alpine:latest",
@@ -31,7 +31,7 @@ def plan(remote_base_path):
 
 
 def bad_plan(remote_base_path):
-    return Config(
+    return PlantITCLIOptions(
         identifier='workflow_with_directory_input',
         workdir=testdir,
         image="docker://alpine:latest",
@@ -41,6 +41,48 @@ def bad_plan(remote_base_path):
             'from': join(remote_base_path, "testCollection"),
         },
         cyverse_token='bad_token')
+
+
+def test_directory_exists(remote_base_path):
+    remote_path = join(remote_base_path, "testCollection")
+    store = TerrainStore(plan(remote_base_path))
+
+    try:
+        # prep CyVerse collection
+        create_collection(remote_path, token)
+
+        # test directories exist
+        assert store.directory_exists(remote_path)
+        assert not store.directory_exists(join(remote_base_path, "notCollection"))
+    finally:
+        clear_dir(testdir)
+        delete_collection(remote_path, token)
+
+
+def test_file_exists(remote_base_path):
+    file1_name = 'f1.txt'
+    file2_name = 'f2.txt'
+    file1_path = join(testdir, file1_name)
+    remote_path = join(remote_base_path, "testCollection")
+    store = TerrainStore(plan(remote_base_path))
+
+    try:
+        # prep CyVerse collection
+        create_collection(remote_path, token)
+
+        # create files
+        with open(file1_path, "w") as file1:
+            file1.write('Hello, 1!')
+
+        # upload files to CyVerse
+        upload_file(file1_path, remote_path, token)
+
+        # test files exist
+        assert store.file_exists(join(remote_path, file1_name))
+        assert not store.file_exists(join(remote_path, file2_name))
+    finally:
+        clear_dir(testdir)
+        delete_collection(remote_path, token)
 
 
 def test_list_directory(remote_base_path):

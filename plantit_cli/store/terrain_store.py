@@ -2,7 +2,6 @@ import multiprocessing
 from contextlib import closing
 from multiprocessing import Pool
 from os.path import isdir, isfile, basename, join
-from pprint import pprint
 from typing import List
 
 import requests
@@ -10,14 +9,51 @@ from requests import ReadTimeout, Timeout, HTTPError, RequestException
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
 
 from plantit_cli.exceptions import PlantitException
-from plantit_cli.config import Config
+from plantit_cli.options import PlantITCLIOptions
 from plantit_cli.store.store import Store
 from plantit_cli.utils import update_status, list_files
 
 
 class TerrainStore(Store):
-    def __init__(self, plan: Config):
+    def __init__(self, plan: PlantITCLIOptions):
         super().__init__(plan)
+
+    @retry(
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        stop=stop_after_attempt(3),
+        retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
+            RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
+            Timeout) | retry_if_exception_type(HTTPError)))
+    def directory_exists(self, path) -> bool:
+        with requests.post('https://de.cyverse.org/terrain/secured/filesystem/stat',
+                           headers={'Authorization': f"Bearer {self.plan.cyverse_token}"},
+                           data={'paths': [path]}) as response:
+            if response.status_code == 500 and response.json()['error_code'] == 'ERR_DOES_NOT_EXIST':
+                return False
+
+            response.raise_for_status()
+            content = response.json()
+            result = [result[path] for result in content['paths']][0]
+            return result['type'] == 'dir'
+
+    @retry(
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        stop=stop_after_attempt(3),
+        retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
+            RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
+            Timeout) | retry_if_exception_type(HTTPError)))
+    def file_exists(self, path) -> bool:
+        with requests.post('https://de.cyverse.org/terrain/secured/filesystem/stat',
+                           headers={'Authorization': f"Bearer {self.plan.cyverse_token}"},
+                           data={'paths': [path]}) as response:
+            if response.status_code == 500 and response.json()['error_code'] == 'ERR_DOES_NOT_EXIST':
+                return False
+
+            response.raise_for_status()
+            content = response.json()
+            result = [result[path] for result in content['paths']][0]
+            return result['type'] == 'file'
+
 
     @retry(
         wait=wait_exponential(multiplier=1, min=4, max=10),
@@ -30,7 +66,7 @@ class TerrainStore(Store):
                 f"https://de.cyverse.org/terrain/secured/filesystem/paged-directory?limit=1000&path={path}",
                 headers={'Authorization': f"Bearer {self.plan.cyverse_token}"}) as response:
             if response.status_code == 500 and response.json()['error_code'] == 'ERR_DOES_NOT_EXIST':
-                raise PlantitException(f"Path {path} does not exist")
+                raise ValueError(f"Path {path} does not exist")
             response.raise_for_status()
             content = response.json()
             files = content['files']
@@ -85,23 +121,24 @@ class TerrainStore(Store):
                 assert expected['name'] == actual[0]
                 assert expected['md5'] == actual[1]
 
-    def download_directory(self,
-                           from_path,
-                           to_path,
-                           patterns=None):
-        from_paths = [path for path in self.list_directory(from_path) if any(
-            pattern.lower() in path.lower() for pattern in patterns)] if patterns is not None else self.list_directory(
-            from_path)
+    def download_directory(self, from_path: str, to_path: str, patterns: List[str] = None):
+        check = self.plan.checksums is not None and len(self.plan.checksums) > 0
+        match = lambda path: any(pattern.lower() in path.lower() for pattern in patterns)
+        paths = self.list_directory(from_path)
+        paths = [path for path in paths if match(path)] if patterns is not None else paths
 
-        if self.plan.checksums is not None and len(self.plan.checksums) > 0:
-            self.__verify_inputs(from_path, from_paths)
+        # verify  that input checksums haven't changed since submission time
+        if check:
+            self.__verify_inputs(from_path, paths)
 
-        update_status(self.plan, 3, f"Downloading directory '{from_path}' with {len(from_paths)} file(s)")
+        update_status(self.plan, 3, f"Downloading directory '{from_path}' with {len(paths)} file(s)")
         with closing(Pool(processes=multiprocessing.cpu_count())) as pool:
-            pool.starmap(self.download_file, [(path, to_path) for path in from_paths])
+            pool.starmap(self.download_file, [(path, to_path) for path in paths])
 
-        if self.plan.checksums is not None and len(self.plan.checksums) > 0:
-            self.__verify_inputs(from_path, from_paths)
+        # verify that input checksums haven't changed since download time
+        # (maybe a bit excessive, and will add network latency, but probably prudent)
+        if check:
+            self.__verify_inputs(from_path, paths)
 
     @retry(
         wait=wait_exponential(multiplier=1, min=4, max=10),
@@ -122,19 +159,20 @@ class TerrainStore(Store):
                     response.raise_for_status()
 
     def upload_directory(self,
-                         from_path,
-                         to_path,
-                         include_patterns=None,
-                         include_names=None,
-                         exclude_patterns=None,
-                         exclude_names=None):
+                         from_path: str,
+                         to_path: str,
+                         include_patterns: List[str] = None,
+                         include_names: List[str] = None,
+                         exclude_patterns: List[str] = None,
+                         exclude_names: List[str] = None):
         is_file = isfile(from_path)
         is_dir = isdir(from_path)
         if not (is_dir or is_file):
             raise FileNotFoundError(f"Local path '{from_path}' does not exist")
         elif is_dir:
             from_paths = list_files(from_path, include_patterns, include_names, exclude_patterns, exclude_names)
-            update_status(self.plan, 3, f"Uploading directory '{from_path}' with {len(from_paths)} file(s) to '{to_path}'")
+            update_status(self.plan, 3,
+                          f"Uploading directory '{from_path}' with {len(from_paths)} file(s) to '{to_path}'")
             with closing(Pool(processes=multiprocessing.cpu_count())) as pool:
                 pool.starmap(self.upload_file, [(path, to_path) for path in [str(p) for p in from_paths]])
         elif is_file:
