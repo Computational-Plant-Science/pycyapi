@@ -1,8 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from plantit_cli.options import PlantITCLIOptions
-
 
 class Store(ABC):
     """
@@ -10,79 +8,98 @@ class Store(ABC):
     """
 
     @abstractmethod
-    def __init__(self, plan: PlantITCLIOptions):
-        self.__plan = plan
-
-    @property
-    def plan(self):
-        return self.__plan
-
-    @abstractmethod
-    def directory_exists(self, path) -> bool:
-        pass
-
-    @abstractmethod
-    def file_exists(self, path) -> bool:
-        pass
-
-    @abstractmethod
-    def list_directory(self, path) -> List[str]:
+    def dir_exists(self, path) -> bool:
         """
-        Lists files in the remote directory.
+        Determines whether a directory exists with the given path.
 
         Args:
-            path: The remote directory path.
+            path: The directory path.
 
         Returns:
-            A list of all files in the remote directory.
+            True if the directory exists, otherwise False.
         """
         pass
 
     @abstractmethod
-    def download_file(self, from_path, to_path):
+    def file_exists(self, path: str) -> bool:
         """
-        Downloads the file at the remote path to the local path.
+        Determines whether a file exists with the given path.
 
         Args:
-            from_path: The remote path.
-            to_path: The local path.
+            path: The file path.
+
+        Returns:
+            True if the file exists, otherwise False.
         """
         pass
 
     @abstractmethod
-    def download_directory(self, from_path, to_path, patterns):
+    def list_dir(self, path: str) -> List[str]:
         """
-        Downloads files from the remote directory to the local directory.
+        Lists files in the given directory.
 
         Args:
-            from_path: The remote directory path.
+            path: The directory path.
+
+        Returns:
+            A list of all files in the directory.
+        """
+        pass
+
+    @abstractmethod
+    def pull_file(self, from_path: str, to_path: str, overwrite: bool = False):
+        """
+        Copies a file from the store to a local directory.
+
+        Args:
+            from_path: The path (prefix followed by name) of the file in the store.
+            to_path: The local directory path.
+            overwrite: Whether to overwrite an already-existing file.
+        """
+        pass
+
+    @abstractmethod
+    def pull_dir(self, from_prefix: str, to_path: str, patterns: List[str], overwrite: bool = False):
+        """
+        Copies files under the given prefix from the store to the local directory path.
+
+        Args:
+            from_prefix: The prefix.
             to_path: The local directory path.
             patterns: File patterns to include.
+            overwrite: Whether to overwrite already-existing files.
         """
         pass
 
     @abstractmethod
-    def upload_file(self, from_path, to_path):
+    def push_file(self, from_path: str, to_prefix: str):
         """
-        Uploads the file at the local path to the remote path.
+        Adds the given file to the store with the given prefix.
 
         Args:
             from_path: The local file path.
-            to_path: The remote path.
+            to_prefix: The prefix.
         """
         pass
 
     @abstractmethod
-    def upload_directory(self, from_path, to_path, include_pattern, include, exclude_pattern, exclude):
+    def push_dir(
+            self,
+            from_path: str,
+            to_prefix: str,
+            include_pattern: List[str],
+            include: List[str],
+            exclude_pattern: List[str],
+            exclude: List[str]):
         """
-        Uploads files from the local directory to the remote directory.
+        Adds files from the local directory to the store under the given prefix.
 
         Args:
             from_path: The local directory path.
-            to_path: The remote directory path.
-            include_pattern: File pattern to include.
+            to_prefix: The prefix.
+            include_pattern: File patterns to include.
             include: Files to include.
-            exclude_pattern: File pattern to exclude.
+            exclude_pattern: File patterns to exclude.
             exclude: Files to exclude.
         """
         pass

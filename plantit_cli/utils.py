@@ -1,11 +1,17 @@
+import re
+import subprocess
 import traceback
 from os import listdir
 from os.path import join, isfile, isdir
+from pathlib import Path
 from time import sleep
+from typing import List
 
 import requests
+from dask_jobqueue import JobQueueCluster
+from distributed import Client
 
-from plantit_cli.options import PlantITCLIOptions
+from plantit_cli.options import BindMount, Parameter, FileInput, FilesInput, DirectoryInput, RunOptions
 
 
 def list_files(path,
@@ -40,34 +46,151 @@ def list_files(path,
     return excluded_by_name
 
 
-def update_status(config: PlantITCLIOptions, state: int, description: str):
+def parse_options(raw: dict):
+    errors = []
+
+    image = None
+    if not isinstance(raw['image'], str):
+        errors.append('Attribute \'image\' must not be a str')
+    elif raw['image'] == '':
+        errors.append('Attribute \'image\' must not be empty')
+    else:
+        image = raw['image']
+        container_split = raw['image'].split('/')
+        container_name = container_split[-1]
+        container_owner = None if container_split[-2] == '' else container_split[-2]
+        if 'docker' in raw['image']:
+            if not docker_image_exists(container_name, container_owner):
+                errors.append(f"Image '{raw['image']}' not found on Docker Hub")
+
+    work_dir = None
+    if not isinstance(raw['workdir'], str):
+        errors.append('Attribute \'workdir\' must not be a str')
+    elif raw['workdir'] == '':
+        errors.append('Attribute \'workdir\' must not be empty')
+    elif not isdir(raw['workdir']):
+        errors.append(f"Working directory '{raw['workdir']}' does not exist")
+    else:
+        work_dir = raw['workdir']
+
+    command = None
+    if not isinstance(raw['command'], str):
+        errors.append('Attribute \'command\' must not be a str')
+    elif raw['command'] == '':
+        errors.append('Attribute \'command\' must not be empty')
+    else:
+        command = raw['command']
+
+    parameters = None
+    if 'parameters' in raw:
+        if not all(['key' in param and
+                    param['key'] is not None and
+                    param['key'] != '' and
+                    'value' in param and
+                    param['value'] is not None and
+                    param['value'] != ''
+                    for param in raw['parameters']]):
+            errors.append('Every parameter must have a non-empty \'key\' and \'value\'')
+        else:
+            parameters = [Parameter(param['key'], param['value']) for param in raw['parameters']]
+
+    bind_mounts = None
+    if 'bind_mounts' in raw:
+        if not all (mount_point != '' for mount_point in raw['bind_mounts']):
+            errors.append('Every mount point must be non-empty')
+        else:
+            bind_mounts = [parse_bind_mount(work_dir, mount_point) for mount_point in raw['bind_mounts']]
+
+    input = None
+    if 'input' in raw:
+        if 'file' in raw['input']:
+            if 'path' not in raw['input']['file']:
+                errors.append('Section \'file\' must include attribute \'path\'')
+            input = FileInput(path=raw['input']['file']['path'])
+        elif 'files' in raw['input']:
+            if 'path' not in raw['input']['files']:
+                errors.append('Section \'files\' must include attribute \'path\'')
+            input = FilesInput(
+                path=raw['input']['files']['path'],
+                patterns=raw['input']['files']['patterns'] if 'patterns' in raw['input']['files'] else None)
+        elif 'directory' in raw['input']:
+            if 'path' not in raw['input']['directory']:
+                errors.append('Section \'directory\' must include attribute \'path\'')
+            input = DirectoryInput(path=raw['input']['directory']['path'])
+        else:
+            errors.append('Section \'input\' must include a \'file\', \'files\', or \'directory\' section')
+
+    log_file = None
+    if 'log_file' in raw:
+        log_file = raw['log_file']
+        if not isinstance(log_file, str):
+            errors.append('Attribute \'log_file\' must be a str')
+        elif log_file.rpartition('/')[0] != '' and not isdir(log_file.rpartition('/')[0]):
+            errors.append('Attribute \'log_file\' must be a valid file path')
+
+    cluster = None
+    if 'cluster' in raw:
+        cluster = raw['cluster']
+        if 'queue' not in cluster:
+            errors.append('Section \'cluster\' must include attribute \'queue\'')
+        if 'project' not in cluster:
+            errors.append('Section \'cluster\' must include attribute \'project\'')
+        if 'walltime' in cluster:
+            if not isinstance(cluster['walltime'], str):
+                errors.append('Section \'cluster\'.\'walltime\' must be a str')
+            matches = re.search("^(?:([01]?\d|2[0-3]):([0-5]?\d):)?([0-5]?\d)$", cluster['walltime'])
+            if len(matches.groups()) != 3:
+                errors.append('Section \'cluster\'.\'walltime\' must be format \'xx:xx:xx\'')
+        if 'cores' in cluster:
+            if not isinstance(cluster['cores'], int):
+                errors.append('Section \'cluster\'.\'cores\' must be a int')
+        if 'processes' in cluster:
+            if not isinstance(cluster['processes'], int):
+                errors.append('Section \'cluster\'.\'processes\' must be a int')
+        if not all(extra is str for extra in cluster['extra']):
+            errors.append('Section \'cluster\'.\'extra\' must be a list of str')
+        if not all(extra is str for extra in cluster['header_skip']):
+            errors.append('Section \'cluster\'.\'header_skip\' must be a list of str')
+
+    return errors, RunOptions(
+        workdir=work_dir,
+        image=image,
+        command=command,
+        input=input,
+        parameters=parameters,
+        bind_mounts=bind_mounts,
+        # checksums=checksums,
+        log_file=log_file,
+        cluster=cluster)
+
+
+def update_status(state: int, description: str, api_url: str = None, api_token: str = None, retries: int = 3):
     print(description)
-    if config.api_url:
-        count = 1
-        max = 4
-        while count <= max:
+    if api_url is not None and api_url != '':
+        if api_token is None or api_token == '':
+            raise ValueError(f"You must provide a PlantIT API access token if you provide an API URL")
+
+        failures = 1
+        while failures <= retries:
             try:
                 requests.post(
-                    config.api_url,
-                    data={
-                        'run_id': config.identifier,
-                        'state': state,
-                        'description': description
-                    },
-                    headers={"Authorization": f"Token {config.plantit_token}"})
+                    api_url,
+                    data={'state': state, 'description': description},
+                    headers={"Authorization": f"Token {api_token}"})
                 break
             except Exception:
                 print(traceback.format_exc())
-                if count > max:
-                    print('Failed to report status to PlantIT')
+                if failures > retries:
+                    print(f"Failed to report status to PlantIT after {failures} failures")
                     break
-                sleep(count * 0.5)
-                count += 1
+                sleep(failures * 0.5)
+                failures += 1
 
 
-def docker_container_exists(name, owner=None):
-    content = requests.get(
-        f"https://hub.docker.com/v2/repositories/{owner if owner is not None else 'library'}/{name}/").json()
+def docker_image_exists(name: str, owner: str = None):
+    response = requests.get(f"https://hub.docker.com/v2/repositories/{owner if owner is not None else 'library'}/{name}/")
+    content = response.json()
+
     if 'user' not in content or 'name' not in content:
         return False
     if content['user'] != (owner if owner is not None else 'library') or content['name'] != name:
@@ -112,127 +235,108 @@ def cyverse_path_exists(path, token):
     return True, input_type
 
 
-def validate_config(config: PlantITCLIOptions):
-    errors = []
+def prep_command(
+        work_dir: str,
+        image: str,
+        command: str,
+        bind_mounts: List[BindMount] = None,
+        parameters: List[Parameter] = None,
+        docker_username: str = None,
+        docker_password: str = None):
+    cmd = f"singularity exec --home {work_dir}"
 
-    # identifier
-    if config.identifier == '':
-        errors.append('Attribute \'identifier\' must not be empty')
+    if bind_mounts is not None:
+        if len(bind_mounts) > 0:
+            cmd += (' --bind ' + ','.join([format_bind_mount(work_dir, mount_point) for mount_point in bind_mounts]))
+        else:
+            raise ValueError(f"List expected for `bind_mounts`")
 
-    # image
-    if config.image == '':
-        errors.append('Attribute \'image\' must not be empty')
-    else:
-        container_split = config.image.split('/')
-        container_name = container_split[-1]
-        container_owner = None if container_split[-2] == '' else container_split[-2]
-        if 'docker' in config.image:
-            if not docker_container_exists(container_name, container_owner):
-                errors.append(f"Image '{config.image}' not found on Docker Hub")
+    if parameters is None:
+        parameters = []
+    parameters.append(Parameter(key='WORKDIR', value=work_dir))
+    for parameter in parameters:
+        print(f"Replacing {parameter.key} with {parameter.value}")
+        command = command.replace(f"${parameter.key.upper()}", parameter.value)
 
-    # working directory
-    if config.workdir == '':
-        errors.append('Attribute \'workdir\' must not be empty')
-    elif not isdir(config.workdir):
-        errors.append(f"Working directory '{config.workdir}' does not exist")
+    cmd += f" {image} {command}"
+    print(f"Using command: '{cmd}'")
 
-    # command
-    if config.command == '':
-        errors.append('Attribute \'command\' must not be empty')
+    # we don't necessarily want to reveal Docker auth info to the end user, so print the command before adding Docker env variables
+    if docker_username is not None and docker_password is not None:
+        print(f"Authenticating with Docker username: {docker_username}")
+        cmd = f"SINGULARITY_DOCKER_USERNAME={docker_username} SINGULARITY_DOCKER_PASSWORD={docker_password} " + cmd
 
-    # params
-    if config.params is not None and not all(['key' in param and
-                                              param['key'] is not None and
-                                              param['key'] != '' and
-                                              'value' in param and
-                                              param['value'] is not None and
-                                              param['value'] != ''
-                                              for param in config.params]):
-        errors.append('Every parameter must have a non-empty \'key\' and \'value\'')
-
-    # input
-    if config.input is not None:
-        # token
-        if config.cyverse_token is None or config.cyverse_token == '':
-            errors.append(f"CyVerse token must be provided")
-
-        # kind
-        if 'kind' not in config.input:
-            errors.append('Attribute \'input\' must include attribute \'kind\'')
-        elif type(config.input['kind']) is not str or not (
-                config.input['kind'] == 'file' or config.input['kind'] == 'files' or config.input[
-            'kind'] == 'directory'):
-            errors.append('Attribute \'input.kind\' must be either \'file\', \'files\', or \'directory\'')
-
-        # from
-        if 'from' not in config.input:
-            errors.append('Attribute \'input\' must include attribute \'from\'')
-        elif type(config.input['from']) is not str or not cyverse_path_exists(config.input['from'],
-                                                                              config.cyverse_token):
-            errors.append(f"Attribute 'input.from' must be a valid path in the CyVerse Data Store")
-
-        # overwrite
-        if 'overwrite' in config.input and type(config.input['overwrite']) is not bool:
-            errors.append('Attribute \'input.overwrite\' must be a bool')
-
-        # patterns
-        if 'patterns' in config.input and not all(
-                type(pattern) is str and pattern != '' for pattern in config.input['patterns']):
-            errors.append('Attribute \'input.patterns\' must be a non-empty str')
-
-    # output
-    if config.output is not None:
-        # token
-        if config.cyverse_token is None or config.cyverse_token == '':
-            errors.append(f"CyVerse token must be provided")
-
-        # from
-        if 'from' not in config.output:
-            errors.append('Attribute \'output\' must include attribute \'from\'')
-        elif type(config.output['from']) is not str:
-            errors.append(f"Attribute 'output.from' must be a str")
-
-        # to
-        if 'to' in config.output and type(config.output['to']) is not str:
-            errors.append(f"Attribute 'output.to' must be a valid path in the CyVerse Data Store")
-
-        # include
-        if 'include' in config.output:
-            if 'patterns' in config.output['include']:
-                if type(config.output['include']['patterns']) is not list or not all(
-                        type(pattern) is str for pattern in config.output['include']['patterns']):
-                    errors.append('Attribute \'output.include.patterns\' must be a list of str')
-            if 'names' in config.output['include']:
-                if type(config.output['include']['names']) is not list or not all(
-                        type(name) is str for name in config.output['include']['names']):
-                    errors.append('Attribute \'output.include.names\' must be a list of str')
-
-        # exclude
-        if 'exclude' in config.output:
-            if 'patterns' in config.output['exclude']:
-                if type(config.output['exclude']['patterns']) is not list or not all(
-                        type(pattern) is str for pattern in config.output['exclude']['patterns']):
-                    errors.append('Attribute \'output.exclude.patterns\' must be a list of str')
-            if 'names' in config.output['exclude']:
-                if type(config.output['exclude']['names']) is not list or not all(
-                        type(name) is str for name in config.output['exclude']['names']):
-                    errors.append('Attribute \'output.exclude.names\' must be a list of str')
-
-    # logging
-    if config.logging is not None:
-        if 'file' in config.logging and type(config.logging['file']) is not str:
-            errors.append('Attribute \'output.logging.file\' must be a str')
-        elif config.logging['file'].rpartition('/')[0] != '' and not isdir(config.logging['file'].rpartition('/')[0]):
-            errors.append('Attribute \'output.logging.file\' must be a valid file path')
-
-    return True if len(errors) == 0 else (False, errors)
+    return cmd
 
 
-def parse_mount(workdir, mp):
-    return mp.rpartition(':')[0] + ':' + mp.rpartition(':')[2] if ':' in mp else workdir + ':' + mp
+def run_command(command: str, log_file: str = None, retries: int = 3):
+    failures = 0
+    while failures < retries:
+        try:
+            with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, universal_newlines=True) as proc:
+                if log_file is not None and log_file != '':
+                    print(f"Logging output to file: {log_file}")
+
+                    with open(log_file, 'a') as log:
+                        for line in proc.stdout:
+                            print(line.strip())
+                            log.write(line)
+                else:
+                    print(f"Logging output to console")
+                    for line in proc.stdout:
+                        print(line.strip())
+
+            if proc.returncode:
+                raise RuntimeError(f"Non-zero exit code")
+            else:
+                msg = 'Command succeeded'
+                print(msg)
+                return msg
+        except:
+            failures += 1
+            print(f"Command failed, retrying {retries - failures} more time(s): {traceback.format_exc()}")
+            pass
+
+    msg = f"Aborting command after {failures} failures: {traceback.format_exc()}"
+    print(msg)
+    return msg
 
 
-SYMBOLS = {
+# noinspection PyBroadException
+def submit_command(client: Client, command: str, log_file: str, retries: int = 3):
+    failures = 0
+    while failures < retries:
+        try:
+            return client.submit(run_command, command, log_file, retries)
+        except:
+            print(f"Failed to submit container to Dask, retrying {retries - failures} more time(s): {traceback.format_exc()}")
+            failures += 1
+            pass
+
+    if failures >= retries:
+        raise RuntimeError(f"Failed to submit container to Dask after {retries} retries")
+
+
+def parse_flow_repo(repo: str):
+    split = repo.rpartition('/')
+    if len(split) != 3:
+        raise ValueError(f"Malformed repository identifier: {repo}")
+
+    owner = split[0]
+    name = split[2]
+    return owner, name
+
+
+def parse_bind_mount(workdir: str, bind_mount: str):
+    split = bind_mount.rpartition(':')
+    return split[0] + ':' + split[2] if len(split) > 0 else BindMount(host_path=workdir, container_path=bind_mount)
+
+
+def format_bind_mount(workdir: str, bind_mount: BindMount):
+    return bind_mount.host_path + ':' + bind_mount.container_path if bind_mount.host_path != '' else workdir + ':' + bind_mount.container_path
+
+
+BYTE_SYMBOLS = {
     'customary': ('B', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'),
     'customary_ext': ('byte', 'kilo', 'mega', 'giga', 'tera', 'peta', 'exa',
                       'zetta', 'iotta'),
@@ -285,7 +389,7 @@ def readable_bytes(n, format='%(value).1f %(symbol)s', symbols='customary'):
     if n < 0:
         raise ValueError("n < 0")
 
-    symbols = SYMBOLS[symbols]
+    symbols = BYTE_SYMBOLS[symbols]
     prefix = {}
     for i, s in enumerate(symbols[1:]):
         prefix[s] = 1 << (i + 1) * 10

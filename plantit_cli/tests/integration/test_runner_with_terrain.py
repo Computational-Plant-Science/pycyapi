@@ -7,7 +7,7 @@ import pytest
 
 from plantit_cli.exceptions import PlantitException
 from plantit_cli.runner.runner import Runner
-from plantit_cli.options import PlantITCLIOptions
+from plantit_cli.options import RunOptions
 from plantit_cli.store.terrain_store import TerrainStore
 from plantit_cli.tests.integration.terrain_test_utils import create_collection, upload_file, delete_collection, \
     list_files
@@ -24,7 +24,7 @@ def test_run_succeeds_with_no_params_and_file_input_and_no_output(remote_base_pa
                                                                   file_name_1):
     local_path = join(testdir, file_name_1)
     remote_path = join(remote_base_path, "testCollection")
-    plan = PlantITCLIOptions(
+    plan = RunOptions(
         identifier='test_run_succeeds_with_no_params_and_file_input_and_no_output',
         workdir=testdir,
         image="docker://alpine:latest",
@@ -65,7 +65,7 @@ def test_run_succeeds_with_params_and_file_input_and_no_output(remote_base_path,
                                                                file_name_1):
     local_path = join(testdir, file_name_1)
     remote_path = join(remote_base_path, "testCollection")
-    plan = PlantITCLIOptions(
+    plan = RunOptions(
         identifier='test_run_succeeds_with_params_and_file_input_and_no_output',
         workdir=testdir,
         image="docker://alpine:latest",
@@ -75,7 +75,7 @@ def test_run_succeeds_with_params_and_file_input_and_no_output(remote_base_path,
             'from': join(remote_base_path, "testCollection", file_name_1),
         },
         cyverse_token=token,
-        params=[
+        parameters=[
             {
                 'key': 'TAG',
                 'value': message
@@ -111,7 +111,7 @@ def test_run_succeeds_with_params_and_file_input_and_no_output(remote_base_path,
 def test_run_fails_with_no_params_and_file_input_and_no_output_when_no_inputs_found(remote_base_path,
                                                                                     file_name_1):
     time.sleep(DEFAULT_SLEEP)
-    plan = PlantITCLIOptions(
+    plan = RunOptions(
         identifier='test_run_fails_with_no_params_and_file_input_and_no_output_when_no_inputs_found',
         workdir=testdir,
         image="docker://alpine:latest",
@@ -131,7 +131,7 @@ def test_run_fails_with_no_params_and_file_input_and_no_output_when_no_inputs_fo
 def test_run_fails_with_params_and_file_input_and_no_output_when_no_inputs_found(remote_base_path,
                                                                                  file_name_1):
     time.sleep(DEFAULT_SLEEP)
-    plan = PlantITCLIOptions(
+    plan = RunOptions(
         identifier='test_run_fails_with_params_and_file_input_and_no_output_when_no_inputs_found',
         workdir=testdir,
         image="docker://alpine:latest",
@@ -141,7 +141,7 @@ def test_run_fails_with_params_and_file_input_and_no_output_when_no_inputs_found
             'from': join(remote_base_path, "testCollection", file_name_1),
         },
         cyverse_token=token,
-        params=[
+        parameters=[
             {
                 'key': 'TAG',
                 'value': message
@@ -160,7 +160,7 @@ def test_run_succeeds_with_no_params_and_files_input_and_no_output(
     local_path_1 = join(testdir, file_name_1)
     local_path_2 = join(testdir, file_name_2)
     remote_path = join(remote_base_path, "testCollection")
-    plan = PlantITCLIOptions(
+    plan = RunOptions(
         identifier='test_run_succeeds_with_no_params_and_files_input_and_no_output',
         workdir=testdir,
         image="docker://alpine:latest",
@@ -212,7 +212,7 @@ def test_run_succeeds_with_no_params_and_files_input_and_patterns_and_no_output(
     local_path_1 = join(testdir, file_name_1)
     local_path_2 = join(testdir, file_name_2)
     remote_path = join(remote_base_path, "testCollection")
-    plan = PlantITCLIOptions(
+    plan = RunOptions(
         identifier='test_run_succeeds_with_no_params_and_files_input_and_no_output',
         workdir=testdir,
         image="docker://alpine:latest",
@@ -263,7 +263,7 @@ def test_run_succeeds_with_params_and_files_input_and_no_output(
     local_path_1 = join(testdir, file_name_1)
     local_path_2 = join(testdir, file_name_2)
     remote_path = join(remote_base_path, "testCollection")
-    plan = PlantITCLIOptions(
+    plan = RunOptions(
         identifier='test_run_succeeds_with_params_and_files_input_and_no_output',
         workdir=testdir,
         image="docker://alpine:latest",
@@ -273,7 +273,7 @@ def test_run_succeeds_with_params_and_files_input_and_no_output(
             'from': join(remote_base_path, "testCollection"),
         },
         cyverse_token=token,
-        params=[
+        parameters=[
             {
                 'key': 'TAG',
                 'value': message
@@ -317,7 +317,7 @@ def test_run_succeeds_with_params_and_files_input_and_no_output(
 def test_run_succeeds_with_no_params_and_no_input_and_file_output(remote_base_path):
     local_output_path = join(testdir, 'output.txt')
     remote_path = join(remote_base_path, "testCollection")
-    plan = PlantITCLIOptions(
+    plan = RunOptions(
         identifier='test_run_succeeds_with_no_params_and_no_input_and_file_output',
         workdir=testdir,
         image="docker://alpine:latest",
@@ -351,7 +351,7 @@ def test_run_succeeds_with_no_params_and_no_input_and_file_output(remote_base_pa
 def test_run_succeeds_with_params_and_no_input_and_file_output(remote_base_path):
     local_output_path = join(testdir, f"output.{message}.txt")
     remote_path = join(remote_base_path, "testCollection")
-    plan = PlantITCLIOptions(
+    plan = RunOptions(
         identifier='test_run_succeeds_with_params_and_no_input_and_file_output',
         workdir=testdir,
         image="docker://alpine:latest",
@@ -361,7 +361,7 @@ def test_run_succeeds_with_params_and_no_input_and_file_output(remote_base_path)
             'from': f"output.{message}.txt",
         },
         cyverse_token=token,
-        params=[
+        parameters=[
             {
                 'key': 'TAG',
                 'value': message
@@ -393,7 +393,7 @@ def test_run_succeeds_with_no_params_and_no_input_and_directory_output(remote_ba
     local_output_file_1 = join(local_output_path, 't1.txt')
     local_output_file_2 = join(local_output_path, 't2.txt')
     remote_path = join(remote_base_path, "testCollection")
-    plan = PlantITCLIOptions(
+    plan = RunOptions(
         identifier='test_run_succeeds_with_no_params_and_no_input_and_directory_output',
         workdir=testdir,
         image="docker://alpine:latest",
@@ -434,7 +434,7 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output(remote_base_
     local_output_file_1 = join(local_output_path, f"t1.{message}.txt")
     local_output_file_2 = join(local_output_path, f"t2.{message}.txt")
     remote_path = join(remote_base_path, "testCollection")
-    plan = PlantITCLIOptions(
+    plan = RunOptions(
         identifier='test_run_succeeds_with_params_and_no_input_and_directory_output',
         workdir=testdir,
         image="docker://alpine:latest",
@@ -444,7 +444,7 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output(remote_base_
             'from': '',
         },
         cyverse_token=token,
-        params=[
+        parameters=[
             {
                 'key': 'TAG',
                 'value': message
@@ -482,7 +482,7 @@ def test_run_succeeds_with_no_params_and_file_input_and_directory_output(
     local_output_path = join(testdir, 'input')  # write output files to input dir
     local_output_file_path = join(local_output_path, f"{file_name_1}.output")
     remote_path = join(remote_base_path, "testCollection")
-    plan = PlantITCLIOptions(
+    plan = RunOptions(
         identifier='test_run_succeeds_with_no_params_and_file_input_and_directory_output',
         workdir=testdir,
         image="docker://alpine:latest",
@@ -530,7 +530,7 @@ def test_run_succeeds_with_params_and_file_input_and_directory_output(
     local_output_path = join(testdir, 'input')  # write output files to input dir
     local_output_file_path = join(local_output_path, f"{file_name_1}.{message}.output")
     remote_path = join(remote_base_path, "testCollection")
-    plan = PlantITCLIOptions(
+    plan = RunOptions(
         identifier='test_run_succeeds_with_params_and_file_input_and_directory_output',
         workdir=testdir,
         image="docker://alpine:latest",
@@ -545,7 +545,7 @@ def test_run_succeeds_with_params_and_file_input_and_directory_output(
             'include': {'patterns': ['output'], 'names': []}
         },
         cyverse_token=token,
-        params=[
+        parameters=[
             {
                 'key': 'TAG',
                 'value': message
@@ -586,7 +586,7 @@ def test_run_succeeds_with_no_params_and_directory_input_and_directory_output(
     remote_path = join(remote_base_path, "testCollection")
     local_output_dir = join(testdir, 'input')  # write output files to input dir
     local_output_path = join(local_output_dir, f"{join(testdir, 'input')}.output")
-    plan = PlantITCLIOptions(
+    plan = RunOptions(
         identifier='test_run_succeeds_with_no_params_and_directory_input_and_directory_output',
         workdir=testdir,
         image="docker://alpine:latest",
@@ -642,7 +642,7 @@ def test_run_succeeds_with_params_and_directory_input_and_directory_output(
     remote_path = join(remote_base_path, "testCollection")
     local_output_dir = join(testdir, 'input')  # write output files to input dir
     local_output_path = join(local_output_dir, f"{join(testdir, 'input')}.{message}.output")
-    plan = PlantITCLIOptions(
+    plan = RunOptions(
         identifier='test_run_succeeds_with_params_and_directory_input_and_directory_output',
         workdir=testdir,
         image="docker://alpine:latest",
@@ -656,7 +656,7 @@ def test_run_succeeds_with_params_and_directory_input_and_directory_output(
             'from': '',
             'include': {'patterns': ['output'], 'names': []}
         },
-        params=[
+        parameters=[
             {
                 'key': 'TAG',
                 'value': message
@@ -700,7 +700,7 @@ def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_excl
     local_output_file_included = join(local_output_path, "included.output")
     local_output_file_excluded = join(local_output_path, "excluded.output")
     remote_path = join(remote_base_path, "testCollection")
-    plan = PlantITCLIOptions(
+    plan = RunOptions(
         identifier='test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_excludes',
         workdir=testdir,
         image="docker://alpine:latest",
@@ -742,7 +742,7 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output_with_exclude
     local_output_file_included = join(local_output_path, f"included.{message}.output")
     local_output_file_excluded = join(local_output_path, "excluded.output")
     remote_path = join(remote_base_path, "testCollection")
-    plan = PlantITCLIOptions(
+    plan = RunOptions(
         identifier='test_run_succeeds_with_params_and_no_input_and_directory_output_with_excludes',
         workdir=testdir,
         image="docker://alpine:latest",
@@ -756,7 +756,7 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output_with_exclude
             ]}
         },
         cyverse_token=token,
-        params=[
+        parameters=[
             {
                 'key': 'TAG',
                 'value': message
@@ -791,7 +791,7 @@ def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_non_
     local_output_file_included = join(local_output_path, "included.output")
     local_output_file_excluded = join(local_output_path, "excluded.output")
     remote_path = join(remote_base_path, "testCollection")
-    plan = PlantITCLIOptions(
+    plan = RunOptions(
         identifier='test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes',
         workdir=testdir,
         image="docker://alpine:latest",
@@ -834,7 +834,7 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output_with_non_mat
     local_output_file_included = join(local_output_path, f"included.{message}.output")
     local_output_file_excluded = join(local_output_path, "excluded.output")
     remote_path = join(remote_base_path, "testCollection")
-    plan = PlantITCLIOptions(
+    plan = RunOptions(
         identifier='test_run_succeeds_with_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes',
         workdir=testdir,
         image="docker://alpine:latest",
@@ -848,7 +848,7 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output_with_non_mat
             ]}
         },
         cyverse_token=token,
-        params=[
+        parameters=[
             {
                 'key': 'TAG',
                 'value': message
@@ -883,7 +883,7 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output_with_already
     local_output_file_included = join(local_output_path, f"included.{message}.output")
     local_output_file_excluded = join(local_output_path, "excluded.output")
     remote_path = join(remote_base_path, "testCollection")
-    plan = PlantITCLIOptions(
+    plan = RunOptions(
         identifier='test_run_succeeds_with_params_and_no_input_and_directory_output_with_excludes',
         workdir=testdir,
         image="docker://alpine:latest",
@@ -897,7 +897,7 @@ def test_run_succeeds_with_params_and_no_input_and_directory_output_with_already
             ]}
         },
         cyverse_token=token,
-        params=[
+        parameters=[
             {
                 'key': 'TAG',
                 'value': message

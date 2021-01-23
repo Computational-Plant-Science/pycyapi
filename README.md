@@ -55,6 +55,27 @@ pip3 install plantit-cli
 
 ## Usage
 
+The `plantit-cli` supports the following commands:
+
+- `clone`:
+- `zip`:
+- `pull`:
+- `push`:
+- `run`:
+
+### Zip
+
+### Pull
+
+Options:
+
+- `--overwrite`: whether to overwrite already-existing files
+- `--check`: file-checksum pair with form `<filename>=<checksum>`, multiple permitted
+
+### Run
+
+### Push
+
 To run `hello_world.yaml`, use `plantit hello_world.yaml`. The YAML schema should look something like this:
 
 ```yaml

@@ -1,20 +1,18 @@
 from os import environ
 from os.path import join
 
-from plantit_cli.options import PlantITCLIOptions
-from plantit_cli.utils import validate_config
+from plantit_cli.utils import parse_options
 
 message = "Message"
 testdir = environ.get('TEST_DIRECTORY')
 
 
 def test_validate_plan_with_params_and_no_input_and_no_output_and_file_logging():
-    plan = PlantITCLIOptions(
-        identifier='test_run_succeeds_with_params_and_no_input_and_no_output',
-        workdir=testdir,
-        image="docker://alpine",
-        command='echo "$MESSAGE" >> $MESSAGE_FILE',
-        params=[
+    errors, options = parse_options({
+        'workdir': testdir,
+        'image': "docker://alpine",
+        'command': 'echo "$MESSAGE" >> $MESSAGE_FILE',
+        'parameters': [
             {
                 'key': 'MESSAGE',
                 'value': message
@@ -24,20 +22,17 @@ def test_validate_plan_with_params_and_no_input_and_no_output_and_file_logging()
                 'value': 'message.txt'
             },
         ],
-        logging={
-            'file': 'logfile.txt'
-        })
-    result = validate_config(plan)
-    assert type(result) is bool and result
+        'log_file': 'logfile.txt'
+    })
+    assert len(errors) == 0
 
 
 def test_validate_plan_with_params_and_no_input_and_no_output():
-    plan = PlantITCLIOptions(
-        identifier='test_run_succeeds_with_params_and_no_input_and_no_output',
-        workdir=testdir,
-        image="docker://alpine",
-        command='echo "$MESSAGE" >> $MESSAGE_FILE',
-        params=[
+    errors, options = parse_options({
+        'workdir': testdir,
+        'image': "docker://alpine",
+        'command': 'echo "$MESSAGE" >> $MESSAGE_FILE',
+        'parameters': [
             {
                 'key': 'MESSAGE',
                 'value': message
@@ -46,7 +41,7 @@ def test_validate_plan_with_params_and_no_input_and_no_output():
                 'key': 'MESSAGE_FILE',
                 'value': join(testdir, 'message.txt')
             },
-        ])
-    result = validate_config(plan)
-    assert type(result) is bool and result
+        ]
+    })
+    assert len(errors) == 0
 
