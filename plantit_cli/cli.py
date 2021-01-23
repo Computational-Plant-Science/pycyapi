@@ -10,7 +10,7 @@ def cli():
     pass
 
 
-@click.command()
+@cli.command()
 @click.argument('input_dir')
 @click.option('-o', '--output_dir', required=False, type=str)
 @click.option('-n', '--name', required=False, type=str)
@@ -45,7 +45,7 @@ def zip(
         plantit_token=plantit_token)
 
 
-@click.command()
+@cli.command()
 @click.argument('input_dir')
 @click.option('--cyverse_token', required=True, type=str)
 @click.option('-o', '--output_dir', required=False, type=str)
@@ -71,7 +71,7 @@ def pull(
         plantit_token=plantit_token)
 
 
-@click.command()
+@cli.command()
 @click.argument('output_dir')
 @click.option('--cyverse_token', required=True, type=str)
 @click.option('-i', '--input_dir', required=False, type=str)
@@ -103,7 +103,7 @@ def push(
         plantit_token=plantit_token)
 
 
-@click.command()
+@cli.command()
 @click.argument('flow')
 @click.option('--plantit_token', required=False, type=str)
 @click.option('--plantit_url', required=False, type=str)
@@ -125,3 +125,7 @@ def run(flow,
             plantit_token=plantit_token,
             docker_username=docker_username,
             docker_password=docker_password)
+
+
+if __name__ == '__main__':
+    cli()

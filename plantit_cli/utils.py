@@ -1,14 +1,11 @@
-import re
 import subprocess
 import traceback
 from os import listdir
 from os.path import join, isfile, isdir
-from pathlib import Path
 from time import sleep
 from typing import List
 
 import requests
-from dask_jobqueue import JobQueueCluster
 from distributed import Client
 
 from plantit_cli.options import BindMount, Parameter, FileInput, FilesInput, DirectoryInput, RunOptions
@@ -128,29 +125,47 @@ def parse_options(raw: dict):
         elif log_file.rpartition('/')[0] != '' and not isdir(log_file.rpartition('/')[0]):
             errors.append('Attribute \'log_file\' must be a valid file path')
 
-    cluster = None
-    if 'cluster' in raw:
-        cluster = raw['cluster']
-        if 'queue' not in cluster:
-            errors.append('Section \'cluster\' must include attribute \'queue\'')
-        if 'project' not in cluster:
-            errors.append('Section \'cluster\' must include attribute \'project\'')
-        if 'walltime' in cluster:
-            if not isinstance(cluster['walltime'], str):
-                errors.append('Section \'cluster\'.\'walltime\' must be a str')
-            matches = re.search("^(?:([01]?\d|2[0-3]):([0-5]?\d):)?([0-5]?\d)$", cluster['walltime'])
-            if len(matches.groups()) != 3:
-                errors.append('Section \'cluster\'.\'walltime\' must be format \'xx:xx:xx\'')
-        if 'cores' in cluster:
-            if not isinstance(cluster['cores'], int):
-                errors.append('Section \'cluster\'.\'cores\' must be a int')
-        if 'processes' in cluster:
-            if not isinstance(cluster['processes'], int):
-                errors.append('Section \'cluster\'.\'processes\' must be a int')
-        if not all(extra is str for extra in cluster['extra']):
-            errors.append('Section \'cluster\'.\'extra\' must be a list of str')
-        if not all(extra is str for extra in cluster['header_skip']):
-            errors.append('Section \'cluster\'.\'header_skip\' must be a list of str')
+    jobqueue = None
+    if 'jobqueue' in raw:
+        jobqueue = raw['jobqueue']
+        if 'slurm' in jobqueue:
+            jobqueue = jobqueue['slurm']
+        elif 'yarn' in jobqueue:
+            jobqueue = jobqueue['yarn']
+        elif 'pbs' in jobqueue:
+            jobqueue = jobqueue['pbs']
+        elif 'moab' in jobqueue:
+            jobqueue = jobqueue['moab']
+        elif 'sge' in jobqueue:
+            jobqueue = jobqueue['sge']
+        elif 'lsf' in jobqueue:
+            jobqueue = jobqueue['lsf']
+        elif 'oar' in jobqueue:
+            jobqueue = jobqueue['oar']
+        elif 'kube' in jobqueue:
+            jobqueue = jobqueue['kube']
+        else:
+            raise ValueError(f"Unsupported jobqueue configuration: {jobqueue}")
+
+        if 'queue' in jobqueue:
+            if not isinstance(jobqueue['queue'], str):
+                errors.append('Section \'jobqueue\'.\'queue\' must be a str')
+        if 'project' in jobqueue:
+            if not isinstance(jobqueue['project'], str):
+                errors.append('Section \'jobqueue\'.\'project\' must be a str')
+        if 'walltime' in jobqueue:
+            if not isinstance(jobqueue['walltime'], str):
+                errors.append('Section \'jobqueue\'.\'walltime\' must be a str')
+        if 'cores' in jobqueue:
+            if not isinstance(jobqueue['cores'], int):
+                errors.append('Section \'jobqueue\'.\'cores\' must be a int')
+        if 'processes' in jobqueue:
+            if not isinstance(jobqueue['processes'], int):
+                errors.append('Section \'jobqueue\'.\'processes\' must be a int')
+        if 'extra' in jobqueue and not all(extra is str for extra in jobqueue['extra']):
+            errors.append('Section \'jobqueue\'.\'extra\' must be a list of str')
+        if 'header_skip' in jobqueue and not all(extra is str for extra in jobqueue['header_skip']):
+            errors.append('Section \'jobqueue\'.\'header_skip\' must be a list of str')
 
     return errors, RunOptions(
         workdir=work_dir,
@@ -161,7 +176,7 @@ def parse_options(raw: dict):
         bind_mounts=bind_mounts,
         # checksums=checksums,
         log_file=log_file,
-        cluster=cluster)
+        jobqueue=jobqueue)
 
 
 def update_status(state: int, description: str, api_url: str = None, api_token: str = None, retries: int = 3):
@@ -329,7 +344,7 @@ def parse_flow_repo(repo: str):
 
 def parse_bind_mount(workdir: str, bind_mount: str):
     split = bind_mount.rpartition(':')
-    return split[0] + ':' + split[2] if len(split) > 0 else BindMount(host_path=workdir, container_path=bind_mount)
+    return BindMount(host_path=split[0], container_path=split[2]) if len(split) > 0 else BindMount(host_path=workdir, container_path=bind_mount)
 
 
 def format_bind_mount(workdir: str, bind_mount: BindMount):

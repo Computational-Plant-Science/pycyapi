@@ -78,7 +78,7 @@ class RunOptions:
                  bind_mounts: List[BindMount] = None,
                  checksums: List[FileChecksum] = None,
                  log_file: str = None,
-                 cluster: dict = None):
+                 jobqueue: dict = None):
         self.workdir = workdir
         self.image = image
         self.command = command
@@ -87,7 +87,7 @@ class RunOptions:
         self.bind_mounts = bind_mounts
         self.checksums = checksums
         self.log_file = log_file
-        self.cluster = cluster
+        self.jobqueue = jobqueue
 
     def to_json(self):
         return json.dumps(

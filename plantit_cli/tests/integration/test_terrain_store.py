@@ -4,11 +4,7 @@ from os.path import join, isfile
 
 import pytest
 
-from tenacity import RetryError
-
-from plantit_cli.exceptions import PlantitException
 from plantit_cli.store.terrain_store import TerrainStore
-from plantit_cli.options import RunOptions
 from plantit_cli.tests.integration.terrain_test_utils import delete_collection, upload_file, create_collection
 from plantit_cli.tests.test_utils import clear_dir, get_token
 
@@ -17,35 +13,9 @@ testdir = environ.get('TEST_DIRECTORY')
 token = get_token()
 
 
-def plan(remote_base_path):
-    return RunOptions(
-        identifier='workflow_with_directory_input',
-        workdir=testdir,
-        image="docker://alpine:latest",
-        command='ls $INPUT | tee $INPUT.output',
-        input={
-            'kind': 'directory',
-            'from': join(remote_base_path, "testCollection"),
-        },
-        cyverse_token=token)
-
-
-def bad_plan(remote_base_path):
-    return RunOptions(
-        identifier='workflow_with_directory_input',
-        workdir=testdir,
-        image="docker://alpine:latest",
-        command='ls $INPUT | tee $INPUT.output',
-        input={
-            'kind': 'directory',
-            'from': join(remote_base_path, "testCollection"),
-        },
-        cyverse_token='bad_token')
-
-
 def test_directory_exists(remote_base_path):
     remote_path = join(remote_base_path, "testCollection")
-    store = TerrainStore(plan(remote_base_path))
+    store = TerrainStore(token)
 
     try:
         # prep CyVerse collection
@@ -64,7 +34,7 @@ def test_file_exists(remote_base_path):
     file2_name = 'f2.txt'
     file1_path = join(testdir, file1_name)
     remote_path = join(remote_base_path, "testCollection")
-    store = TerrainStore(plan(remote_base_path))
+    store = TerrainStore(token)
 
     try:
         # prep CyVerse collection
@@ -91,7 +61,7 @@ def test_list_directory(remote_base_path):
     file1_path = join(testdir, file1_name)
     file2_path = join(testdir, file2_name)
     remote_path = join(remote_base_path, "testCollection")
-    store = TerrainStore(plan(remote_base_path))
+    store = TerrainStore(token)
 
     try:
         # prep CyVerse collection
@@ -119,17 +89,17 @@ def test_list_directory(remote_base_path):
 
 def test_list_directory_no_retries_when_path_does_not_exist(remote_base_path):
     remote_path = join(remote_base_path, "badCollection")
-    store = TerrainStore(plan(remote_base_path))
+    store = TerrainStore(token)
 
-    with pytest.raises(PlantitException):
+    with pytest.raises(ValueError):
         store.list_dir(remote_path)
 
 
 def test_list_directory_retries_when_token_invalid(remote_base_path):
     remote_path = join(remote_base_path, "testCollection")
-    store = TerrainStore(bad_plan(remote_base_path))
+    store = TerrainStore(token)
 
-    with pytest.raises(RetryError):
+    with pytest.raises(ValueError):
         store.list_dir(remote_path)
 
 
@@ -137,7 +107,7 @@ def test_download_file(remote_base_path):
     file_name = 'f1.txt'
     file_path = join(testdir, file_name)
     remote_path = join(remote_base_path, "testCollection")
-    store = TerrainStore(plan(remote_base_path))
+    store = TerrainStore(token)
 
     try:
         # prep CyVerse collection
@@ -166,7 +136,7 @@ def test_download_directory(remote_base_path):
     file1_path = join(testdir, file1_name)
     file2_path = join(testdir, file2_name)
     remote_path = join(remote_base_path, "testCollection")
-    store = TerrainStore(plan(remote_base_path))
+    store = TerrainStore(token)
 
     try:
         # prep CyVerse collection
@@ -186,7 +156,7 @@ def test_download_directory(remote_base_path):
         os.remove(file2_path)
 
         # download files
-        store.pull_dir(remote_path, testdir, '.txt')
+        store.pull_dir(remote_path, testdir, ['.txt'])
 
         # check files were downloaded
         assert isfile(file1_path)

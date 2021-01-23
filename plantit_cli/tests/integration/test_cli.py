@@ -2,35 +2,97 @@ import os
 import tempfile
 from os.path import join, isfile
 
+import pytest
 import requests
 from click.testing import CliRunner
 
 from plantit_cli.cli import run
+from plantit_cli.tests.test_utils import clear_dir
 
 from_path = f"/iplant/home/{os.environ.get('CYVERSE_USERNAME')}"
 message = "Hello, world!"
-testdir = '/opt/plantit-cli/runs/'
+testdir = '/opt/plantit-cli/runs'
 tempdir = tempfile.gettempdir()
 runner = CliRunner()
 
 
-# def test_workflow_with_params():
-#     try:
-#         # run the workflow
-#         os.environ['LC_ALL'] = 'en_US.utf8'
-#         os.environ['LANG'] = 'en_US.utf8'
-#         result = runner.invoke(run, ['examples/params.yaml'])
-#         assert result.exit_code == 0
-#
-#         # check local message file
-#         file = join(testdir, 'message.txt')
-#         assert isfile(file)
-#         with open(file) as file:
-#             lines = file.readlines()
-#             assert len(lines) == 1
-#             assert lines[0] == f"{message}\n"
-#     finally:
-#         clear_dir(testdir)
+def test_run_cli_parameters(file_name_1, file_name_2):
+    try:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            input_file_path_1 = join(temp_dir, file_name_1)
+            input_file_path_2 = join(temp_dir, file_name_2)
+            with open(input_file_path_1, "w") as file1, open(input_file_path_2, "w") as file2:
+                file1.write('Hello, 1!')
+                file2.write('Hello, 2!')
+
+            # run the flow
+            result = runner.invoke(run, ['../samples/flow_with_parameters.yaml'])
+            print(result.output)
+            assert result.exit_code == 0
+
+            # check local message file
+            file = join(testdir, 'output.txt')
+            assert isfile(file)
+            with open(file) as file:
+                lines = file.readlines()
+                assert len(lines) == 1
+                assert lines[0] == f"{message}\n"
+    except:
+        clear_dir(testdir)
+        raise
+    finally:
+        clear_dir(testdir)
+
+
+def test_run_cli_bind_mounts(file_name_1, file_name_2):
+    try:
+        # run the flow
+        result = runner.invoke(run, ['../samples/flow_with_bind_mounts.yaml'])
+        print(result.output)
+        assert result.exit_code == 0
+
+        # check local message file
+        file = join(testdir, 'output.txt')
+        assert isfile(file)
+        with open(file) as file:
+            lines = file.readlines()
+            assert len(lines) >= 1
+            print(lines)
+            assert any('flow_with_bind_mounts' in line for line in lines)
+    except:
+        clear_dir(testdir)
+        raise
+    finally:
+        clear_dir(testdir)
+
+
+# @pytest.mark.skip(reason='until fixed')
+def test_run_cli_parameters_slurm(file_name_1, file_name_2):
+    try:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            input_file_path_1 = join(temp_dir, file_name_1)
+            input_file_path_2 = join(temp_dir, file_name_2)
+            with open(input_file_path_1, "w") as file1, open(input_file_path_2, "w") as file2:
+                file1.write('Hello, 1!')
+                file2.write('Hello, 2!')
+
+            # run the flow
+            result = runner.invoke(run, ['../samples/flow_with_parameters_slurm.yaml'])
+            print(result.output)
+            assert result.exit_code == 0
+
+            # check local message file
+            file = join(testdir, 'output.txt')
+            assert isfile(file)
+            with open(file) as file:
+                lines = file.readlines()
+                assert len(lines) == 1
+                assert lines[0] == f"{message}\n"
+    except:
+        clear_dir(testdir)
+        raise
+    finally:
+        clear_dir(testdir)
 
 
 # def test_workflow_with_params_slurm():

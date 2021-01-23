@@ -1,3 +1,4 @@
+import json
 import multiprocessing
 from contextlib import closing
 from multiprocessing import Pool
@@ -8,12 +9,11 @@ import requests
 from requests import ReadTimeout, Timeout, HTTPError, RequestException
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
 
-from plantit_cli.exceptions import PlantitException
 from plantit_cli.store.store import Store
-from plantit_cli.utils import update_status, list_files
+from plantit_cli.utils import list_files
 
 
-class FileChecksum():
+class FileChecksum:
     def __init__(self, file, checksum):
         self.file = file
         self.checksum = checksum
@@ -31,14 +31,14 @@ class TerrainStore(Store):
             Timeout) | retry_if_exception_type(HTTPError)))
     def dir_exists(self, path: str) -> bool:
         with requests.post('https://de.cyverse.org/terrain/secured/filesystem/stat',
-                           headers={'Authorization': f"Bearer {self.token}"},
-                           data={'paths': [path]}) as response:
+                           headers={'Authorization': f"Bearer {self.token}", "Content-Type": 'application/json;charset=utf-8'},
+                           data=json.dumps({'paths': [path]})) as response:
             if response.status_code == 500 and response.json()['error_code'] == 'ERR_DOES_NOT_EXIST':
                 return False
 
             response.raise_for_status()
             content = response.json()
-            result = [result[path] for result in content['paths']][0]
+            result = content['paths'][path]
             return result['type'] == 'dir'
 
     @retry(
@@ -49,14 +49,14 @@ class TerrainStore(Store):
             Timeout) | retry_if_exception_type(HTTPError)))
     def file_exists(self, path: str) -> bool:
         with requests.post('https://de.cyverse.org/terrain/secured/filesystem/stat',
-                           headers={'Authorization': f"Bearer {self.token}"},
-                           data={'paths': [path]}) as response:
+                           headers={'Authorization': f"Bearer {self.token}", "Content-Type": 'application/json;charset=utf-8'},
+                           data=json.dumps({'paths': [path]})) as response:
             if response.status_code == 500 and response.json()['error_code'] == 'ERR_DOES_NOT_EXIST':
                 return False
 
             response.raise_for_status()
             content = response.json()
-            result = [result[path] for result in content['paths']][0]
+            result = content['paths'][path]
             return result['type'] == 'file'
 
 
@@ -96,7 +96,7 @@ class TerrainStore(Store):
         with requests.get(f"https://de.cyverse.org/terrain/secured/fileio/download?path={from_path}",
                           headers={'Authorization': f"Bearer {self.token}"}) as response:
             if response.status_code == 500 and response.json()['error_code'] == 'ERR_REQUEST_FAILED':
-                raise PlantitException(f"Path {from_path} does not exist")
+                raise ValueError(f"Path {from_path} does not exist")
             response.raise_for_status()
             with open(to_path_full, 'wb') as file:
                 for chunk in response.iter_content(chunk_size=8192):
@@ -133,7 +133,7 @@ class TerrainStore(Store):
         if check:
             self.__verify_checksums(from_path, checksums)
 
-        update_status(self.plan, 3, f"Downloading directory '{from_path}' with {len(paths)} file(s)")
+        print(f"Downloading directory '{from_path}' with {len(paths)} file(s)")
         with closing(Pool(processes=multiprocessing.cpu_count())) as pool:
             pool.starmap(self.pull_file, [(path, to_path) for path in paths])
 

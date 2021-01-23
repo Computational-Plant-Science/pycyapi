@@ -15,10 +15,12 @@ services:
   slurmctld:
     image: computationalplantscience/plantit-sandbox
     command: ["slurmctld"]
-    working_dir: /opt/plantit-cli/runs
+    working_dir: /opt/plantit-cli
     hostname: slurmctld
     privileged: true
     environment:
+      - LC_ALL=en_US.utf8
+      - LANG=en_US.utf8
       - CYVERSE_USERNAME=${CYVERSE_USERNAME}
       - CYVERSE_PASSWORD=${CYVERSE_PASSWORD}
       - COVERALLS_REPO_TOKEN=${COVERALLS_REPO_TOKEN}
