@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='plantit-cli',
-    version='0.2.0',
+    version='0.2.13',
     description='Deploy PlantIT workflows on laptops, servers, or clusters.',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -19,7 +19,7 @@ setuptools.setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'plantit = plantit_cli.cli:run'
+            'plantit = plantit_cli.cli:cli'
         ]
     },
     python_requires='>=3.6.8',

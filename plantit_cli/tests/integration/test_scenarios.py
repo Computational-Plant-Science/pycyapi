@@ -28,9 +28,8 @@ def test_pull_then_run_file_input(remote_base_path, file_name_1):
     plan = RunOptions(
         workdir=testdir,
         image="docker://alpine:latest",
-        command='cat "$INPUT" | tee "$INPUT.output"',
-        input=FileInput(path=join(testdir, file_name_1)),
-        bind_mounts=[BindMount(host_path=testdir, container_path=testdir)])
+        command='cat "$INPUT" > "$INPUT.output"',
+        input=FileInput(path=join(testdir, file_name_1)))
 
     try:
         # prep CyVerse collection
@@ -40,6 +39,7 @@ def test_pull_then_run_file_input(remote_base_path, file_name_1):
         with open(local_path, "w") as file1:
             file1.write('Hello, 1!')
         upload_file(local_path, remote_path, token)
+        remove(local_path)
 
         # pull file to test directory
         commands.pull(remote_path, testdir, cyverse_token=token)
@@ -70,10 +70,9 @@ def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
     plan = RunOptions(
         workdir=testdir,
         image="docker://alpine:latest",
-        command='cat $INPUT | tee $INPUT.$TAG.output',
-        input=FileInput(path=join(testdir, file_name_1)),
-        parameters=[Parameter(key='TAG', value=message)],
-        bind_mounts=[BindMount(host_path=testdir, container_path=testdir)])
+        command='cat $INPUT > $INPUT.$TAG.output',
+        input=FileInput(path=local_path),
+        parameters=[Parameter(key='TAG', value=message)])
 
     try:
         # prep CyVerse collection

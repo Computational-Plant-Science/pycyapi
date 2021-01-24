@@ -190,7 +190,7 @@ def update_status(state: int, description: str, api_url: str = None, api_token: 
             try:
                 requests.post(
                     api_url,
-                    data={'state': state, 'description': description},
+                    data={'state': int(state), 'description': description},
                     headers={"Authorization": f"Token {api_token}"})
                 break
             except Exception:

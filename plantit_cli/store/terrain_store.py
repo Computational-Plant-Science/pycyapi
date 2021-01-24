@@ -9,14 +9,9 @@ import requests
 from requests import ReadTimeout, Timeout, HTTPError, RequestException
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
 
+from plantit_cli.options import FileChecksum
 from plantit_cli.store.store import Store
 from plantit_cli.utils import list_files
-
-
-class FileChecksum:
-    def __init__(self, file, checksum):
-        self.file = file
-        self.checksum = checksum
 
 
 class TerrainStore(Store):
@@ -108,7 +103,7 @@ class TerrainStore(Store):
         retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
             RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
             Timeout) | retry_if_exception_type(HTTPError)))
-    def __verify_checksums(self, from_path: str, expected_pairs: List[FileChecksum]):
+    def verify_checksums(self, from_path: str, expected_pairs: List[FileChecksum]):
         with requests.post('https://de.cyverse.org/terrain/secured/filesystem/stat',
                            headers={'Authorization': f"Bearer {self.token}"},
                            data={'paths': expected_pairs}) as response:
@@ -131,7 +126,7 @@ class TerrainStore(Store):
 
         # verify  that input checksums haven't changed since submission time
         if check:
-            self.__verify_checksums(from_path, checksums)
+            self.verify_checksums(from_path, checksums)
 
         print(f"Downloading directory '{from_path}' with {len(paths)} file(s)")
         with closing(Pool(processes=multiprocessing.cpu_count())) as pool:
@@ -140,7 +135,7 @@ class TerrainStore(Store):
         # verify that input checksums haven't changed since download time
         # (maybe a bit excessive, and will add network latency, but probably prudent)
         if check:
-            self.__verify_checksums(from_path, paths)
+            self.verify_checksums(from_path, paths)
 
     @retry(
         wait=wait_exponential(multiplier=1, min=4, max=10),

@@ -2,6 +2,7 @@ import click
 import yaml
 
 from plantit_cli import commands
+from plantit_cli.store import terrain_commands
 from plantit_cli.utils import parse_options
 
 
@@ -10,15 +11,78 @@ def cli():
     pass
 
 
+@cli.group()
+def terrain():
+    pass
+
+
+@terrain.command()
+@click.argument('remote_path')
+@click.option('--local_path', '-p', required=False, type=str)
+@click.option('--terrain_token', required=True, type=str)
+@click.option('--patterns', required=False, type=str, multiple=True)
+@click.option('--overwrite', required=False, type=str, multiple=True)
+@click.option('--plantit_token', required=False, type=str)
+@click.option('--plantit_url', required=False, type=str)
+def pull(
+        remote_path,
+        terrain_token,
+        local_path,
+        patterns,
+        overwrite,
+        plantit_token,
+        plantit_url):
+    terrain_commands.pull(
+        remote_path=remote_path,
+        local_path=local_path,
+        patterns=patterns,
+        overwrite=overwrite,
+        cyverse_token=terrain_token,
+        plantit_url=plantit_url,
+        plantit_token=plantit_token)
+
+
+@terrain.command()
+@click.argument('remote_path')
+@click.option('--terrain_token', required=True, type=str)
+@click.option('--local_path', '-p', required=False, type=str)
+@click.option('--include_patterns', '-ip', required=False, type=str, multiple=True)
+@click.option('--include_names', '-in', required=False, type=str, multiple=True)
+@click.option('--exclude_patterns', '-ep', required=False, type=str, multiple=True)
+@click.option('--exclude_names', '-en', required=False, type=str, multiple=True)
+@click.option('--plantit_token', required=False, type=str)
+@click.option('--plantit_url', required=False, type=str)
+def push(
+        remote_path,
+        terrain_token,
+        local_path,
+        include_patterns,
+        include_names,
+        exclude_patterns,
+        exclude_names,
+        plantit_token,
+        plantit_url):
+    terrain_commands.push(
+        local_path=local_path,
+        remote_path=remote_path,
+        cyverse_token=terrain_token,
+        include_patterns=include_patterns,
+        include_names=include_names,
+        exclude_patterns=exclude_patterns,
+        exclude_names=exclude_names,
+        plantit_url=plantit_url,
+        plantit_token=plantit_token)
+
+
 @cli.command()
 @click.argument('input_dir')
-@click.option('-o', '--output_dir', required=False, type=str)
-@click.option('-n', '--name', required=False, type=str)
-@click.option('-ms', '--max_size', required=False, type=int, default=1000000000)  # 1GB default
-@click.option('-ip', '--include_patterns', required=False, type=str, multiple=True)
-@click.option('-in', '--include_names', required=False, type=str, multiple=True)
-@click.option('-ep', '--exclude_patterns', required=False, type=str, multiple=True)
-@click.option('-en', '--exclude_names', required=False, type=str, multiple=True)
+@click.option('--output_dir', '-o', required=False, type=str)
+@click.option('--name', '-n', required=False, type=str)
+@click.option('--max_size', '-ms', required=False, type=int, default=1000000000)  # 1GB default
+@click.option('--include_patterns', '-ip', required=False, type=str, multiple=True)
+@click.option('--include_names', '-in', required=False, type=str, multiple=True)
+@click.option('--exclude_patterns', '-ep', required=False, type=str, multiple=True)
+@click.option('--exclude_names', '-en', required=False, type=str, multiple=True)
 @click.option('--plantit_token', required=False, type=str)
 @click.option('--plantit_url', required=False, type=str)
 def zip(
@@ -37,64 +101,6 @@ def zip(
         output_dir=output_dir,
         name=name,
         max_size=max_size,
-        include_patterns=include_patterns,
-        include_names=include_names,
-        exclude_patterns=exclude_patterns,
-        exclude_names=exclude_names,
-        plantit_url=plantit_url,
-        plantit_token=plantit_token)
-
-
-@cli.command()
-@click.argument('input_dir')
-@click.option('--cyverse_token', required=True, type=str)
-@click.option('-o', '--output_dir', required=False, type=str)
-@click.option('-p', '--patterns', required=False, type=str, multiple=True)
-@click.option('--overwrite', required=False, type=str, multiple=True)
-@click.option('--plantit_token', required=False, type=str)
-@click.option('--plantit_url', required=False, type=str)
-def pull(
-        input_dir,
-        cyverse_token,
-        output_dir,
-        patterns,
-        overwrite,
-        plantit_token,
-        plantit_url):
-    commands.pull(
-        remote_path=input_dir,
-        local_path=output_dir,
-        patterns=patterns,
-        overwrite=overwrite,
-        cyverse_token=cyverse_token,
-        plantit_url=plantit_url,
-        plantit_token=plantit_token)
-
-
-@cli.command()
-@click.argument('output_dir')
-@click.option('--cyverse_token', required=True, type=str)
-@click.option('-i', '--input_dir', required=False, type=str)
-@click.option('-ip', '--include_patterns', required=False, type=str, multiple=True)
-@click.option('-in', '--include_names', required=False, type=str, multiple=True)
-@click.option('-ep', '--exclude_patterns', required=False, type=str, multiple=True)
-@click.option('-en', '--exclude_names', required=False, type=str, multiple=True)
-@click.option('--plantit_token', required=False, type=str)
-@click.option('--plantit_url', required=False, type=str)
-def push(
-        output_dir,
-        cyverse_token,
-        input_dir,
-        include_patterns,
-        include_names,
-        exclude_patterns,
-        exclude_names,
-        plantit_token,
-        plantit_url):
-    commands.push(
-        local_path=input_dir,
-        remote_path=output_dir,
-        cyverse_token=cyverse_token,
         include_patterns=include_patterns,
         include_names=include_names,
         exclude_patterns=exclude_patterns,

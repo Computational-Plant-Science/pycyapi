@@ -57,52 +57,52 @@ pip3 install plantit-cli
 
 The `plantit-cli` supports the following commands:
 
-- `clone`:
-- `zip`:
-- `pull`:
-- `push`:
-- `run`:
+- `pull`: Downloads files from the CyVerse Data Store.
+- `run`: Runs a container for a flow configuration.
+- `zip`: Zips files produced by container runs.
+- `push`: Uploads files to the CyVerse Data Store.
 
 ### Zip
 
+To zip files all files in a directory, use `plantit zip <input directory>`.
+
+To include file patterns or names, use flags `--include_patterns` or `--include_names`.
+
+To exclude file patterns or names, use flags `--include_patterns` or `--include_names`.
+
+Included files are gathered first, then excludes are filtered out of this collection.
+
 ### Pull
 
-Options:
+To pull files from the `/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/` directory in the CyVerse Data Store to the current working directory, use `plantit terrain pull /iplant/home/shared/iplantcollaborative/testing_tools/cowsay/ --terrain_token <token>`.
 
-- `--overwrite`: whether to overwrite already-existing files
-- `--check`: file-checksum pair with form `<filename>=<checksum>`, multiple permitted
+Optional arguments are:
+
+- `--local_path (-p)`: Local path to download files to.
+- `--patterns`: File patterns in include.
+- `--overwrite`: Whether to overwrite already-existing files.
 
 ### Run
 
-### Push
-
-To run `hello_world.yaml`, use `plantit hello_world.yaml`. The YAML schema should look something like this:
+To run `hello_world.yaml`, use `plantit run hello_world.yaml`. At minimum, the YAML schema should include the following attributes:
 
 ```yaml
-identifier: a42033c3-9ba1-4d99-83ed-3fdce08c706e # run identifier (required)
-image: docker://alpine                           # Docker or Singularity image (required)
-workdir: /your/working/directory                 # working directory (required)
-command: echo $MESSAGE                           # command to run in container (required)
-params:                                          # parameters substituted when `command` is run (optional)
-- key: message
-  value: Hello, plant person!
+image: docker://alpine              # Docker or Singularity image
+workdir: /your/working/directory    # working directory
+command: echo "Hello, world!"       # entrypoint
 ```
 
-Note that your `command` may fail on some operating systems if it contains `&&`. If you must run multiple consecutive commands, you should package them into a script.
+Note that your `command` may fail on some images if it contains `&&`. If you must run multiple consecutive commands, it's probably best to package them into a script.
 
-### Inputs
+#### Runs with inputs
 
-The CLI can automatically copy files from the CyVerse Data Store to the local (or network) file system before your code runs, then push output files back to the Data Store afterwards.
+Runs involving inputs fall into 3 categories:
 
-#### Input kinds
+- spawn a single container to process a single file
+- spawn a single container to process a single directory
+- spawn a container per file to process files in a directory
 
-Runs involving inputs and outputs fall into 3 categories:
-
-- pull a file from the Data Store and spawn a single container to process it
-- pull a directory from the Data Store and spawn a single container to process it
-- pull a directory from the Data Store and spawn multiple containers, one for each file
-
-To pull a file or directory, add an `input` section (the file or directory name will be substituted for `$INPUT` when `command` is invoked).
+To pull a file or directory, add an `input` section (whose `path` attribute will be substituted for `$INPUT` when your `command` is invoked).
 
 ##### Input file
 
@@ -110,8 +110,8 @@ To pull a file from the Data Store and spawn a single container to process it, u
 
 ```yaml
 input:
-  kind: file
-  from: /iplant/home/username/directory/file
+  file:
+    path: /iplant/home/username/directory/file
 ```
 
 ##### Input files
@@ -120,8 +120,11 @@ To pull a directory from the Data Store and spawn a container for each file, use
 
 ```yaml
 input:
-  kind: files
-  from: /iplant/home/username/directory
+  files:
+    path: /iplant/home/username/directory
+    patterns:  # optional
+    - jpg
+    - png
 ```
 
 ##### Input directory
@@ -130,22 +133,25 @@ To pull the contents of a directory from the Data Store and spawn a single conta
 
 ```yaml
 input:
-  kind: directory
-  from: /iplant/home/username/directory
+  directory:
+    path: /iplant/home/username/directory
 ```
 
-#### Input patterns
+### Push
 
-To match and pull only certain input files `from` an input directory, use attribute `patterns`:
+To push files in the current working directory to the `/iplant/home/<my>/<directory/` in the CyVerse Data Store, use `plantit terrain push /iplant/home/<my>/<directory/ --terrain_token <token>`.
 
-```yaml
-input:
-  kind: directory
-  from: /iplant/home/username/directory
-  filetypes:
-    - jpg
-    - png
-```
+Options are:
+
+- `--local_path (-p)`: Local path to download files to.
+- `--include_patterns`: File patterns to include.
+- `--include_names`: File names to include.
+- `--exclude_patterns`: File patterns to exclude.
+- `--exclude_names`: File names to exclude.
+
+The `include_...` and `exclude_...` attributes accept comma-separated lists.
+
+If only `include_...`s are provided, only the file patterns and names specified will be included. If only `exclude_...`s section are present, all files except the patterns and names specified will be included. If you provide both `include_...` and `exclude_...` sections, the `include_...` rules will first be applied to generate a subset of files, which will then be filtered by the `exclude_...` rules.
 
 <!--#### Verifying input file checksums
 
@@ -162,50 +168,6 @@ input:
       md5: 8540f05638ac10899e8bc31c13d5074a
 ```-->
 
-#### Overwriting existing input files
-
-Note that by default, the CLI will check whether files already exist on the local filesystem, and will not re-download them if they do. To force a download and overwrite, add the flag `overwrite: True` to the `input` section, for instance:
-
-```yaml
-input:
-  kind: directory
-  from: /iplant/home/username/directory
-  overwrite: True
-```
-
-### Outputs
-
-To push files back to the Data Store after your container executes, add an `output` section:
-
-```yaml
-output:
-  from: directory                       # required, relative to the working directory (leave empty to indicate working directory)
-  to: /iplant/home/username/collection  # required, path in CyVerse Data Store
-```
-
-The path specified in `from` will be substituted for `$OUTPUT` when `command` runs.
-
-By default, all files in `from` are pushed to the location specified in `to` in the CyVerse Data Store (collections will be created as necessary if they do not already exist). To explicitly specify files to include/exclude, add the following to your `output` section:
-
-```yaml
-output:
-  from: directory                       
-  to: /iplant/home/username/collection  
-  include:
-    patterns:                           # include excel files
-      - xlsx
-    names:                              # say we want to include a few images,
-      - image.png                       # but not all .jpg or .png files...
-      - image.jpg
-  exclude:
-    patterns:
-      - temp                            # don't include temp files
-    names:
-      - not_important.xlsx              # actually, here's an excel file we want to exclude
-```
-
-If only an `include` section is provided, only the file patterns and names specified will be included. If only an `exclude` section is present, all files except the patterns and names specified will be included. If you provide both `include` and `exclude` sections, the `include` rules will first be applied to generate a subset of files, which will then be filtered by the `exclude` rules.
-
 #### Zipped outputs
 
 The CLI will automatically zip your outputs to a file named `<run identifier>.zip`.
@@ -220,28 +182,34 @@ mount:
   - path/relative/to/host/working/directory:/another/path/in/your/container
 ```
 
-### SLURM deployments
+### Cluster deployment targets
 
-When using `plantit-cli` on SLURM clusters, you can parallelize multi-file runs by adding a section like the following:
+On HPC clusters, you can parallelize multi-file runs by adding a `jobqueue` section like the following:
 
 ```yaml
-slurm:
-  cores: 1
-  processes: 10,
-  project: '<allocation>'
-  walltime: '01:00:00'
-  queue: 'normal'
+...
+jobqueue:
+  slurm:
+    cores: 1
+    processes: 10,
+    project: '<your allocation>'
+    walltime: '01:00:00'
+    queue: '<your queue>'
 ```
+
+Substitute `pbs`, `moab`, or any other [Dask Jobqueue](https://jobqueue.dask.org/) cluster configuration section (the CLI uses Dask internally and passes your configuration directly through).
 
 #### Virtual memory
 
 For clusters with virtual memory, you may need to use `header_skip`:
 
 ```yaml
-slurm:
-  ...
-  header_skip: # for clusters with virtual memory
-    - '--mem'
+...
+jobqueue:
+  slurm:
+    ...
+    header_skip: # for clusters with virtual memory
+      - '--mem'
 ```
 
 #### Other resource requests
@@ -249,10 +217,12 @@ slurm:
 You can add other cluster-specific resource requests, like GPU-enabled nodes, with an `extra` section:
 
 ```yaml
-slurm:
-  ...
-  extra:
-    - '--gres=gpu:1'
+...
+jobqueue:
+  slurm:
+    ...
+    extra:
+      - '--gres=gpu:1'
 ```
 
 ### Authenticating with Docker
@@ -260,7 +230,7 @@ slurm:
 Docker Hub pull rate limits are quickly reached for large datasets. To authenticate and bypass rate limits, provide a `--docker_username` and `--docker_password`. For instance:
 
 ```shell
-plantit hello_world.yaml --docker_username <your username> --docker_password <your password>
+plantit run hello_world.yaml --docker_username <your username> --docker_password <your password>
 ```
 
 ### Authenticating with the Terrain API
@@ -268,7 +238,7 @@ plantit hello_world.yaml --docker_username <your username> --docker_password <yo
 The CLI uses the Terrain API to access the CyVerse Data Store. Runs with inputs and outputs must provide a `--cyverse_token` argument. For instance, to run `hello_world.yaml`:
 
 ```shell
-plantit hello_world.yaml --cyverse_token 'eyJhbGciOiJSUzI1N...'
+plantit run hello_world.yaml --cyverse_token 'eyJhbGciOiJSUzI1N...'
 ```
 
 A CyVerse access token can be obtained from the Terrain API with a `GET` request (providing username/password for basic auth):
@@ -283,28 +253,20 @@ When the CLI is invoked by PlantIT, a `--plantit_token` is provided in order to 
 
 ### Logging
 
-By default, the CLI will print all output to `stdout`. If a `--plantit_token` is provided, CLI output will be POSTed back to the PlantIT web application (only output generated by the CLI itself; container output will just be printed to `stdout`).
+By default, the CLI will print all output to `stdout`. If a `--plantit_url` and `--plantit_token` are provided, output will be POSTed back to the PlantIT web application (only output generated by the CLI itself; container output will just be printed to `stdout`).
 
 The default configuration is suitable for most cluster deployment targets, whose schedulers should automatically capture job output. To configure the CLI itself to write container output to a file, add the following to your configuration file:
 
 ```yaml
-logging:
-  file: relative/path/to/logfile
-```
-
-Note that a `logging` section like the following is equivalent to omitting the section entirely (i.e., the default logging configuration):
-
-```yaml
-logging:
-  console:
+log_file: relative/path/to/logfile
 ```
 
 ## Tests
 
 Before running tests, run `scripts/bootstrap.sh` (this will pull/build images for a small `docker-compose` SLURM cluster test environment). To run unit tests:
 
-```docker-compose -f docker-compose.test.yml run slurmctld python3 -m pytest /opt/plantit-cli/plantit_cli/tests/unit -s```
+```docker-compose -f docker-compose.test.yml run -w /opt/plantit-cli/runs slurmctld python3 -m pytest /opt/plantit-cli/plantit_cli/tests/unit -s```
 
 Note that integration tests invoke the Terrain API and may take some time to complete; they're rigged with a delay to allow writes to propagate from Terrain to the CyVerse Data Store (some pass/fail non-determinism occurs otherwise). To run integration tests:
 
-```docker-compose -f docker-compose.test.yml run slurmctld python3 -m pytest /opt/plantit-cli/plantit_cli/tests/integration -s```
+```docker-compose -f docker-compose.test.yml run -w /opt/plantit-cli/runs slurmctld python3 -m pytest /opt/plantit-cli/plantit_cli/tests/integration -s```

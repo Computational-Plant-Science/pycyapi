@@ -13,7 +13,7 @@ test_dir = environ.get('TEST_DIRECTORY')
 token = get_token()
 
 
-@pytest.mark.skip(reason='TODO debug')
+# @pytest.mark.skip(reason='TODO debug')
 def test_pull_directory(remote_base_path, file_name_1, file_name_2):
     with TemporaryDirectory() as temp_dir:
         local_path_1 = join(test_dir, file_name_1)
@@ -43,7 +43,7 @@ def test_pull_directory(remote_base_path, file_name_1, file_name_2):
             clear_dir(test_dir)
 
 
-@pytest.mark.skip(reason='TODO debug')
+# @pytest.mark.skip(reason='TODO debug')
 def test_push(remote_base_path, file_name_1, file_name_2):
     with TemporaryDirectory() as temp_dir:
         local_path_1 = join(test_dir, file_name_1)
