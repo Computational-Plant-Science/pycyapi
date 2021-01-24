@@ -54,8 +54,6 @@ def run(options: RunOptions,
         docker_username: str = None,
         docker_password: str = None):
     try:
-        update_status(Status.RUNNING, f"Running flow with definition:\n{options.to_json()}", plantit_url, plantit_token)
-
         if options.jobqueue is None:
             cluster = LocalCluster()
         else:

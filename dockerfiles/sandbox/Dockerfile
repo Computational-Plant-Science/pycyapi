@@ -117,7 +117,6 @@ COPY ./LICENSE /opt/plantit-cli
 COPY ./README.md /opt/plantit-cli
 COPY ./MANIFEST.in /opt/plantit-cli
 COPY ./plantit_cli /opt/plantit-cli/plantit_cli
-COPY ./plantit_cli/runner/slurm_job.sh /opt/plantit-cli/runs
 
 RUN pip3 install coveralls \
     && pip3 install pytest \

@@ -20,7 +20,7 @@ def terrain():
 @click.argument('remote_path')
 @click.option('--local_path', '-p', required=False, type=str)
 @click.option('--terrain_token', required=True, type=str)
-@click.option('--patterns', required=False, type=str, multiple=True)
+@click.option('--pattern', required=False, type=str, multiple=True)
 @click.option('--overwrite', required=False, type=str, multiple=True)
 @click.option('--plantit_token', required=False, type=str)
 @click.option('--plantit_url', required=False, type=str)
@@ -28,14 +28,14 @@ def pull(
         remote_path,
         terrain_token,
         local_path,
-        patterns,
+        pattern,
         overwrite,
         plantit_token,
         plantit_url):
     terrain_commands.pull(
         remote_path=remote_path,
         local_path=local_path,
-        patterns=patterns,
+        patterns=pattern,
         overwrite=overwrite,
         cyverse_token=terrain_token,
         plantit_url=plantit_url,
@@ -46,30 +46,30 @@ def pull(
 @click.argument('remote_path')
 @click.option('--terrain_token', required=True, type=str)
 @click.option('--local_path', '-p', required=False, type=str)
-@click.option('--include_patterns', '-ip', required=False, type=str, multiple=True)
-@click.option('--include_names', '-in', required=False, type=str, multiple=True)
-@click.option('--exclude_patterns', '-ep', required=False, type=str, multiple=True)
-@click.option('--exclude_names', '-en', required=False, type=str, multiple=True)
+@click.option('--include_pattern', '-ip', required=False, type=str, multiple=True)
+@click.option('--include_name', '-in', required=False, type=str, multiple=True)
+@click.option('--exclude_pattern', '-ep', required=False, type=str, multiple=True)
+@click.option('--exclude_name', '-en', required=False, type=str, multiple=True)
 @click.option('--plantit_token', required=False, type=str)
 @click.option('--plantit_url', required=False, type=str)
 def push(
         remote_path,
         terrain_token,
         local_path,
-        include_patterns,
-        include_names,
-        exclude_patterns,
-        exclude_names,
+        include_pattern,
+        include_name,
+        exclude_pattern,
+        exclude_name,
         plantit_token,
         plantit_url):
     terrain_commands.push(
         local_path=local_path,
         remote_path=remote_path,
         cyverse_token=terrain_token,
-        include_patterns=include_patterns,
-        include_names=include_names,
-        exclude_patterns=exclude_patterns,
-        exclude_names=exclude_names,
+        include_patterns=include_pattern,
+        include_names=include_name,
+        exclude_patterns=exclude_pattern,
+        exclude_names=exclude_name,
         plantit_url=plantit_url,
         plantit_token=plantit_token)
 
@@ -79,10 +79,10 @@ def push(
 @click.option('--output_dir', '-o', required=False, type=str)
 @click.option('--name', '-n', required=False, type=str)
 @click.option('--max_size', '-ms', required=False, type=int, default=1000000000)  # 1GB default
-@click.option('--include_patterns', '-ip', required=False, type=str, multiple=True)
-@click.option('--include_names', '-in', required=False, type=str, multiple=True)
-@click.option('--exclude_patterns', '-ep', required=False, type=str, multiple=True)
-@click.option('--exclude_names', '-en', required=False, type=str, multiple=True)
+@click.option('--include_pattern', '-ip', required=False, type=str, multiple=True)
+@click.option('--include_name', '-in', required=False, type=str, multiple=True)
+@click.option('--exclude_pattern', '-ep', required=False, type=str, multiple=True)
+@click.option('--exclude_name', '-en', required=False, type=str, multiple=True)
 @click.option('--plantit_token', required=False, type=str)
 @click.option('--plantit_url', required=False, type=str)
 def zip(
@@ -90,10 +90,10 @@ def zip(
         output_dir,
         name,
         max_size,
-        include_patterns,
-        include_names,
-        exclude_patterns,
-        exclude_names,
+        include_pattern,
+        include_name,
+        exclude_pattern,
+        exclude_name,
         plantit_token,
         plantit_url):
     commands.zip(
@@ -101,10 +101,10 @@ def zip(
         output_dir=output_dir,
         name=name,
         max_size=max_size,
-        include_patterns=include_patterns,
-        include_names=include_names,
-        exclude_patterns=exclude_patterns,
-        exclude_names=exclude_names,
+        include_patterns=include_pattern,
+        include_names=include_name,
+        exclude_patterns=exclude_pattern,
+        exclude_names=exclude_name,
         plantit_url=plantit_url,
         plantit_token=plantit_token)
 
