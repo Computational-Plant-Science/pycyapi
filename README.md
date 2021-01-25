@@ -263,9 +263,11 @@ log_file: relative/path/to/logfile
 
 ## Tests
 
-Before running tests, run `scripts/bootstrap.sh` (this will pull/build images for a small `docker-compose` SLURM cluster test environment). To run unit tests:
+Before running tests, run `scripts/bootstrap.sh` (this will pull/build images for a small `docker-compose` SLURM cluster test environment) then `docker-compose -f docker-compose.test.yml up` (`-d for detached`).
 
-```docker-compose -f docker-compose.test.yml run -w /opt/plantit-cli/runs slurmctld python3 -m pytest /opt/plantit-cli/plantit_cli/tests/unit -s```
+To run unit tests:
+
+```docker-compose -f docker-compose.test.yml exec -w /opt/plantit-cli/runs slurmctld python3 -m pytest /opt/plantit-cli/plantit_cli/tests/unit -s```
 
 Note that integration tests invoke the Terrain API and may take some time to complete; they're rigged with a delay to allow writes to propagate from Terrain to the CyVerse Data Store (some pass/fail non-determinism occurs otherwise). To run integration tests:
 
