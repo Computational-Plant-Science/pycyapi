@@ -128,23 +128,7 @@ def parse_options(raw: dict):
     jobqueue = None
     if 'jobqueue' in raw:
         jobqueue = raw['jobqueue']
-        if 'slurm' in jobqueue:
-            jobqueue = jobqueue['slurm']
-        elif 'yarn' in jobqueue:
-            jobqueue = jobqueue['yarn']
-        elif 'pbs' in jobqueue:
-            jobqueue = jobqueue['pbs']
-        elif 'moab' in jobqueue:
-            jobqueue = jobqueue['moab']
-        elif 'sge' in jobqueue:
-            jobqueue = jobqueue['sge']
-        elif 'lsf' in jobqueue:
-            jobqueue = jobqueue['lsf']
-        elif 'oar' in jobqueue:
-            jobqueue = jobqueue['oar']
-        elif 'kube' in jobqueue:
-            jobqueue = jobqueue['kube']
-        else:
+        if not ('slurm' in jobqueue or 'yarn' in jobqueue or 'pbs' in jobqueue or 'moab' in jobqueue or 'sge' in jobqueue or 'lsf' in jobqueue or 'oar' in jobqueue or 'kube' in jobqueue):
             raise ValueError(f"Unsupported jobqueue configuration: {jobqueue}")
 
         if 'queue' in jobqueue:
