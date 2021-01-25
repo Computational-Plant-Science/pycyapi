@@ -19,16 +19,17 @@ Deploy workflows on laptops, servers, or HPC/HTC clusters.
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)
-  - [Inputs](#inputs)
-    - [Input kinds](#input-kinds)
+  - [Zip](#zip)
+  - [Pull](#pull)
+  - [Run](#run)
+    - [Runs with inputs](#runs-with-inputs)
       - [Input file](#input-file)
       - [Input files](#input-files)
       - [Input directory](#input-directory)
-    - [Input patterns](#input-patterns)
-    - [Overwriting existing input files](#overwriting-existing-input-files)
-  - [Outputs](#outputs)
+  - [Push](#push)
+    - [Zipped outputs](#zipped-outputs)
   - [Bind mounts](#bind-mounts)
-  - [SLURM deployments](#slurm-deployments)
+  - [Cluster deployment targets](#cluster-deployment-targets)
     - [Virtual memory](#virtual-memory)
     - [Other resource requests](#other-resource-requests)
   - [Authenticating with Docker](#authenticating-with-docker)
@@ -66,20 +67,24 @@ The `plantit-cli` supports the following commands:
 
 To zip files all files in a directory, use `plantit zip <input directory>`.
 
-To include file patterns or names, use flags `--include_patterns` or `--include_names`.
+To include file patterns or names, use (one or more) flags `--include_pattern` (abbr. `-ip`) or `--include_name` (`-in`).
 
-To exclude file patterns or names, use flags `--include_patterns` or `--include_names`.
+To exclude file patterns or names, use (one or more) flags `--exclude_pattern` (`-ep`) or `--exclude_name` (`-en`).
 
 Included files are gathered first, then excludes are filtered out of this collection.
 
 ### Pull
 
-To pull files from the `/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/` directory in the CyVerse Data Store to the current working directory, use `plantit terrain pull /iplant/home/shared/iplantcollaborative/testing_tools/cowsay/ --terrain_token <token>`.
+To pull files from the `/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/` directory in the CyVerse Data Store to the current working directory, use:
+
+```shell
+plantit terrain pull /iplant/home/shared/iplantcollaborative/testing_tools/cowsay/ --terrain_token <token>
+```
 
 Optional arguments are:
 
 - `--local_path (-p)`: Local path to download files to.
-- `--patterns`: File patterns in include.
+- `--pattern`: File patterns to include (one or more).
 - `--overwrite`: Whether to overwrite already-existing files.
 
 ### Run
@@ -144,12 +149,10 @@ To push files in the current working directory to the `/iplant/home/<my>/<direct
 Options are:
 
 - `--local_path (-p)`: Local path to download files to.
-- `--include_patterns`: File patterns to include.
-- `--include_names`: File names to include.
-- `--exclude_patterns`: File patterns to exclude.
-- `--exclude_names`: File names to exclude.
-
-The `include_...` and `exclude_...` attributes accept comma-separated lists.
+- `--include_pattern (-ip)`: File patterns to include (one or more).
+- `--include_name (-in)`: File names to include (one or more).
+- `--exclude_pattern (-ep)`: File patterns to exclude (one or more).
+- `--exclude_name (-en)`: File names to exclude (one or more).
 
 If only `include_...`s are provided, only the file patterns and names specified will be included. If only `exclude_...`s section are present, all files except the patterns and names specified will be included. If you provide both `include_...` and `exclude_...` sections, the `include_...` rules will first be applied to generate a subset of files, which will then be filtered by the `exclude_...` rules.
 
