@@ -177,7 +177,7 @@ The CLI will automatically zip your outputs to a file named `<run identifier>.zi
 
 ### Bind mounts
 
-If your code needs to write temporary files somewhere other than the (automatically mounted) host working directory, use the `mount` attribute:
+If your code needs to write temporary files somewhere other than the (automatically mounted) host working directory, use the `bind_mounts` attribute:
 
 ```yaml
 bind_mounts:
