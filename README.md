@@ -180,7 +180,7 @@ The CLI will automatically zip your outputs to a file named `<run identifier>.zi
 If your code needs to write temporary files somewhere other than the (automatically mounted) host working directory, use the `mount` attribute:
 
 ```yaml
-mount:
+bind_mounts:
   - /path/in/your/container # defaults to the host working directory
   - path/relative/to/host/working/directory:/another/path/in/your/container
 ```
