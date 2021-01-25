@@ -8,7 +8,6 @@ from pathlib import Path
 import pytest
 from plantit_cli import commands
 
-from plantit_cli.exceptions import PlantitException
 from plantit_cli.options import RunOptions, FileInput, Parameter, BindMount
 from plantit_cli.store.terrain_store import TerrainStore
 from plantit_cli.tests.integration.terrain_test_utils import create_collection, upload_file, delete_collection, \
