@@ -254,7 +254,7 @@ def prep_command(
         parameters = []
     parameters.append(Parameter(key='WORKDIR', value=work_dir))
     for parameter in parameters:
-        print(f"Replacing {parameter.key} with {parameter.value}")
+        print(f"Replacing '{parameter.key.upper()}' with '{parameter.value}'")
         command = command.replace(f"${parameter.key.upper()}", parameter.value)
 
     cmd += f" {image} {command}"
@@ -262,7 +262,6 @@ def prep_command(
 
     # we don't necessarily want to reveal Docker auth info to the end user, so print the command before adding Docker env variables
     if docker_username is not None and docker_password is not None:
-        print(f"Authenticating with Docker username: {docker_username}")
         cmd = f"SINGULARITY_DOCKER_USERNAME={docker_username} SINGULARITY_DOCKER_PASSWORD={docker_password} " + cmd
 
     return cmd

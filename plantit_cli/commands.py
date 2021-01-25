@@ -2,6 +2,7 @@ import os
 import traceback
 from copy import deepcopy
 from os.path import join, getsize, basename
+from pprint import pprint
 from typing import List
 from zipfile import ZIP_DEFLATED, ZipFile
 
@@ -59,22 +60,28 @@ def run(options: RunOptions,
         else:
             jobqueue = options.jobqueue
             if 'slurm' in jobqueue:
-                print(f"Requesting SLURM cluster: {jobqueue['slurm']}")
+                print("Requesting SLURM cluster:")
+                pprint(jobqueue['slurm'])
                 cluster = SLURMCluster(**jobqueue['slurm'])
             elif 'pbs' in jobqueue:
-                print(f"Requesting PBS cluster: {jobqueue['pbs']}")
+                print("Requesting PBS cluster:")
+                pprint(jobqueue['pbs'])
                 cluster = PBSCluster(**jobqueue['pbs'])
             elif 'moab' in jobqueue:
-                print(f"Requesting MOAB cluster: {jobqueue['moab']}")
+                print("Requesting MOAB cluster:")
+                pprint(jobqueue['moab'])
                 cluster = MoabCluster(**jobqueue['moab'])
             elif 'sge' in jobqueue:
-                print(f"Requesting SGE cluster: {jobqueue['sge']}")
+                print("Requesting SGE cluster:")
                 cluster = SGECluster(**jobqueue['sge'])
+                pprint(jobqueue['sge'])
             elif 'lsf' in jobqueue:
-                print(f"Requesting LSF cluster: {jobqueue['lsf']}")
+                print("Requesting LSF cluster:")
                 cluster = LSFCluster(**jobqueue['lsf'])
+                pprint(jobqueue['lsf'])
             elif 'oar' in jobqueue:
-                print(f"Requesting OAR cluster: {jobqueue['oar']}")
+                print("Requesting OAR cluster:")
+                pprint(jobqueue['oar'])
                 cluster = OARCluster(**jobqueue['oar'])
             else:
                 raise ValueError(f"Unsupported jobqueue configuration: {jobqueue}")
@@ -92,10 +99,13 @@ def run(options: RunOptions,
                     docker_username=docker_username,
                     docker_password=docker_password)
 
+                update_status(Status.RUNNING, f"Submitting container", plantit_url, plantit_token)
                 future = submit_command(client, command, options.log_file, 3)
-                update_status(Status.RUNNING, f"Submitted container", plantit_url, plantit_token)
                 future.result()
-                update_status(Status.RUNNING, f"Container completed")
+                if future.status != 'finished':
+                    update_status(Status.FAILED, f"Container failed: {future.exception}", plantit_url, plantit_token)
+                else:
+                    update_status(Status.RUNNING, f"Container completed", plantit_url, plantit_token)
         elif isinstance(options.input, DirectoryInput):
             if options.jobqueue is not None:
                 cluster.scale(1)
@@ -109,19 +119,22 @@ def run(options: RunOptions,
                         docker_username=docker_username,
                         docker_password=docker_password)
 
+                update_status(Status.RUNNING, f"Submitting container for directory '{options.input.path}'", plantit_url, plantit_token)
                 future = submit_command(client, command, options.log_file, 3)
-                update_status(Status.RUNNING, f"Submitted container for directory: {options.input.path}", plantit_url, plantit_token)
                 future.result()
-                update_status(Status.RUNNING, f"Container completed for directory: {options.input.path}")
+                if future.status != 'finished':
+                    update_status(Status.FAILED, f"Container failed for directory '{options.input.path}': {future.exception}", plantit_url, plantit_token)
+                else:
+                    update_status(Status.RUNNING, f"Container completed for directory '{options.input.path}'", plantit_url, plantit_token)
         elif isinstance(options.input, FilesInput):
             files = os.listdir(options.input.path)
             count = len(files)
             futures = []
 
             if options.jobqueue is None:
-                update_status(Status.RUNNING, f"Processing {count} files in '{options.input.path}'")
+                update_status(Status.RUNNING, f"Processing {count} files in '{options.input.path}'", plantit_url, plantit_token)
             else:
-                update_status(Status.RUNNING, f"Requesting nodes to process {count} files in '{options.input.path}' with job script:\n{cluster.job_script()}")
+                update_status(Status.RUNNING, f"Requesting nodes to process {count} files in '{options.input.path}' with job script:\n{cluster.job_script()}", plantit_url, plantit_token)
                 cluster.scale(count)
 
             with Client(cluster) as client:
@@ -136,13 +149,16 @@ def run(options: RunOptions,
                             docker_username=docker_username,
                             docker_password=docker_password)
 
+                    update_status(Status.RUNNING, f"Submitting container for file: {file}", plantit_url, plantit_token)
                     futures.append(submit_command(client, command, options.log_file, 3))
-                    update_status(Status.RUNNING, f"Submitted container for file: {file}", plantit_url, plantit_token)
 
                 finished = 0
-                for _ in as_completed(futures):
+                for future in as_completed(futures):
                     finished += 1
-                    update_status(Status.RUNNING, f"Container completed for file {finished} of {len(futures)}")
+                    if future.status != 'finished':
+                        update_status(Status.FAILED, f"Container failed for file {finished} of {len(futures)}: {future.exception}", plantit_url, plantit_token)
+                    else:
+                        update_status(Status.RUNNING, f"Container completed for file {finished} of {len(futures)}", plantit_url, plantit_token)
         elif isinstance(options.input, FileInput):
             if options.jobqueue is not None:
                 cluster.scale(1)
@@ -156,12 +172,15 @@ def run(options: RunOptions,
                     docker_username=docker_username,
                     docker_password=docker_password)
 
+                update_status(Status.RUNNING, f"Submitting container for file '{options.input.path}'", plantit_url, plantit_token)
                 future = submit_command(client, command, options.log_file, 3)
-                update_status(Status.RUNNING, f"Submitted container for file: {options.input.path}", plantit_url, plantit_token)
                 future.result()
-                update_status(Status.RUNNING, f"Container completed for file: {options.input.path}")
+                if future.status != 'finished':
+                    update_status(Status.FAILED, f"Container failed for file '{options.input.path}': {future.exception}", plantit_url, plantit_token)
+                else:
+                    update_status(Status.RUNNING, f"Container completed for file '{options.input.path}'", plantit_url, plantit_token)
 
-        update_status(Status.RUNNING, f"Run succeeded", plantit_url, plantit_token)
+        update_status(Status.COMPLETED, f"Run succeeded", plantit_url, plantit_token)
     except:
         update_status(Status.FAILED, f"Run failed: {traceback.format_exc()}", plantit_url, plantit_token)
         raise
