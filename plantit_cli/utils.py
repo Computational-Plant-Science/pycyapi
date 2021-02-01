@@ -66,10 +66,11 @@ def parse_options(raw: dict):
     elif raw['image'] == '':
         errors.append('Attribute \'image\' must not be empty')
     else:
-        image_owner, image_name, image_tag = parse_docker_image_components(raw['image'])
-        if 'docker' in raw['image']:
+        image = raw['image']
+        if 'docker' in image:
+            image_owner, image_name, image_tag = parse_docker_image_components(image)
             if not docker_image_exists(image_name, image_owner, image_tag):
-                errors.append(f"Image '{raw['image']}' not found on Docker Hub")
+                errors.append(f"Image '{image}' not found on Docker Hub")
 
     work_dir = None
     if not isinstance(raw['workdir'], str):
