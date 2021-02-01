@@ -43,6 +43,20 @@ def list_files(path,
     return excluded_by_name
 
 
+def parse_docker_image_components(value):
+    container_split = value.split('/')
+    container_name = container_split[-1]
+    container_owner = None if container_split[-2] == '' else container_split[-2]
+    if ':' in container_name:
+        container_name_split = container_name.split(":")
+        container_name = container_name_split[0]
+        container_tag = container_name_split[1]
+    else:
+        container_tag = None
+
+    return container_owner, container_name, container_tag
+
+
 def parse_options(raw: dict):
     errors = []
 
@@ -52,12 +66,9 @@ def parse_options(raw: dict):
     elif raw['image'] == '':
         errors.append('Attribute \'image\' must not be empty')
     else:
-        image = raw['image']
-        container_split = raw['image'].split('/')
-        container_name = container_split[-1]
-        container_owner = None if container_split[-2] == '' else container_split[-2]
+        image_owner, image_name, image_tag = parse_docker_image_components(raw['image'])
         if 'docker' in raw['image']:
-            if not docker_image_exists(container_name, container_owner):
+            if not docker_image_exists(image_name, image_owner, image_tag):
                 errors.append(f"Image '{raw['image']}' not found on Docker Hub")
 
     work_dir = None
@@ -186,15 +197,20 @@ def update_status(state: int, description: str, api_url: str = None, api_token: 
                 failures += 1
 
 
-def docker_image_exists(name: str, owner: str = None):
-    response = requests.get(f"https://hub.docker.com/v2/repositories/{owner if owner is not None else 'library'}/{name}/")
-    content = response.json()
-
-    if 'user' not in content or 'name' not in content:
+def docker_image_exists(name, owner=None, tag=None):
+    url = f"https://hub.docker.com/v2/repositories/{owner if owner is not None else 'library'}/{name}/"
+    if tag is not None:
+        url += f"tags/{tag}/"
+    response = requests.get(url)
+    try:
+        content = response.json()
+        if 'user' not in content and 'name' not in content:
+            return False
+        if content['name'] != tag and content['name'] != name and content['user'] != (owner if owner is not None else 'library'):
+            return False
+        return True
+    except:
         return False
-    if content['user'] != (owner if owner is not None else 'library') or content['name'] != name:
-        return False
-    return True
 
 
 def cyverse_path_exists(path, token):

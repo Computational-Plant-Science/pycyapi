@@ -12,7 +12,7 @@ from plantit_cli.options import RunOptions, FileInput, Parameter, BindMount
 from plantit_cli.store.terrain_store import TerrainStore
 from plantit_cli.tests.integration.terrain_test_utils import create_collection, upload_file, delete_collection, \
     list_files
-from plantit_cli.tests.test_utils import clear_dir, check_hello, get_token
+from plantit_cli.tests.utils import clear_dir, check_hello, get_token
 
 message = "Message"
 testdir = '/opt/plantit-cli/runs'

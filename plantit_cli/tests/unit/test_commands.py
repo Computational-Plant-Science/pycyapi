@@ -7,7 +7,7 @@ import pytest
 
 from plantit_cli import commands
 from plantit_cli.options import RunOptions, FileInput, FilesInput, DirectoryInput, Parameter, BindMount
-from plantit_cli.tests.test_utils import clear_dir
+from plantit_cli.tests.utils import clear_dir
 
 message = "Message"
 test_dir = environ.get('TEST_DIRECTORY')

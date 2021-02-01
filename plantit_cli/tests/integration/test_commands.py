@@ -8,7 +8,7 @@ from plantit_cli import commands
 from plantit_cli.options import FileInput, RunOptions, FilesInput, DirectoryInput, BindMount, Parameter
 from plantit_cli.store import terrain_commands
 from plantit_cli.store.local_store import LocalStore
-from plantit_cli.tests.test_utils import clear_dir, get_token, check_hello
+from plantit_cli.tests.utils import clear_dir, get_token, check_hello
 
 message = "Message"
 test_dir = environ.get('TEST_DIRECTORY')
