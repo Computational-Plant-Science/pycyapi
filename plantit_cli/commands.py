@@ -11,7 +11,7 @@ from distributed import as_completed, LocalCluster, Client
 
 from plantit_cli.options import RunOptions, DirectoryInput, FilesInput, FileInput, Parameter
 from plantit_cli.status import Status
-from plantit_cli.utils import list_files, readable_bytes, prep_command, update_status, submit_command
+from plantit_cli.utils import list_files, readable_bytes, prep_command, update_status, submit_command, run_command
 
 message = "Message"
 testdir = os.environ.get('TEST_DIRECTORY')
@@ -85,6 +85,11 @@ def run(options: RunOptions,
                 cluster = OARCluster(**jobqueue['oar'])
             else:
                 raise ValueError(f"Unsupported jobqueue configuration: {jobqueue}")
+
+        # asking singularity to pull docker images in a Dask worker context fails for some reason with:
+        #   FATAL:   Unable to handle <image> uri: while building SIF from layers: unable to create new build...
+        # just run a no-op container directly on the host so singularity can cache the image in advance
+        run_command(f"SINGULARITY_DOCKER_USERNAME={docker_username} SINGULARITY_DOCKER_PASSWORD={docker_password} singularity exec {options.image} echo 'dask y u do dis'")
 
         if options.input is None:
             if options.jobqueue is not None:
