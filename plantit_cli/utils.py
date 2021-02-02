@@ -137,6 +137,12 @@ def parse_options(raw: dict):
         elif log_file.rpartition('/')[0] != '' and not isdir(log_file.rpartition('/')[0]):
             errors.append('Attribute \'log_file\' must be a valid file path')
 
+    gpu = None
+    if 'gpu' in raw:
+        gpu = raw['gpu']
+        if not isinstance(gpu, bool):
+            errors.append('Attribute \'log_file\' must be a bool')
+
     jobqueue = None
     if 'jobqueue' in raw:
         jobqueue = raw['jobqueue']
@@ -172,7 +178,8 @@ def parse_options(raw: dict):
         bind_mounts=bind_mounts,
         # checksums=checksums,
         log_file=log_file,
-        jobqueue=jobqueue)
+        jobqueue=jobqueue,
+        gpu=gpu)
 
 
 def update_status(state: int, description: str, api_url: str = None, api_token: str = None, retries: int = 3):
@@ -258,7 +265,8 @@ def prep_command(
         bind_mounts: List[BindMount] = None,
         parameters: List[Parameter] = None,
         docker_username: str = None,
-        docker_password: str = None):
+        docker_password: str = None,
+        gpu: bool = False):
     cmd = f"singularity exec --home {work_dir}"
 
     if bind_mounts is not None:
@@ -273,6 +281,9 @@ def prep_command(
     for parameter in parameters:
         print(f"Replacing '{parameter.key.upper()}' with '{parameter.value}'")
         command = command.replace(f"${parameter.key.upper()}", parameter.value)
+
+    if gpu:
+        cmd += ' --nv'
 
     cmd += f" {image} {command}"
     print(f"Using command: '{cmd}'")

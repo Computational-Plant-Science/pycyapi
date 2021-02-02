@@ -29,6 +29,7 @@ Deploy workflows on laptops, servers, or HPC/HTC clusters.
   - [Push](#push)
     - [Zipped outputs](#zipped-outputs)
   - [Bind mounts](#bind-mounts)
+  - [GPU mode](#gpu-mode)
   - [Cluster deployment targets](#cluster-deployment-targets)
     - [Virtual memory](#virtual-memory)
     - [Other resource requests](#other-resource-requests)
@@ -184,6 +185,10 @@ bind_mounts:
   - /path/in/your/container # defaults to the host working directory
   - path/relative/to/host/working/directory:/another/path/in/your/container
 ```
+
+### GPU mode
+
+To instruct Singularity to bind to NVIDIA GPU drivers on the host, add a `gpu: True` attribute to your configuration.
 
 ### Cluster deployment targets
 

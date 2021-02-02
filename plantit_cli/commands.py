@@ -97,7 +97,8 @@ def run(options: RunOptions,
                     parameters=options.parameters if options.parameters is not None else [],
                     bind_mounts=options.bind_mounts,
                     docker_username=docker_username,
-                    docker_password=docker_password)
+                    docker_password=docker_password,
+                    gpu=options.gpu)
 
                 update_status(Status.RUNNING, f"Submitting container", plantit_url, plantit_token)
                 future = submit_command(client, command, options.log_file, 3)
@@ -117,7 +118,8 @@ def run(options: RunOptions,
                         parameters=(options.parameters if options.parameters is not None else []) + [Parameter(key='INPUT', value=options.input.path)],
                         bind_mounts=options.bind_mounts,
                         docker_username=docker_username,
-                        docker_password=docker_password)
+                        docker_password=docker_password,
+                        gpu=options.gpu)
 
                 update_status(Status.RUNNING, f"Submitting container for directory '{options.input.path}'", plantit_url, plantit_token)
                 future = submit_command(client, command, options.log_file, 3)
@@ -147,7 +149,8 @@ def run(options: RunOptions,
                                        [Parameter(key='INPUT', value=join(options.input.path, file))],
                             bind_mounts=options.bind_mounts,
                             docker_username=docker_username,
-                            docker_password=docker_password)
+                            docker_password=docker_password,
+                            gpu=options.gpu)
 
                     update_status(Status.RUNNING, f"Submitting container for file: {file}", plantit_url, plantit_token)
                     futures.append(submit_command(client, command, options.log_file, 3))
@@ -170,7 +173,8 @@ def run(options: RunOptions,
                     parameters=(options.parameters if options.parameters else []) + [Parameter(key='INPUT', value=options.input.path)],
                     bind_mounts=options.bind_mounts,
                     docker_username=docker_username,
-                    docker_password=docker_password)
+                    docker_password=docker_password,
+                    gpu=options.gpu)
 
                 update_status(Status.RUNNING, f"Submitting container for file '{options.input.path}'", plantit_url, plantit_token)
                 future = submit_command(client, command, options.log_file, 3)
