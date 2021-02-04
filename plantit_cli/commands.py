@@ -103,6 +103,7 @@ def run(options: RunOptions,
                     bind_mounts=options.bind_mounts,
                     docker_username=docker_username,
                     docker_password=docker_password,
+                    no_cache=options.no_cache,
                     gpu=options.gpu)
 
                 update_status(Status.RUNNING, f"Submitting container", plantit_url, plantit_token)
@@ -124,6 +125,7 @@ def run(options: RunOptions,
                         bind_mounts=options.bind_mounts,
                         docker_username=docker_username,
                         docker_password=docker_password,
+                        no_cache=options.no_cache,
                         gpu=options.gpu)
 
                 update_status(Status.RUNNING, f"Submitting container for directory '{options.input.path}'", plantit_url, plantit_token)
@@ -155,6 +157,7 @@ def run(options: RunOptions,
                             bind_mounts=options.bind_mounts,
                             docker_username=docker_username,
                             docker_password=docker_password,
+                            no_cache=options.no_cache,
                             gpu=options.gpu)
 
                     update_status(Status.RUNNING, f"Submitting container for file: {file}", plantit_url, plantit_token)
@@ -179,6 +182,7 @@ def run(options: RunOptions,
                     bind_mounts=options.bind_mounts,
                     docker_username=docker_username,
                     docker_password=docker_password,
+                    no_cache=options.no_cache,
                     gpu=options.gpu)
 
                 update_status(Status.RUNNING, f"Submitting container for file '{options.input.path}'", plantit_url, plantit_token)

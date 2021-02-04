@@ -79,6 +79,7 @@ class RunOptions:
                  checksums: List[FileChecksum] = None,
                  log_file: str = None,
                  jobqueue: dict = None,
+                 no_cache: bool = False,
                  gpu: bool = False):
         self.workdir = workdir
         self.image = image
@@ -89,6 +90,7 @@ class RunOptions:
         self.checksums = checksums
         self.log_file = log_file
         self.jobqueue = jobqueue
+        self.no_cache = no_cache
         self.gpu = gpu
 
     def to_json(self):
