@@ -24,7 +24,7 @@ def pull(
         Path(local_path).mkdir(exist_ok=True)
 
         if store.dir_exists(remote_path):
-            store.pull_dir(from_path=remote_path, to_path=local_path, patterns=patterns if patterns is not None else None, checksums=checksums, overwrite=overwrite)
+            store.pull_dir(from_path=remote_path, to_path=local_path, patterns=patterns, checksums=checksums, overwrite=overwrite)
         elif store.file_exists(remote_path):
             store.pull_file(from_path=remote_path, to_path=local_path, overwrite=overwrite)
         else:

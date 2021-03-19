@@ -122,7 +122,7 @@ class TerrainStore(Store):
         check = checksums is not None and len(checksums) > 0
         match = lambda path: any(pattern.lower() in path.lower() for pattern in patterns)
         paths = self.list_dir(from_path)
-        paths = [path for path in paths if match(path)] if patterns is not None else paths
+        paths = [path for path in paths if match(path)] if (patterns is not None and len(patterns) > 0) else paths
 
         # verify  that input checksums haven't changed since submission time
         if check:
