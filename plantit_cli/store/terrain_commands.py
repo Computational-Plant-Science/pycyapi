@@ -1,5 +1,5 @@
 import traceback
-from os import listdir
+from os import listdir, getcwd
 from pathlib import Path
 from typing import List
 
@@ -11,7 +11,7 @@ from plantit_cli.utils import update_status
 
 def pull(
         remote_path: str,
-        local_path: str,
+        local_path: str = None,
         cyverse_token: str = None,
         patterns: List[str] = None,
         checksums: List[FileChecksum] = None,
@@ -20,6 +20,7 @@ def pull(
         plantit_token: str = None):
     try:
         store = TerrainStore(cyverse_token)
+        local_path = getcwd() if local_path is None else local_path
         Path(local_path).mkdir(exist_ok=True)
 
         if store.dir_exists(remote_path):
