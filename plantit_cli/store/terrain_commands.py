@@ -20,7 +20,7 @@ def pull(
         plantit_token: str = None):
     try:
         store = TerrainStore(cyverse_token)
-        local_path = getcwd() if local_path is None else local_path
+        local_path = getcwd() if (local_path is None or local_path == '') else local_path
         Path(local_path).mkdir(exist_ok=True)
 
         if store.dir_exists(remote_path):
