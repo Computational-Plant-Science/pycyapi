@@ -115,7 +115,7 @@ def zip(
 @click.option('--plantit_url', required=False, type=str)
 @click.option('--docker_username', required=False, type=str)
 @click.option('--docker_password', required=False, type=str)
-@click.option('--pre_pull_image', required=False, type=bool)
+@click.option('--pre_pull_image', is_flag=True)
 def run(flow,
         plantit_token,
         plantit_url,
