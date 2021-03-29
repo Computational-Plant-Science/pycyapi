@@ -54,7 +54,8 @@ def run(options: RunOptions,
         plantit_token: str = None,
         docker_username: str = None,
         docker_password: str = None,
-        pre_pull_image: bool = False):
+        pre_pull_image: bool = False,
+        slurm_job_array: bool = False):
     try:
         if options.jobqueue is None:
             cluster = LocalCluster()
@@ -90,12 +91,11 @@ def run(options: RunOptions,
         # asking singularity to pull docker images in a Dask worker occasionally fails with:
         #   FATAL:   Unable to handle <image> uri: while building SIF from layers: unable to create new build...
         #
-        # run a no-op container directly on the host so singularity can cache the image in advance
+        # if flag is set, run a no-op container directly on the host so singularity can cache the image in advance
         if pre_pull_image:
             run_command(f"SINGULARITY_DOCKER_USERNAME={docker_username} SINGULARITY_DOCKER_PASSWORD={docker_password} singularity exec {options.image} echo 'dask y u do dis'")
 
         if options.input is None:
-            # if
             if options.jobqueue is not None:
                 cluster.scale(1)
             with Client(cluster) as client:
@@ -139,6 +139,34 @@ def run(options: RunOptions,
                     update_status(Status.FAILED, f"Container failed for directory '{options.input.path}': {future.exception}", plantit_url, plantit_token)
                 else:
                     update_status(Status.RUNNING, f"Container completed for directory '{options.input.path}'", plantit_url, plantit_token)
+        elif isinstance(options.input, FilesInput) and slurm_job_array:
+            files = os.listdir(options.input.path)
+            index = int(os.environ.get('SLURM_ARRAY_TASK_ID'))
+            file = files[index]
+
+            if options.jobqueue is not None:
+                cluster.scale(1)
+            with Client(cluster) as client:
+                command = prep_command(
+                    work_dir=options.workdir,
+                    image=options.image,
+                    command=options.command,
+                    parameters=(options.parameters if options.parameters else []) + [Parameter(key='INPUT', value=join(options.input.path, file))],
+                    bind_mounts=options.bind_mounts,
+                    docker_username=docker_username,
+                    docker_password=docker_password,
+                    no_cache=options.no_cache,
+                    gpu=options.gpu)
+
+                update_status(Status.RUNNING, f"Submitting container for file '{options.input.path}'", plantit_url, plantit_token)
+                future = submit_command(client, command, options.log_file, 3)
+                future.result()
+                if future.status != 'finished':
+                    update_status(Status.FAILED, f"Container failed for file '{options.input.path}': {future.exception}", plantit_url, plantit_token)
+                else:
+                    update_status(Status.RUNNING, f"Container completed for file '{options.input.path}'", plantit_url, plantit_token)
+
+            update_status(Status.COMPLETED, f"Run succeeded", plantit_url, plantit_token)
         elif isinstance(options.input, FilesInput):
             files = os.listdir(options.input.path)
             count = len(files)

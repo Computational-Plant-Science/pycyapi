@@ -116,12 +116,14 @@ def zip(
 @click.option('--docker_username', required=False, type=str)
 @click.option('--docker_password', required=False, type=str)
 @click.option('--pre_pull_image', is_flag=True)
+@click.option('--slurm_job_array', is_flag=True)
 def run(flow,
         plantit_token,
         plantit_url,
         docker_username,
         docker_password,
-        pre_pull_image):
+        pre_pull_image,
+        slurm_job_array):
     with open(flow, 'r') as file:
         errors, options = parse_options(yaml.safe_load(file))
         if len(errors) > 0:
@@ -133,7 +135,8 @@ def run(flow,
             plantit_token=plantit_token,
             docker_username=docker_username,
             docker_password=docker_password,
-            pre_pull_image=pre_pull_image)
+            pre_pull_image=pre_pull_image,
+            slurm_job_array=slurm_job_array)
 
 
 if __name__ == '__main__':
