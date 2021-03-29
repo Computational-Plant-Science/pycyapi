@@ -115,11 +115,13 @@ def zip(
 @click.option('--plantit_url', required=False, type=str)
 @click.option('--docker_username', required=False, type=str)
 @click.option('--docker_password', required=False, type=str)
+@click.option('--pre_pull_image', required=False, type=bool)
 def run(flow,
         plantit_token,
         plantit_url,
         docker_username,
-        docker_password):
+        docker_password,
+        pre_pull_image):
     with open(flow, 'r') as file:
         errors, options = parse_options(yaml.safe_load(file))
         if len(errors) > 0:
@@ -130,7 +132,8 @@ def run(flow,
             plantit_url=plantit_url,
             plantit_token=plantit_token,
             docker_username=docker_username,
-            docker_password=docker_password)
+            docker_password=docker_password,
+            pre_pull_image=pre_pull_image)
 
 
 if __name__ == '__main__':
