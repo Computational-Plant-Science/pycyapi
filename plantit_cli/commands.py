@@ -93,7 +93,7 @@ def run(options: RunOptions,
         #
         # if flag is set, run a no-op container directly on the host so singularity can cache the image in advance
         if pre_pull_image:
-            run_command(f"SINGULARITY_DOCKER_USERNAME={docker_username} SINGULARITY_DOCKER_PASSWORD={docker_password} singularity exec {options.image} echo 'dask y u do dis'")
+            run_command(f"SINGULARITY_DOCKER_USERNAME={docker_username} SINGULARITY_DOCKER_PASSWORD={docker_password} singularity exec {options.image} echo 'Pre-caching Singularity image'")
 
         if options.input is None:
             if options.jobqueue is not None:

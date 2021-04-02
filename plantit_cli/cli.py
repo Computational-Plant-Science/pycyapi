@@ -77,7 +77,7 @@ def push(
 @cli.command()
 @click.argument('input_dir')
 @click.option('--output_dir', '-o', required=False, type=str)
-@click.option('--name', '-n', required=False, type=str)
+@click.option('--name', '-n', required=True, type=str)
 @click.option('--max_size', '-ms', required=False, type=int, default=1000000000)  # 1GB default
 @click.option('--include_pattern', '-ip', required=False, type=str, multiple=True)
 @click.option('--include_name', '-in', required=False, type=str, multiple=True)
