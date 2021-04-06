@@ -54,7 +54,6 @@ def run(options: RunOptions,
         plantit_token: str = None,
         docker_username: str = None,
         docker_password: str = None,
-        pre_pull_image: bool = False,
         slurm_job_array: bool = False):
     try:
         if options.jobqueue is None:
@@ -87,13 +86,6 @@ def run(options: RunOptions,
                 cluster = OARCluster(**jobqueue['oar'])
             else:
                 raise ValueError(f"Unsupported jobqueue configuration: {jobqueue}")
-
-        # asking singularity to pull docker images in a Dask worker occasionally fails with:
-        #   FATAL:   Unable to handle <image> uri: while building SIF from layers: unable to create new build...
-        #
-        # if flag is set, run a no-op container directly on the host so singularity can cache the image in advance
-        if pre_pull_image:
-            run_command(f"SINGULARITY_DOCKER_USERNAME={docker_username} SINGULARITY_DOCKER_PASSWORD={docker_password} singularity exec {options.image} echo 'Pre-caching Singularity image'")
 
         if options.input is None:
             if options.jobqueue is not None:
