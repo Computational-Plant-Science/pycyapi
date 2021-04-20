@@ -299,9 +299,10 @@ def prep_command(
     cmd += f" {image} {command}"
     print(f"Using command: '{cmd}'")
 
-    # we don't necessarily want to reveal Docker auth info to the end user, so print the command before adding Docker env variables
+    # wait until now to add env variables so we don't reveal auth info to the end user
     if docker_username is not None and docker_password is not None:
         cmd = f"SINGULARITY_DOCKER_USERNAME={docker_username} SINGULARITY_DOCKER_PASSWORD={docker_password} " + cmd
+    cmd = f"GPU_MODE={'true' if gpu else 'false'} {cmd}"
 
     return cmd
 
