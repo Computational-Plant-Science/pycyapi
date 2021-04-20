@@ -290,7 +290,7 @@ def prep_command(
         print(f"Replacing '{parameter.key.upper()}' with '{parameter.value}'")
         command = command.replace(f"${parameter.key.upper()}", parameter.value)
 
-    command = command.replace("GPU_MODE", 'true' if gpu else 'false')
+    command = command.replace("$GPU_MODE", 'true' if gpu else 'false')
 
     if no_cache:
         cmd += ' --disable-cache'
