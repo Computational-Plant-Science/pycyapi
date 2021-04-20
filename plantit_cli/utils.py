@@ -290,6 +290,8 @@ def prep_command(
         print(f"Replacing '{parameter.key.upper()}' with '{parameter.value}'")
         command = command.replace(f"${parameter.key.upper()}", parameter.value)
 
+    command = command.replace("GPU_MODE", 'true' if gpu else 'false')
+
     if no_cache:
         cmd += ' --disable-cache'
 
@@ -302,7 +304,6 @@ def prep_command(
     # wait until now to add env variables so we don't reveal auth info to the end user
     if docker_username is not None and docker_password is not None:
         cmd = f"SINGULARITY_DOCKER_USERNAME={docker_username} SINGULARITY_DOCKER_PASSWORD={docker_password} " + cmd
-    cmd = f"SINGULARITY_GPU_MODE={'true' if gpu else 'false'} {cmd}"
 
     return cmd
 
