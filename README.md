@@ -241,7 +241,7 @@ input:
 
 #### Ping
 
-The `plantit ping` command is used internally by the PlantIT web application to tesxt whether the CLI is properly installed on user-defined agents.
+The `plantit ping` command is used internally by the PlantIT web application to test whether the CLI is properly installed on user-defined agents.
 
 ### Authenticating with Docker
 
