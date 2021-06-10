@@ -8,7 +8,7 @@
 [![PyPI version](https://badge.fury.io/py/plantit-cli.svg)](https://badge.fury.io/py/plantit-cli)
 [![Coverage Status](https://coveralls.io/repos/github/Computational-Plant-Science/plantit-cli/badge.svg?branch=master)](https://coveralls.io/github/Computational-Plant-Science/plantit-cli) 
 
-Deploy workflows on laptops, servers, or HPC/HTC clusters.
+Deploy plant phenotyping workflows on laptops, servers, or HPC/HTC clusters.
 
 **This project is in open alpha and is not yet stable.**
 
@@ -19,25 +19,28 @@ Deploy workflows on laptops, servers, or HPC/HTC clusters.
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)
-  - [Zip](#zip)
-  - [Pull](#pull)
-  - [Run](#run)
-    - [Runs with inputs](#runs-with-inputs)
-      - [Input file](#input-file)
-      - [Input files](#input-files)
-      - [Input directory](#input-directory)
-  - [Push](#push)
-    - [Zipped outputs](#zipped-outputs)
-  - [Bind mounts](#bind-mounts)
-  - [GPU mode](#gpu-mode)
-  - [Cluster deployment targets](#cluster-deployment-targets)
-    - [Virtual memory](#virtual-memory)
-    - [Other resource requests](#other-resource-requests)
+  - [Commands](#commands)
+    - [Pull](#pull)
+    - [Run](#run)
+      - [Compound commands](#compound-commands)
+      - [Inputs](#inputs)
+        - [File](#file)
+        - [Files](#files)
+        - [Directory](#directory)
+      - [Bind mounts](#bind-mounts)
+      - [GPU mode](#gpu-mode)
+      - [HPC/HTC](#hpchtc)
+        - [Virtual memory](#virtual-memory)
+        - [Other resource requests](#other-resource-requests)
+    - [Zip](#zip)
+    - [Push](#push)
+    - [Ping](#ping)
   - [Authenticating with Docker](#authenticating-with-docker)
-  - [Authenticating with the Terrain API](#authenticating-with-the-terrain-api)
+  - [Authenticating with Terrain](#authenticating-with-terrain)
   - [Authenticating with PlantIT](#authenticating-with-plantit)
   - [Logging](#logging)
-- [Tests](#tests)
+- [Development](#development)
+  - [Tests](#tests)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -49,7 +52,7 @@ Deploy workflows on laptops, servers, or HPC/HTC clusters.
 
 ## Installation
 
-To install, clone the project with `git clone https://github.com/Computational-Plant-Science/plantit-cli.git` or use pip:
+To install the PlantIT CLI, use pip:
 
 ```
 pip3 install plantit-cli
@@ -57,24 +60,19 @@ pip3 install plantit-cli
 
 ## Usage
 
-The `plantit-cli` supports the following commands:
+Once the CLI is installed it can be invoked with `plantit <command>`.
 
-- `pull`: Downloads files from the CyVerse Data Store.
-- `run`: Runs a container for a flow configuration.
-- `zip`: Zips files produced by container runs.
-- `push`: Uploads files to the CyVerse Data Store.
+### Commands
 
-### Zip
+The CLI supports the following commands:
 
-To zip files all files in a directory, use `plantit zip <input directory>`.
+- `ping`: Print `pong`.
+- `pull`: Download files from the CyVerse Data Store.
+- `run`: Run a workflow.
+- `zip`: Zip files produced by a workflow.
+- `push`: Upload files to the CyVerse Data Store.
 
-To include file patterns or names, use (one or more) flags `--include_pattern` (abbr. `-ip`) or `--include_name` (`-in`).
-
-To exclude file patterns or names, use (one or more) flags `--exclude_pattern` (`-ep`) or `--exclude_name` (`-en`).
-
-Included files are gathered first, then excludes are filtered out of this collection.
-
-### Pull
+#### Pull
 
 To pull files from the `/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/` directory in the CyVerse Data Store to the current working directory, use:
 
@@ -88,9 +86,9 @@ Optional arguments are:
 - `--pattern`: File patterns to include (one or more).
 - `--overwrite`: Whether to overwrite already-existing files.
 
-### Run
+#### Run
 
-To run `hello_world.yaml`, use `plantit run hello_world.yaml`. At minimum, the YAML schema should include the following attributes:
+PlantIT workflows are defined in YAML files. To run a workflow defined in `hello_world.yaml`, use `plantit run hello_world.yaml`. At minimum, the schema should include the following attributes:
 
 ```yaml
 image: docker://alpine              # Docker or Singularity image
@@ -98,9 +96,11 @@ workdir: /your/working/directory    # working directory
 command: echo "Hello, world!"       # entrypoint
 ```
 
+##### Compound commands
+
 Note that your `command` may fail on some images if it contains `&&`. If you must run multiple consecutive commands, it's probably best to package them into a script.
 
-#### Runs with inputs
+##### Inputs
 
 Runs involving inputs fall into 3 categories:
 
@@ -110,7 +110,7 @@ Runs involving inputs fall into 3 categories:
 
 To pull a file or directory, add an `input` section (whose `path` attribute will be substituted for `$INPUT` when your `command` is invoked).
 
-##### Input file
+###### File
 
 To pull a file from the Data Store and spawn a single container to process it, use `kind: file` and `from: <file path>`:
 
@@ -120,7 +120,7 @@ input:
     path: /iplant/home/username/directory/file
 ```
 
-##### Input files
+###### Files
 
 To pull a directory from the Data Store and spawn a container for each file, use `kind: files` and `from: <directory path>`:
 
@@ -133,7 +133,7 @@ input:
     - png
 ```
 
-##### Input directory
+###### Directory
 
 To pull the contents of a directory from the Data Store and spawn a single container to process it, use `kind: directory` and `from: <directory path>`:
 
@@ -143,7 +143,74 @@ input:
     path: /iplant/home/username/directory
 ```
 
-### Push
+##### Bind mounts
+
+If your code needs to write temporary files somewhere other than the (automatically mounted) host working directory, use the `bind_mounts` attribute:
+
+```yaml
+bind_mounts:
+  - /path/in/your/container # defaults to the host working directory
+  - path/relative/to/host/working/directory:/another/path/in/your/container
+```
+
+##### GPU mode
+
+To instruct Singularity to bind to NVIDIA GPU drivers on the host, add a `gpu: True` attribute to your configuration.
+
+##### HPC/HTC
+
+On high-performance or high-throughput computing systems with a scheduler like Torque or SLURM, you can parallelize multi-file runs by adding a `jobqueue` section like the following:
+
+```yaml
+...
+jobqueue:
+  slurm:
+    cores: 1
+    processes: 10,
+    project: '<your allocation>'
+    walltime: '01:00:00'
+    queue: '<your queue>'
+```
+
+Substitute `pbs`, `moab`, `slurm`, or any other [Dask Jobqueue](https://jobqueue.dask.org/) cluster configuration section (the CLI uses Dask internally and passes your configuration directly through).
+
+###### Virtual memory
+
+For clusters with virtual memory, you may need to use `header_skip`:
+
+```yaml
+...
+jobqueue:
+  slurm:
+    ...
+    header_skip: # for clusters with virtual memory
+      - '--mem'
+```
+
+###### Other resource requests
+
+You can add other cluster-specific resource requests, like GPU-enabled nodes, with an `extra` section:
+
+```yaml
+...
+jobqueue:
+  slurm:
+    ...
+    extra:
+      - '--gres=gpu:1'
+```
+
+#### Zip
+
+To zip files all files in a directory, use `plantit zip <input directory>`.
+
+To include file patterns or names, use (one or more) flags `--include_pattern` (abbr. `-ip`) or `--include_name` (`-in`).
+
+To exclude file patterns or names, use (one or more) flags `--exclude_pattern` (`-ep`) or `--exclude_name` (`-en`).
+
+Included files are gathered first, then excludes are filtered out of this collection.
+
+#### Push
 
 To push files in the current working directory to the `/iplant/home/<my>/<directory/` in the CyVerse Data Store, use `plantit terrain push /iplant/home/<my>/<directory/ --terrain_token <token>`.
 
@@ -172,66 +239,9 @@ input:
       md5: 8540f05638ac10899e8bc31c13d5074a
 ```-->
 
-#### Zipped outputs
+#### Ping
 
-The CLI will automatically zip your outputs to a file named `<run identifier>.zip`.
-
-### Bind mounts
-
-If your code needs to write temporary files somewhere other than the (automatically mounted) host working directory, use the `bind_mounts` attribute:
-
-```yaml
-bind_mounts:
-  - /path/in/your/container # defaults to the host working directory
-  - path/relative/to/host/working/directory:/another/path/in/your/container
-```
-
-### GPU mode
-
-To instruct Singularity to bind to NVIDIA GPU drivers on the host, add a `gpu: True` attribute to your configuration.
-
-### Cluster deployment targets
-
-On HPC clusters, you can parallelize multi-file runs by adding a `jobqueue` section like the following:
-
-```yaml
-...
-jobqueue:
-  slurm:
-    cores: 1
-    processes: 10,
-    project: '<your allocation>'
-    walltime: '01:00:00'
-    queue: '<your queue>'
-```
-
-Substitute `pbs`, `moab`, or any other [Dask Jobqueue](https://jobqueue.dask.org/) cluster configuration section (the CLI uses Dask internally and passes your configuration directly through).
-
-#### Virtual memory
-
-For clusters with virtual memory, you may need to use `header_skip`:
-
-```yaml
-...
-jobqueue:
-  slurm:
-    ...
-    header_skip: # for clusters with virtual memory
-      - '--mem'
-```
-
-#### Other resource requests
-
-You can add other cluster-specific resource requests, like GPU-enabled nodes, with an `extra` section:
-
-```yaml
-...
-jobqueue:
-  slurm:
-    ...
-    extra:
-      - '--gres=gpu:1'
-```
+The `plantit ping` command is used internally by the PlantIT web application to tesxt whether the CLI is properly installed on user-defined agents.
 
 ### Authenticating with Docker
 
@@ -241,9 +251,11 @@ Docker Hub pull rate limits are quickly reached for large datasets. To authentic
 plantit run hello_world.yaml --docker_username <your username> --docker_password <your password>
 ```
 
-### Authenticating with the Terrain API
+This is only required for the `plantit run` command.
 
-The CLI uses the Terrain API to access the CyVerse Data Store. Runs with inputs and outputs must provide a `--cyverse_token` argument. For instance, to run `hello_world.yaml`:
+### Authenticating with Terrain
+
+The `pull`, `push`, and `run` commands use the Terrain API to access the CyVerse Data Store. Runs with inputs and outputs must provide a `--cyverse_token` argument. For instance, to run `hello_world.yaml`:
 
 ```shell
 plantit run hello_world.yaml --cyverse_token 'eyJhbGciOiJSUzI1N...'
@@ -257,25 +269,25 @@ GET https://de.cyverse.org/terrain/token/cas
 
 ### Authenticating with PlantIT
 
-When the CLI is invoked by PlantIT, a `--plantit_token` is provided in order to authenticate with PlantIT's RESTful API and push run status updates and log messages back to the web application.
+When the `run` command is invoked, `--plantit_url` and `--plantit_token` options may be provided to authenticate with PlantIT's RESTful API and push task status updates and logs back to the web application. This is only intended for internal use &mdash; requests with an invalid token or for a nonexistent task will be rejected.
 
 ### Logging
 
-By default, the CLI will print all output to `stdout`. If a `--plantit_url` and `--plantit_token` are provided, output will be POSTed back to the PlantIT web application (only output generated by the CLI itself; container output will just be printed to `stdout`).
-
-The default configuration is suitable for most cluster deployment targets, whose schedulers should automatically capture job output. To configure the CLI itself to write container output to a file, add the following to your configuration file:
+By default, the CLI will print all output to `stdout`. If a `--plantit_url` and `--plantit_token` are provided, output will be POSTed back to the PlantIT web application (only output generated by the CLI itself &mdash; container output will just be printed to `stdout`).  This is suitable for most cluster deployment targets, whose schedulers should automatically capture job output. To configure the CLI itself to write container output to a file, add the following to your configuration file:
 
 ```yaml
 log_file: relative/path/to/logfile
 ```
 
-## Tests
+## Development
 
-Before running tests, run `scripts/bootstrap.sh` (this will pull/build images for a small `docker-compose` SLURM cluster test environment) then `docker-compose -f docker-compose.test.yml up` (`-d for detached`).
+To set up a development environment, clone the repo with `git clone https://github.com/Computational-Plant-Science/plantit-cli.git`. Then run `scripts/bootstrap.sh` (this will pull/build images for a small `docker-compose` SLURM cluster test environment).
+
+### Tests
 
 To run unit tests:
 
-```docker-compose -f docker-compose.test.yml exec -w /opt/plantit-cli/runs slurmctld python3 -m pytest /opt/plantit-cli/plantit_cli/tests/unit -s```
+```docker-compose -f docker-compose.test.yml run -w /opt/plantit-cli/runs slurmctld python3 -m pytest /opt/plantit-cli/plantit_cli/tests/unit -s```
 
 Note that integration tests invoke the Terrain API and may take some time to complete; they're rigged with a delay to allow writes to propagate from Terrain to the CyVerse Data Store (some pass/fail non-determinism occurs otherwise). To run integration tests:
 

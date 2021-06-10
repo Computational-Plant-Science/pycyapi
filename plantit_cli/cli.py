@@ -16,6 +16,11 @@ def terrain():
     pass
 
 
+@cli.command()
+def ping():
+    print('pong')
+
+
 @terrain.command()
 @click.argument('remote_path')
 @click.option('--local_path', '-p', required=False, type=str)
@@ -42,36 +47,31 @@ def pull(
         plantit_token=plantit_token)
 
 
-@terrain.command()
-@click.argument('remote_path')
-@click.option('--terrain_token', required=True, type=str)
-@click.option('--local_path', '-p', required=False, type=str)
-@click.option('--include_pattern', '-ip', required=False, type=str, multiple=True)
-@click.option('--include_name', '-in', required=False, type=str, multiple=True)
-@click.option('--exclude_pattern', '-ep', required=False, type=str, multiple=True)
-@click.option('--exclude_name', '-en', required=False, type=str, multiple=True)
+@cli.command()
+@click.argument('flow')
 @click.option('--plantit_token', required=False, type=str)
 @click.option('--plantit_url', required=False, type=str)
-def push(
-        remote_path,
-        terrain_token,
-        local_path,
-        include_pattern,
-        include_name,
-        exclude_pattern,
-        exclude_name,
+@click.option('--docker_username', required=False, type=str)
+@click.option('--docker_password', required=False, type=str)
+@click.option('--slurm_job_array', is_flag=True)
+def run(flow,
         plantit_token,
-        plantit_url):
-    terrain_commands.push(
-        local_path=local_path,
-        remote_path=remote_path,
-        cyverse_token=terrain_token,
-        include_patterns=include_pattern,
-        include_names=include_name,
-        exclude_patterns=exclude_pattern,
-        exclude_names=exclude_name,
-        plantit_url=plantit_url,
-        plantit_token=plantit_token)
+        plantit_url,
+        docker_username,
+        docker_password,
+        slurm_job_array):
+    with open(flow, 'r') as file:
+        errors, options = parse_options(yaml.safe_load(file))
+        if len(errors) > 0:
+            raise ValueError(f"Invalid configuration: {', '.join(errors[1])}")
+
+        commands.run(
+            options=options,
+            plantit_url=plantit_url,
+            plantit_token=plantit_token,
+            docker_username=docker_username,
+            docker_password=docker_password,
+            slurm_job_array=slurm_job_array)
 
 
 @cli.command()
@@ -109,31 +109,36 @@ def zip(
         plantit_token=plantit_token)
 
 
-@cli.command()
-@click.argument('flow')
+@terrain.command()
+@click.argument('remote_path')
+@click.option('--terrain_token', required=True, type=str)
+@click.option('--local_path', '-p', required=False, type=str)
+@click.option('--include_pattern', '-ip', required=False, type=str, multiple=True)
+@click.option('--include_name', '-in', required=False, type=str, multiple=True)
+@click.option('--exclude_pattern', '-ep', required=False, type=str, multiple=True)
+@click.option('--exclude_name', '-en', required=False, type=str, multiple=True)
 @click.option('--plantit_token', required=False, type=str)
 @click.option('--plantit_url', required=False, type=str)
-@click.option('--docker_username', required=False, type=str)
-@click.option('--docker_password', required=False, type=str)
-@click.option('--slurm_job_array', is_flag=True)
-def run(flow,
+def push(
+        remote_path,
+        terrain_token,
+        local_path,
+        include_pattern,
+        include_name,
+        exclude_pattern,
+        exclude_name,
         plantit_token,
-        plantit_url,
-        docker_username,
-        docker_password,
-        slurm_job_array):
-    with open(flow, 'r') as file:
-        errors, options = parse_options(yaml.safe_load(file))
-        if len(errors) > 0:
-            raise ValueError(f"Invalid configuration: {', '.join(errors[1])}")
-
-        commands.run(
-            options=options,
-            plantit_url=plantit_url,
-            plantit_token=plantit_token,
-            docker_username=docker_username,
-            docker_password=docker_password,
-            slurm_job_array=slurm_job_array)
+        plantit_url):
+    terrain_commands.push(
+        local_path=local_path,
+        remote_path=remote_path,
+        cyverse_token=terrain_token,
+        include_patterns=include_pattern,
+        include_names=include_name,
+        exclude_patterns=exclude_pattern,
+        exclude_names=exclude_name,
+        plantit_url=plantit_url,
+        plantit_token=plantit_token)
 
 
 if __name__ == '__main__':
