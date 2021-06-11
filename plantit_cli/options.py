@@ -68,7 +68,7 @@ class FilesInput(Input):
 
 
 # noinspection PyShadowingBuiltins
-class RunOptions:
+class PlantITCLIOptions:
     def __init__(self,
                  workdir: str,
                  image: str,

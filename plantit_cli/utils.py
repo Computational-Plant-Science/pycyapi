@@ -8,7 +8,7 @@ from typing import List
 import requests
 from distributed import Client
 
-from plantit_cli.options import BindMount, Parameter, FileInput, FilesInput, DirectoryInput, RunOptions
+from plantit_cli.options import BindMount, Parameter, FileInput, FilesInput, DirectoryInput, PlantITCLIOptions
 
 
 def list_files(path,
@@ -175,7 +175,7 @@ def parse_options(raw: dict):
         if 'header_skip' in jobqueue and not all(extra is str for extra in jobqueue['header_skip']):
             errors.append('Section \'jobqueue\'.\'header_skip\' must be a list of str')
 
-    return errors, RunOptions(
+    return errors, PlantITCLIOptions(
         workdir=work_dir,
         image=image,
         command=command,

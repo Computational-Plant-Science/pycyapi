@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 from plantit_cli import commands
 
-from plantit_cli.options import RunOptions, FileInput, Parameter, BindMount
+from plantit_cli.options import PlantITCLIOptions, FileInput, Parameter, BindMount
 from plantit_cli.store.terrain_store import TerrainStore
 from plantit_cli.tests.integration.terrain_test_utils import create_collection, upload_file, delete_collection, \
     list_files
@@ -24,7 +24,7 @@ DEFAULT_SLEEP = 45
 def test_pull_then_run_file_input(remote_base_path, file_name_1):
     local_path = join(testdir, file_name_1)
     remote_path = join(remote_base_path, "testCollection")
-    plan = RunOptions(
+    plan = PlantITCLIOptions(
         workdir=testdir,
         image="docker://alpine:latest",
         command='cat "$INPUT" > "$INPUT.output"',
@@ -66,7 +66,7 @@ def test_pull_then_run_file_input(remote_base_path, file_name_1):
 def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
     local_path = join(testdir, file_name_1)
     remote_path = join(remote_base_path, "testCollection")
-    plan = RunOptions(
+    plan = PlantITCLIOptions(
         workdir=testdir,
         image="docker://alpine:latest",
         command='cat $INPUT > $INPUT.$TAG.output',

@@ -6,7 +6,7 @@ from tempfile import TemporaryDirectory
 import pytest
 
 from plantit_cli import commands
-from plantit_cli.options import RunOptions, FileInput, FilesInput, DirectoryInput, Parameter, BindMount
+from plantit_cli.options import PlantITCLIOptions, FileInput, FilesInput, DirectoryInput, Parameter, BindMount
 from plantit_cli.tests.utils import clear_dir
 
 message = "Message"
@@ -69,7 +69,7 @@ def test_run_parameters(file_name_1, file_name_2):
             file1.write('Hello, 1!')
             file2.write('Hello, 2!')
 
-        options = RunOptions(
+        options = PlantITCLIOptions(
             workdir=temp_dir,
             image='docker://alpine',
             command='echo "$MESSAGE" > $WORKDIR/output.txt',
@@ -95,7 +95,7 @@ def test_run_bind_mounts(file_name_1, file_name_2):
             file1.write('Hello, 1!')
             file2.write('Hello, 2!')
 
-        options = RunOptions(
+        options = PlantITCLIOptions(
             workdir=test_dir,
             image='docker://alpine',
             command=f"echo '{message}' > $WORKDIR/output.txt",
@@ -121,7 +121,7 @@ def test_run_directory_input(file_name_1, file_name_2):
             file1.write('Hello, 1!')
             file2.write('Hello, 2!')
 
-        options = RunOptions(
+        options = PlantITCLIOptions(
             workdir=temp_dir,
             image='docker://alpine',
             command='ls "$INPUT" > $WORKDIR/output.txt',
@@ -148,7 +148,7 @@ def test_run_files_input(file_name_1, file_name_2):
             file1.write('Hello, 1!')
             file2.write('Hello, 2!')
 
-        options = RunOptions(
+        options = PlantITCLIOptions(
             workdir=temp_dir,
             image='docker://alpine',
             command='echo "$INPUT" >> $WORKDIR/output.txt',
@@ -173,7 +173,7 @@ def test_run_file_input(file_name_1):
         with open(input_file_path, "w") as file1:
             file1.write(message)
 
-        options = RunOptions(
+        options = PlantITCLIOptions(
             workdir=temp_dir,
             image='docker://alpine',
             command='cat "$INPUT" > $WORKDIR/output.txt',

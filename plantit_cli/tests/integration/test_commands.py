@@ -5,7 +5,7 @@ from tempfile import TemporaryDirectory
 import pytest
 
 from plantit_cli import commands
-from plantit_cli.options import FileInput, RunOptions, FilesInput, DirectoryInput, BindMount, Parameter
+from plantit_cli.options import FileInput, PlantITCLIOptions, FilesInput, DirectoryInput, BindMount, Parameter
 from plantit_cli.store import terrain_commands
 from plantit_cli.store.local_store import LocalStore
 from plantit_cli.tests.utils import clear_dir, get_token, check_hello
@@ -79,7 +79,7 @@ def test_push(remote_base_path, file_name_1, file_name_2):
 def test_run_parameters_slurm():
     try:
         output_file_path = join(test_dir, 'output.txt')
-        options = RunOptions(
+        options = PlantITCLIOptions(
             workdir=test_dir,
             image='docker://alpine',
             command='echo "$MESSAGE" > $WORKDIR/output.txt',
@@ -112,7 +112,7 @@ def test_run_parameters_slurm():
 def test_run_bind_mounts_slurm():
     try:
         output_file_path = join(test_dir, 'output.txt')
-        options = RunOptions(
+        options = PlantITCLIOptions(
             workdir=test_dir,
             image='docker://alpine',
             command=f"ls > $WORKDIR/output.txt",
@@ -153,7 +153,7 @@ def test_run_directory_input_slurm(file_name_1, file_name_2):
                 file1.write('Hello, 1!')
                 file2.write('Hello, 2!')
 
-            options = RunOptions(
+            options = PlantITCLIOptions(
                 workdir=test_dir,
                 image='docker://alpine',
                 command='pwd > $WORKDIR/output.txt',
@@ -192,7 +192,7 @@ def test_run_files_input_slurm(file_name_1, file_name_2):
             file1.write('Hello, 1!')
             file2.write('Hello, 2!')
 
-        options = RunOptions(
+        options = PlantITCLIOptions(
             workdir=test_dir,
             image='docker://alpine',
             command='echo $INPUT >> $WORKDIR/output.txt',
@@ -230,7 +230,7 @@ def test_run_file_input_slurm(file_name_1):
         with open(input_file_path, "w") as file1:
             file1.write(message)
 
-        options = RunOptions(
+        options = PlantITCLIOptions(
             workdir=test_dir,
             image='docker://alpine',
             command='cat $INPUT > $WORKDIR/output.txt',

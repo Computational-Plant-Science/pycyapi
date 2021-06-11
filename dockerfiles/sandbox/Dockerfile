@@ -110,7 +110,7 @@ RUN mkdir /var/run/sshd \
 #     && update-rc.d slurmd defaults
 
 RUN mkdir -p /opt/plantit-cli/scripts \
-    && mkdir -p /opt/plantit-cli/runs
+    && mkdir -p /opt/plantit-cli/tasks
 
 COPY ./setup.py /opt/plantit-cli
 COPY ./LICENSE /opt/plantit-cli

@@ -9,7 +9,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 from dask_jobqueue import SLURMCluster, PBSCluster, MoabCluster, SGECluster, LSFCluster, OARCluster
 from distributed import as_completed, LocalCluster, Client
 
-from plantit_cli.options import RunOptions, DirectoryInput, FilesInput, FileInput, Parameter
+from plantit_cli.options import PlantITCLIOptions, DirectoryInput, FilesInput, FileInput, Parameter
 from plantit_cli.status import Status
 from plantit_cli.utils import list_files, readable_bytes, prep_command, update_status, submit_command, run_command
 
@@ -49,7 +49,7 @@ def zip(
         raise
 
 
-def run(options: RunOptions,
+def run(options: PlantITCLIOptions,
         plantit_url: str = None,
         plantit_token: str = None,
         docker_username: str = None,
