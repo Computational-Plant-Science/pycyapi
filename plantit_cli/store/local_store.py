@@ -3,7 +3,6 @@ from pathlib import Path
 from shutil import copyfileobj
 from typing import List
 
-from plantit_cli.options import FileChecksum
 from plantit_cli.store.store import Store
 from plantit_cli.utils import list_files
 
@@ -34,7 +33,7 @@ class LocalStore(Store):
             print(f"Copying {from_path_file} to {to_path_file}")
             copyfileobj(from_file, to_file)
 
-    def pull_dir(self, from_path: str, to_path: str, patterns: List[str], checksums: List[FileChecksum] = None, overwrite: bool = False):
+    def pull_dir(self, from_path: str, to_path: str, patterns: List[str], checksums: List[dict] = None, overwrite: bool = False):
         if checksums is not None:
             raise ValueError(f"Checksums not supported")
 

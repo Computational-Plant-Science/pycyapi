@@ -9,7 +9,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 from dask_jobqueue import SLURMCluster, PBSCluster, MoabCluster, SGECluster, LSFCluster, OARCluster
 from distributed import as_completed, LocalCluster, Client
 
-from plantit_cli.options import PlantITCLIOptions, DirectoryInput, FilesInput, FileInput, Parameter
+from plantit_cli.options import InputKind
 from plantit_cli.status import Status
 from plantit_cli.utils import list_files, readable_bytes, prep_command, update_status, submit_command, run_command
 
@@ -21,7 +21,7 @@ def zip(
         input_dir: str,
         output_dir: str,
         name: str,
-        max_size: int = 1000000000,  # 1GB default
+        # max_size: int = 1000000000,  # 1GB default
         include_patterns: List[str] = None,
         include_names: List[str] = None,
         exclude_patterns: List[str] = None,
@@ -34,10 +34,10 @@ def zip(
         sizes = [getsize(file) for file in files]
         total = sum(sizes)
 
-        if total > max_size:
-            msg = f"Cumulative filesize ({readable_bytes(total)}) exceeds maximum ({readable_bytes(max_size)})"
-            update_status(Status.ZIPPING, msg, plantit_url, plantit_token)
-            raise ValueError(msg)
+        # if total > max_size:
+        #     msg = f"Cumulative filesize ({readable_bytes(total)}) exceeds maximum ({readable_bytes(max_size)})"
+        #     update_status(Status.ZIPPING, msg, plantit_url, plantit_token)
+        #     raise ValueError(msg)
 
         update_status(Status.RUNNING, f"Zipping {readable_bytes(total)} into file: {zip_path}", plantit_url, plantit_token)
         with ZipFile(zip_path, 'w', ZIP_DEFLATED) as zipped:
@@ -49,17 +49,17 @@ def zip(
         raise
 
 
-def run(options: PlantITCLIOptions,
+def run(options: dict,
         plantit_url: str = None,
         plantit_token: str = None,
         docker_username: str = None,
         docker_password: str = None,
         slurm_job_array: bool = False):
     try:
-        if options.jobqueue is None:
+        if 'jobqueue' not in options:
             cluster = LocalCluster()
         else:
-            jobqueue = options.jobqueue
+            jobqueue = options['jobqueue']
             if 'slurm' in jobqueue:
                 print("Requesting SLURM cluster:")
                 pprint(jobqueue['slurm'])
@@ -87,141 +87,143 @@ def run(options: PlantITCLIOptions,
             else:
                 raise ValueError(f"Unsupported jobqueue configuration: {jobqueue}")
 
-        if options.input is None:
-            if options.jobqueue is not None:
-                cluster.scale(1)
+        if 'input' not in options:
+            if 'jobqueue' not in options: cluster.scale(1)
             with Client(cluster) as client:
                 command = prep_command(
-                    work_dir=options.workdir,
-                    image=options.image,
-                    command=options.command,
-                    parameters=options.parameters if options.parameters is not None else [],
-                    bind_mounts=options.bind_mounts,
+                    work_dir=options['workdir'],
+                    image=options['image'],
+                    command=options['command'],
+                    parameters=options['parameters'] if 'parameters' in options else [],
+                    bind_mounts=options['bind_mounts'] if 'bind_mounts' in options else [],
+                    no_cache=options['no_cache'] if 'no_cache' in options else False,
+                    gpu=options['gpu'] if 'gpu' in options else False,
                     docker_username=docker_username,
-                    docker_password=docker_password,
-                    no_cache=options.no_cache,
-                    gpu=options.gpu)
+                    docker_password=docker_password)
 
                 update_status(Status.RUNNING, f"Submitting container", plantit_url, plantit_token)
-                future = submit_command(client, command, options.log_file, 3)
+                future = submit_command(client, command, options['log_file'] if 'log_file' in options else None, 3)
                 future.result()
                 if future.status != 'finished':
                     update_status(Status.FAILED, f"Container failed: {future.exception}", plantit_url, plantit_token)
                 else:
                     update_status(Status.RUNNING, f"Container completed", plantit_url, plantit_token)
-        elif isinstance(options.input, DirectoryInput):
-            if options.jobqueue is not None:
-                cluster.scale(1)
+        elif options['input']['kind'] == InputKind.DIRECTORY:
+            input_path = options['input']['path']
+            if 'jobqueue' in options: cluster.scale(1)
             with Client(cluster) as client:
                 command = prep_command(
-                        work_dir=options.workdir,
-                        image=options.image,
-                        command=options.command,
-                        parameters=(options.parameters if options.parameters is not None else []) + [Parameter(key='INPUT', value=options.input.path)],
-                        bind_mounts=options.bind_mounts,
-                        docker_username=docker_username,
-                        docker_password=docker_password,
-                        no_cache=options.no_cache,
-                        gpu=options.gpu)
-
-                update_status(Status.RUNNING, f"Submitting container for directory '{options.input.path}'", plantit_url, plantit_token)
-                future = submit_command(client, command, options.log_file, 3)
-                future.result()
-                if future.status != 'finished':
-                    update_status(Status.FAILED, f"Container failed for directory '{options.input.path}': {future.exception}", plantit_url, plantit_token)
-                else:
-                    update_status(Status.RUNNING, f"Container completed for directory '{options.input.path}'", plantit_url, plantit_token)
-        elif isinstance(options.input, FilesInput) and slurm_job_array:
-            files = os.listdir(options.input.path)
-            index = int(os.environ.get('SLURM_ARRAY_TASK_ID'))
-            file = files[index]
-
-            if options.jobqueue is not None:
-                cluster.scale(1)
-            with Client(cluster) as client:
-                command = prep_command(
-                    work_dir=options.workdir,
-                    image=options.image,
-                    command=options.command,
-                    parameters=(options.parameters if options.parameters else []) + [Parameter(key='INPUT', value=join(options.input.path, file))],
-                    bind_mounts=options.bind_mounts,
+                    work_dir=options['workdir'],
+                    image=options['image'],
+                    command=options['command'],
+                    parameters=(options['parameters'] if 'parameters' in options else []) + [{'key': 'INPUT', 'value': input_path}],
+                    bind_mounts=options['bind_mounts'] if 'bind_mounts' in options else [],
+                    no_cache=options['no_cache'] if 'no_cache' in options else False,
+                    gpu=options['gpu'] if 'gpu' in options else False,
                     docker_username=docker_username,
-                    docker_password=docker_password,
-                    no_cache=options.no_cache,
-                    gpu=options.gpu)
+                    docker_password=docker_password)
 
-                update_status(Status.RUNNING, f"Submitting container for file '{options.input.path}'", plantit_url, plantit_token)
-                future = submit_command(client, command, options.log_file, 3)
+                update_status(Status.RUNNING, f"Submitting container for directory '{input_path}'", plantit_url, plantit_token)
+                future = submit_command(client, command, options['log_file'] if 'log_file' in options else None, 3)
                 future.result()
                 if future.status != 'finished':
-                    update_status(Status.FAILED, f"Container failed for file '{options.input.path}': {future.exception}", plantit_url, plantit_token)
+                    update_status(Status.FAILED, f"Container failed for directory '{input_path}': {future.exception}", plantit_url, plantit_token)
                 else:
-                    update_status(Status.RUNNING, f"Container completed for file '{options.input.path}'", plantit_url, plantit_token)
+                    update_status(Status.RUNNING, f"Container completed for directory '{input_path}'", plantit_url, plantit_token)
+        elif options['input']['kind'] == InputKind.FILES:
+            input_path = options['input']['path']
+            if slurm_job_array:
+                files = os.listdir(input_path)
+                index = int(os.environ.get('SLURM_ARRAY_TASK_ID'))
+                file = files[index]
 
-            update_status(Status.COMPLETED, f"Run succeeded", plantit_url, plantit_token)
-        elif isinstance(options.input, FilesInput):
-            files = os.listdir(options.input.path)
-            count = len(files)
-            futures = []
-
-            if options.jobqueue is None:
-                update_status(Status.RUNNING, f"Processing {count} files in '{options.input.path}'", plantit_url, plantit_token)
-            else:
-                update_status(Status.RUNNING, f"Requesting nodes to process {count} files in '{options.input.path}' with job script:\n{cluster.job_script()}", plantit_url, plantit_token)
-                cluster.scale(count)
-
-            with Client(cluster) as client:
-                for file in files:
+                if 'jobqueue' in options: cluster.scale(1)
+                with Client(cluster) as client:
                     command = prep_command(
-                            work_dir=options.workdir,
-                            image=options.image,
-                            command=options.command,
-                            parameters=(deepcopy(options.parameters) if options.parameters else []) + \
-                                       [Parameter(key='INPUT', value=join(options.input.path, file))],
-                            bind_mounts=options.bind_mounts,
-                            docker_username=docker_username,
-                            docker_password=docker_password,
-                            no_cache=options.no_cache,
-                            gpu=options.gpu)
+                        work_dir=options['workdir'],
+                        image=options['image'],
+                        command=options['command'],
+                        parameters=(options['parameters'] if 'parameters' in options else []) + [{'key': 'INPUT', 'value': join(input_path, file)}],
+                        bind_mounts=options['bind_mounts'] if 'bind_mounts' in options else [],
+                        no_cache=options['no_cache'] if 'no_cache' in options else False,
+                        gpu=options['gpu'] if 'gpu' in options else False,
+                        docker_username=docker_username,
+                        docker_password=docker_password)
 
-                    update_status(Status.RUNNING, f"Submitting container for file: {file}", plantit_url, plantit_token)
-                    futures.append(submit_command(client, command, options.log_file, 3))
-
-                finished = 0
-                for future in as_completed(futures):
-                    finished += 1
+                    update_status(Status.RUNNING, f"Submitting container for file '{input_path}'", plantit_url, plantit_token)
+                    future = submit_command(client, command, options['log_file'] if 'log_file' in options else None, 3)
+                    future.result()
                     if future.status != 'finished':
-                        update_status(Status.FAILED, f"Container failed for file {finished} of {len(futures)}: {future.exception}", plantit_url, plantit_token)
+                        update_status(Status.FAILED, f"Container failed for file '{input_path}': {future.exception}", plantit_url, plantit_token)
                     else:
-                        update_status(Status.RUNNING, f"Container completed for file {finished} of {len(futures)}", plantit_url, plantit_token)
-        elif isinstance(options.input, FileInput):
-            if options.jobqueue is not None:
-                cluster.scale(1)
+                        update_status(Status.RUNNING, f"Container completed for file '{input_path}'", plantit_url, plantit_token)
+
+                update_status(Status.COMPLETED, f"Run succeeded", plantit_url, plantit_token)
+            else:
+                files = os.listdir(input_path)
+                count = len(files)
+                futures = []
+
+                if 'jobqueue' not in options:
+                    update_status(Status.RUNNING, f"Processing {count} files in '{input_path}'", plantit_url, plantit_token)
+                else:
+                    update_status(Status.RUNNING,
+                                  f"Requesting {count} nodes to process {count} files in '{input_path}' with job script:\n{cluster.job_script()}",
+                                  plantit_url, plantit_token)
+                    cluster.scale(count)
+
+                with Client(cluster) as client:
+                    for file in files:
+                        command = prep_command(
+                            work_dir=options['workdir'],
+                            image=options['image'],
+                            command=options['command'],
+                            parameters=(deepcopy(options['parameters']) if 'parameters' in options else []) + [
+                                {'key': 'INPUT', 'value': join(input_path, file)}],
+                            bind_mounts=options['bind_mounts'] if 'bind_mounts' in options else [],
+                            no_cache=options['no_cache'] if 'no_cache' in options else False,
+                            gpu=options['gpu'] if 'gpu' in options else False,
+                            docker_username=docker_username,
+                            docker_password=docker_password)
+
+                        update_status(Status.RUNNING, f"Submitting container for file: {file}", plantit_url, plantit_token)
+                        futures.append(submit_command(client, command, options['log_file'] if 'log_file' in options else None, 3))
+
+                    finished = 0
+                    for future in as_completed(futures):
+                        finished += 1
+                        if future.status != 'finished':
+                            update_status(Status.FAILED, f"Container failed for file {finished} of {len(futures)}: {future.exception}", plantit_url,
+                                          plantit_token)
+                        else:
+                            update_status(Status.RUNNING, f"Container completed for file {finished} of {len(futures)}", plantit_url, plantit_token)
+        elif options['input']['kind'] == InputKind.FILE:
+            input_path = options['input']['path']
+            if 'jobqueue' in options: cluster.scale(1)
             with Client(cluster) as client:
                 command = prep_command(
-                    work_dir=options.workdir,
-                    image=options.image,
-                    command=options.command,
-                    parameters=(options.parameters if options.parameters else []) + [Parameter(key='INPUT', value=options.input.path)],
-                    bind_mounts=options.bind_mounts,
+                    work_dir=options['workdir'],
+                    image=options['image'],
+                    command=options['command'],
+                    parameters=(options['parameters'] if 'parameters' in options else []) + [{'key': 'INPUT', 'value': input_path}],
+                    bind_mounts=options['bind_mounts'] if 'bind_mounts' in options else [],
+                    no_cache=options['no_cache'] if 'no_cache' in options else False,
+                    gpu=options['gpu'] if 'gpu' in options else False,
                     docker_username=docker_username,
-                    docker_password=docker_password,
-                    no_cache=options.no_cache,
-                    gpu=options.gpu)
+                    docker_password=docker_password)
 
-                update_status(Status.RUNNING, f"Submitting container for file '{options.input.path}'", plantit_url, plantit_token)
-                future = submit_command(client, command, options.log_file, 3)
+                update_status(Status.RUNNING, f"Submitting container for file '{input_path}'", plantit_url, plantit_token)
+                future = submit_command(client, command, options['log_file'] if 'log_file' in options else None, 3)
                 future.result()
                 if future.status != 'finished':
-                    update_status(Status.FAILED, f"Container failed for file '{options.input.path}': {future.exception}", plantit_url, plantit_token)
+                    update_status(Status.FAILED, f"Container failed for file '{input_path}': {future.exception}", plantit_url, plantit_token)
                 else:
-                    update_status(Status.RUNNING, f"Container completed for file '{options.input.path}'", plantit_url, plantit_token)
+                    update_status(Status.RUNNING, f"Container completed for file '{input_path}'", plantit_url, plantit_token)
 
         update_status(Status.COMPLETED, f"Run succeeded", plantit_url, plantit_token)
     except:
         update_status(Status.FAILED, f"Run failed: {traceback.format_exc()}", plantit_url, plantit_token)
         raise
-
 
 # TODO test flow configuration validation
 

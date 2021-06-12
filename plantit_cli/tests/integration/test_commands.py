@@ -2,10 +2,7 @@ from os import environ, remove
 from os.path import join, isfile
 from tempfile import TemporaryDirectory
 
-import pytest
-
 from plantit_cli import commands
-from plantit_cli.options import FileInput, PlantITCLIOptions, FilesInput, DirectoryInput, BindMount, Parameter
 from plantit_cli.store import terrain_commands
 from plantit_cli.store.local_store import LocalStore
 from plantit_cli.tests.utils import clear_dir, get_token, check_hello
@@ -79,19 +76,20 @@ def test_push(remote_base_path, file_name_1, file_name_2):
 def test_run_parameters_slurm():
     try:
         output_file_path = join(test_dir, 'output.txt')
-        options = PlantITCLIOptions(
-            workdir=test_dir,
-            image='docker://alpine',
-            command='echo "$MESSAGE" > $WORKDIR/output.txt',
-            parameters=[Parameter(key='MESSAGE', value=message)],
-            jobqueue={
+        options = {
+            'workdir': test_dir,
+            'image': 'docker://alpine',
+            'command': 'echo "$MESSAGE" > $WORKDIR/output.txt',
+            'parameters': [{'key': 'MESSAGE', 'value': message}],
+            'jobqueue': {
                 'slurm': {
                     'cores': 1,
                     'processes': 1,
                     'memory': '1GB',
                     'walltime': '00:01:00'
                 }
-            })
+            }
+        }
         commands.run(
             options=options,
             docker_username=environ.get('DOCKER_USERNAME', None),
@@ -112,19 +110,20 @@ def test_run_parameters_slurm():
 def test_run_bind_mounts_slurm():
     try:
         output_file_path = join(test_dir, 'output.txt')
-        options = PlantITCLIOptions(
-            workdir=test_dir,
-            image='docker://alpine',
-            command=f"ls > $WORKDIR/output.txt",
-            bind_mounts=[BindMount(host_path='/opt/plantit-cli/samples', container_path=test_dir)],
-            jobqueue={
+        options = {
+            'workdir': test_dir,
+            'image': 'docker://alpine',
+            'command': f"ls > $WORKDIR/output.txt",
+            'bind_mounts': [{'host_path': '/opt/plantit-cli/samples', 'container_path': test_dir}],
+            'jobqueue': {
                 'slurm': {
                     'cores': 1,
                     'processes': 1,
                     'memory': '1GB',
                     'walltime': '00:01:00'
                 }
-            })
+            }
+        }
         commands.run(
             options=options,
             docker_username=environ.get('DOCKER_USERNAME', None),
@@ -153,19 +152,20 @@ def test_run_directory_input_slurm(file_name_1, file_name_2):
                 file1.write('Hello, 1!')
                 file2.write('Hello, 2!')
 
-            options = PlantITCLIOptions(
-                workdir=test_dir,
-                image='docker://alpine',
-                command='pwd > $WORKDIR/output.txt',
-                input=DirectoryInput(path=temp_dir),
-                jobqueue={
+            options = {
+                'workdir': test_dir,
+                'image': 'docker://alpine',
+                'command': 'pwd > $WORKDIR/output.txt',
+                'input': {'path': temp_dir, 'kind': 'directory'},
+                'jobqueue': {
                     'slurm': {
                         'cores': 1,
                         'processes': 1,
                         'memory': '1GB',
                         'walltime': '00:01:00'
                     }
-                })
+                }
+            }
             commands.run(
                 options=options,
                 docker_username=environ.get('DOCKER_USERNAME', None),
@@ -192,19 +192,20 @@ def test_run_files_input_slurm(file_name_1, file_name_2):
             file1.write('Hello, 1!')
             file2.write('Hello, 2!')
 
-        options = PlantITCLIOptions(
-            workdir=test_dir,
-            image='docker://alpine',
-            command='echo $INPUT >> $WORKDIR/output.txt',
-            input=FilesInput(path=test_dir),
-            jobqueue={
+        options = {
+            'workdir': test_dir,
+            'image': 'docker://alpine',
+            'command': 'echo $INPUT >> $WORKDIR/output.txt',
+            'input': {'path': test_dir, 'kind': 'files'},
+            'jobqueue': {
                 'slurm': {
                     'cores': 1,
                     'processes': 1,
                     'memory': '1GB',
                     'walltime': '00:01:00'
                 }
-            })
+            }
+        }
         commands.run(
             options=options,
             docker_username=environ.get('DOCKER_USERNAME', None),
@@ -230,19 +231,20 @@ def test_run_file_input_slurm(file_name_1):
         with open(input_file_path, "w") as file1:
             file1.write(message)
 
-        options = PlantITCLIOptions(
-            workdir=test_dir,
-            image='docker://alpine',
-            command='cat $INPUT > $WORKDIR/output.txt',
-            input=FileInput(path=input_file_path),
-            jobqueue={
+        options = {
+            'workdir': test_dir,
+            'image': 'docker://alpine',
+            'command': 'cat $INPUT > $WORKDIR/output.txt',
+            'input': {'path': input_file_path, 'kind': 'file'},
+            'jobqueue': {
                 'slurm': {
                     'cores': 1,
                     'processes': 1,
                     'memory': '1GB',
                     'walltime': '00:01:00'
                 }
-            })
+            }
+        }
         commands.run(
             options=options,
             docker_username=environ.get('DOCKER_USERNAME', None),

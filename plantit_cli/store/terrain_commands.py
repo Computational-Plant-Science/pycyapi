@@ -3,7 +3,6 @@ from os import listdir, getcwd
 from pathlib import Path
 from typing import List
 
-from plantit_cli.options import FileChecksum
 from plantit_cli.status import Status
 from plantit_cli.store.terrain_store import TerrainStore
 from plantit_cli.utils import update_status
@@ -14,7 +13,7 @@ def pull(
         local_path: str = None,
         cyverse_token: str = None,
         patterns: List[str] = None,
-        checksums: List[FileChecksum] = None,
+        checksums: List[dict] = None,
         overwrite: bool = False,
         plantit_url: str = None,
         plantit_token: str = None):

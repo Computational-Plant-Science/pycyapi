@@ -1,17 +1,11 @@
 import os
 import tempfile
-import time
 from os import remove, environ
-from os.path import join, isfile
-from pathlib import Path
+from os.path import join
 
-import pytest
 from plantit_cli import commands
-
-from plantit_cli.options import PlantITCLIOptions, FileInput, Parameter, BindMount
-from plantit_cli.store.terrain_store import TerrainStore
-from plantit_cli.tests.integration.terrain_test_utils import create_collection, upload_file, delete_collection, \
-    list_files
+from plantit_cli.store import terrain_commands
+from plantit_cli.tests.integration.terrain_test_utils import create_collection, upload_file, delete_collection
 from plantit_cli.tests.utils import clear_dir, check_hello, get_token
 
 message = "Message"
@@ -24,11 +18,12 @@ DEFAULT_SLEEP = 45
 def test_pull_then_run_file_input(remote_base_path, file_name_1):
     local_path = join(testdir, file_name_1)
     remote_path = join(remote_base_path, "testCollection")
-    plan = PlantITCLIOptions(
-        workdir=testdir,
-        image="docker://alpine:latest",
-        command='cat "$INPUT" > "$INPUT.output"',
-        input=FileInput(path=join(testdir, file_name_1)))
+    plan = {
+        'workdir': testdir,
+        'image': "docker://alpine:latest",
+        'command': 'cat "$INPUT" > "$INPUT.output"',
+        'input': {'path': join(testdir, file_name_1), 'kind': 'file'}
+    }
 
     try:
         # prep CyVerse collection
@@ -41,7 +36,7 @@ def test_pull_then_run_file_input(remote_base_path, file_name_1):
         remove(local_path)
 
         # pull file to test directory
-        commands.pull(remote_path, testdir, cyverse_token=token)
+        terrain_commands.pull(remote_path, testdir, cyverse_token=token)
 
         # check file was pulled
         downloaded_path = join(testdir, file_name_1)
@@ -66,12 +61,13 @@ def test_pull_then_run_file_input(remote_base_path, file_name_1):
 def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
     local_path = join(testdir, file_name_1)
     remote_path = join(remote_base_path, "testCollection")
-    plan = PlantITCLIOptions(
-        workdir=testdir,
-        image="docker://alpine:latest",
-        command='cat $INPUT > $INPUT.$TAG.output',
-        input=FileInput(path=local_path),
-        parameters=[Parameter(key='TAG', value=message)])
+    plan = {
+        'workdir': testdir,
+        'image': "docker://alpine:latest",
+        'command': 'cat $INPUT > $INPUT.$TAG.output',
+        'input': {'path': local_path, 'kind': 'file'},
+        'parameters': [{'key': 'TAG', 'value': message}]
+    }
 
     try:
         # prep CyVerse collection
@@ -84,7 +80,7 @@ def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
         os.remove(local_path)
 
         # pull file to test directory
-        commands.pull(remote_path, testdir, cyverse_token=token)
+        terrain_commands.pull(remote_path, testdir, cyverse_token=token)
 
         # check file was pulled
         check_hello(local_path, 1)
@@ -95,7 +91,7 @@ def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
             options=plan,
             docker_username=environ.get('DOCKER_USERNAME', None),
             docker_password=environ.get('DOCKER_PASSWORD', None))
-        
+
         # check local output file was written
         output_1 = f"{local_path}.{message}.output"
         check_hello(output_1, 1)
@@ -103,7 +99,6 @@ def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
     finally:
         clear_dir(testdir)
         delete_collection(remote_path, token)
-
 
 # def test_run_fails_with_no_params_and_file_input_and_no_output_when_no_inputs_found(remote_base_path, file_name_1):
 #    time.sleep(DEFAULT_SLEEP)
@@ -124,7 +119,7 @@ def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
 #    time.sleep(DEFAULT_SLEEP)
 #
 #
-#def test_run_fails_with_params_and_file_input_and_no_output_when_no_inputs_found(remote_base_path,
+# def test_run_fails_with_params_and_file_input_and_no_output_when_no_inputs_found(remote_base_path,
 #                                                                                 file_name_1):
 #    time.sleep(DEFAULT_SLEEP)
 #    plan = RunOptions(
@@ -149,7 +144,7 @@ def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
 #    time.sleep(DEFAULT_SLEEP)
 #
 #
-#def test_run_succeeds_with_no_params_and_files_input_and_no_output(
+# def test_run_succeeds_with_no_params_and_files_input_and_no_output(
 #        remote_base_path,
 #        file_name_1,
 #        file_name_2):
@@ -201,7 +196,7 @@ def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
 #        delete_collection(remote_path, token)
 #
 #
-#def test_run_succeeds_with_no_params_and_files_input_and_patterns_and_no_output(
+# def test_run_succeeds_with_no_params_and_files_input_and_patterns_and_no_output(
 #        remote_base_path,
 #        file_name_1,
 #        file_name_2):
@@ -252,7 +247,7 @@ def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
 #        delete_collection(remote_path, token)
 #
 #
-#def test_run_succeeds_with_params_and_files_input_and_no_output(
+# def test_run_succeeds_with_params_and_files_input_and_no_output(
 #        remote_base_path,
 #        file_name_1,
 #        file_name_2):
@@ -310,7 +305,7 @@ def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
 #        delete_collection(remote_path, token)
 #
 #
-#def test_run_succeeds_with_no_params_and_no_input_and_file_output(remote_base_path):
+# def test_run_succeeds_with_no_params_and_no_input_and_file_output(remote_base_path):
 #    local_output_path = join(testdir, 'output.txt')
 #    remote_path = join(remote_base_path, "testCollection")
 #    plan = RunOptions(
@@ -344,7 +339,7 @@ def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
 #        delete_collection(remote_path, token)
 #
 #
-#def test_run_succeeds_with_params_and_no_input_and_file_output(remote_base_path):
+# def test_run_succeeds_with_params_and_no_input_and_file_output(remote_base_path):
 #    local_output_path = join(testdir, f"output.{message}.txt")
 #    remote_path = join(remote_base_path, "testCollection")
 #    plan = RunOptions(
@@ -384,7 +379,7 @@ def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
 #        delete_collection(remote_path, token)
 #
 #
-#def test_run_succeeds_with_no_params_and_no_input_and_directory_output(remote_base_path):
+# def test_run_succeeds_with_no_params_and_no_input_and_directory_output(remote_base_path):
 #    local_output_path = testdir
 #    local_output_file_1 = join(local_output_path, 't1.txt')
 #    local_output_file_2 = join(local_output_path, 't2.txt')
@@ -424,8 +419,8 @@ def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
 #        delete_collection(remote_path, token)
 #
 #
-#@pytest.mark.skip(reason="fails on GitHub Actions build (why?)")
-#def test_run_succeeds_with_params_and_no_input_and_directory_output(remote_base_path):
+# @pytest.mark.skip(reason="fails on GitHub Actions build (why?)")
+# def test_run_succeeds_with_params_and_no_input_and_directory_output(remote_base_path):
 #    local_output_path = testdir
 #    local_output_file_1 = join(local_output_path, f"t1.{message}.txt")
 #    local_output_file_2 = join(local_output_path, f"t2.{message}.txt")
@@ -471,7 +466,7 @@ def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
 #        delete_collection(remote_path, token)
 #
 #
-#def test_run_succeeds_with_no_params_and_file_input_and_directory_output(
+# def test_run_succeeds_with_no_params_and_file_input_and_directory_output(
 #        remote_base_path,
 #        file_name_1):
 #    local_input_file_path = join(testdir, file_name_1)
@@ -519,7 +514,7 @@ def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
 #        delete_collection(remote_path, token)
 #
 #
-#def test_run_succeeds_with_params_and_file_input_and_directory_output(
+# def test_run_succeeds_with_params_and_file_input_and_directory_output(
 #        remote_base_path,
 #        file_name_1):
 #    local_input_file_path = join(testdir, file_name_1)
@@ -573,7 +568,7 @@ def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
 #        delete_collection(remote_path, token)
 #
 #
-#def test_run_succeeds_with_no_params_and_directory_input_and_directory_output(
+# def test_run_succeeds_with_no_params_and_directory_input_and_directory_output(
 #        remote_base_path,
 #        file_name_1,
 #        file_name_2):
@@ -629,7 +624,7 @@ def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
 #        delete_collection(remote_path, token)
 #
 #
-#def test_run_succeeds_with_params_and_directory_input_and_directory_output(
+# def test_run_succeeds_with_params_and_directory_input_and_directory_output(
 #        remote_base_path,
 #        file_name_1,
 #        file_name_2):
@@ -691,7 +686,7 @@ def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
 #        delete_collection(remote_path, token)
 #
 #
-#def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_excludes(remote_base_path):
+# def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_excludes(remote_base_path):
 #    local_output_path = testdir
 #    local_output_file_included = join(local_output_path, "included.output")
 #    local_output_file_excluded = join(local_output_path, "excluded.output")
@@ -733,7 +728,7 @@ def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
 #        delete_collection(remote_path, token)
 #
 #
-#def test_run_succeeds_with_params_and_no_input_and_directory_output_with_excludes(remote_base_path):
+# def test_run_succeeds_with_params_and_no_input_and_directory_output_with_excludes(remote_base_path):
 #    local_output_path = testdir
 #    local_output_file_included = join(local_output_path, f"included.{message}.output")
 #    local_output_file_excluded = join(local_output_path, "excluded.output")
@@ -781,7 +776,7 @@ def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
 #        delete_collection(remote_path, token)
 #
 #
-#def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes(
+# def test_run_succeeds_with_no_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes(
 #        remote_base_path):
 #    local_output_path = testdir
 #    local_output_file_included = join(local_output_path, "included.output")
@@ -824,7 +819,7 @@ def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
 #        delete_collection(remote_path, token)
 #
 #
-#def test_run_succeeds_with_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes(
+# def test_run_succeeds_with_params_and_no_input_and_directory_output_with_non_matching_case_pattern_and_excludes(
 #        remote_base_path):
 #    local_output_path = testdir
 #    local_output_file_included = join(local_output_path, f"included.{message}.output")
@@ -873,7 +868,7 @@ def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
 #        delete_collection(remote_path, token)
 #
 #
-#def test_run_succeeds_with_params_and_no_input_and_directory_output_with_already_existing_output(remote_base_path, file_name_1):
+# def test_run_succeeds_with_params_and_no_input_and_directory_output_with_already_existing_output(remote_base_path, file_name_1):
 #    local_output_path = testdir
 #    local_input_file_path_1 = join(testdir, file_name_1)
 #    local_output_file_included = join(local_output_path, f"included.{message}.output")

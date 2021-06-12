@@ -1,8 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from plantit_cli.options import FileChecksum
-
 
 class Store(ABC):
     """
@@ -61,7 +59,7 @@ class Store(ABC):
         pass
 
     @abstractmethod
-    def pull_dir(self, from_prefix: str, to_path: str, patterns: List[str], checksums: List[FileChecksum] = None, overwrite: bool = False):
+    def pull_dir(self, from_prefix: str, to_path: str, patterns: List[str], checksums: List[dict] = None, overwrite: bool = False):
         """
         Copies files under the given prefix from the store to the local directory path.
 

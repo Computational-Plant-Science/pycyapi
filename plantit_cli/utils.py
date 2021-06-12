@@ -8,8 +8,6 @@ from typing import List
 import requests
 from distributed import Client
 
-from plantit_cli.options import BindMount, Parameter, FileInput, FilesInput, DirectoryInput, PlantITCLIOptions
-
 
 def list_files(path,
                include_patterns=None,
@@ -57,7 +55,7 @@ def parse_docker_image_components(value):
     return container_owner, container_name, container_tag
 
 
-def parse_options(raw: dict):
+def parse_options(raw: dict) -> (List[str], dict):
     errors = []
 
     image = None
@@ -101,11 +99,11 @@ def parse_options(raw: dict):
                     for param in raw['parameters']]):
             errors.append('Every parameter must have a non-empty \'key\' and \'value\'')
         else:
-            parameters = [Parameter(param['key'], param['value']) for param in raw['parameters']]
+            parameters = [{'key': param['key'], 'value': param['value']} for param in raw['parameters']]
 
     bind_mounts = None
     if 'bind_mounts' in raw:
-        if not all (mount_point != '' for mount_point in raw['bind_mounts']):
+        if not all(mount_point != '' for mount_point in raw['bind_mounts']):
             errors.append('Every mount point must be non-empty')
         else:
             bind_mounts = [parse_bind_mount(work_dir, mount_point) for mount_point in raw['bind_mounts']]
@@ -115,17 +113,17 @@ def parse_options(raw: dict):
         if 'file' in raw['input']:
             if 'path' not in raw['input']['file']:
                 errors.append('Section \'file\' must include attribute \'path\'')
-            input = FileInput(path=raw['input']['file']['path'])
+            input = {'path': raw['input']['file']['path']}
         elif 'files' in raw['input']:
             if 'path' not in raw['input']['files']:
                 errors.append('Section \'files\' must include attribute \'path\'')
-            input = FilesInput(
-                path=raw['input']['files']['path'],
-                patterns=raw['input']['files']['patterns'] if 'patterns' in raw['input']['files'] else None)
+            input = {
+                'path': raw['input']['files']['path'],
+                'patterns': raw['input']['files']['patterns'] if 'patterns' in raw['input']['files'] else None}
         elif 'directory' in raw['input']:
             if 'path' not in raw['input']['directory']:
                 errors.append('Section \'directory\' must include attribute \'path\'')
-            input = DirectoryInput(path=raw['input']['directory']['path'])
+            input = {'path': raw['input']['directory']['path']}
         else:
             errors.append('Section \'input\' must include a \'file\', \'files\', or \'directory\' section')
 
@@ -152,7 +150,8 @@ def parse_options(raw: dict):
     jobqueue = None
     if 'jobqueue' in raw:
         jobqueue = raw['jobqueue']
-        if not ('slurm' in jobqueue or 'yarn' in jobqueue or 'pbs' in jobqueue or 'moab' in jobqueue or 'sge' in jobqueue or 'lsf' in jobqueue or 'oar' in jobqueue or 'kube' in jobqueue):
+        if not (
+                'slurm' in jobqueue or 'yarn' in jobqueue or 'pbs' in jobqueue or 'moab' in jobqueue or 'sge' in jobqueue or 'lsf' in jobqueue or 'oar' in jobqueue or 'kube' in jobqueue):
             raise ValueError(f"Unsupported jobqueue configuration: {jobqueue}")
 
         if 'queue' in jobqueue:
@@ -175,18 +174,19 @@ def parse_options(raw: dict):
         if 'header_skip' in jobqueue and not all(extra is str for extra in jobqueue['header_skip']):
             errors.append('Section \'jobqueue\'.\'header_skip\' must be a list of str')
 
-    return errors, PlantITCLIOptions(
-        workdir=work_dir,
-        image=image,
-        command=command,
-        input=input,
-        parameters=parameters,
-        bind_mounts=bind_mounts,
-        # checksums=checksums,
-        log_file=log_file,
-        jobqueue=jobqueue,
-        no_cache=no_cache,
-        gpu=gpu)
+    return errors, {
+        'workdir': work_dir,
+        'image': image,
+        'command': command,
+        'imput': input,
+        'parameters': parameters,
+        'bind_mounts': bind_mounts,
+        # 'checksums': checksums,
+        'log_file': log_file,
+        'jobqueue': jobqueue,
+        'no_cache': no_cache,
+        'gpu': gpu
+    }
 
 
 def update_status(state: int, description: str, api_url: str = None, api_token: str = None, retries: int = 3):
@@ -269,26 +269,23 @@ def prep_command(
         work_dir: str,
         image: str,
         command: str,
-        bind_mounts: List[BindMount] = None,
-        parameters: List[Parameter] = None,
-        docker_username: str = None,
-        docker_password: str = None,
+        bind_mounts: List[dict] = None,
+        parameters: List[dict] = None,
         no_cache: bool = False,
-        gpu: bool = False):
+        gpu: bool = False,
+        docker_username: str = None,
+        docker_password: str = None):
     cmd = f"singularity exec --home {work_dir}"
 
-    if bind_mounts is not None:
-        if len(bind_mounts) > 0:
-            cmd += (' --bind ' + ','.join([format_bind_mount(work_dir, mount_point) for mount_point in bind_mounts]))
-        else:
-            raise ValueError(f"List expected for `bind_mounts`")
+    if bind_mounts is not None and len(bind_mounts) > 0:
+        cmd += (' --bind ' + ','.join([format_bind_mount(work_dir, mount_point) for mount_point in bind_mounts]))
 
     if parameters is None:
         parameters = []
-    parameters.append(Parameter(key='WORKDIR', value=work_dir))
+    parameters.append({'key': 'WORKDIR', 'value': work_dir})
     for parameter in parameters:
-        print(f"Replacing '{parameter.key.upper()}' with '{parameter.value}'")
-        command = command.replace(f"${parameter.key.upper()}", parameter.value)
+        print(f"Replacing '{parameter['key'].upper()}' with '{parameter['value']}'")
+        command = command.replace(f"${parameter['key'].upper()}", parameter['value'])
 
     command = command.replace("$GPU_MODE", 'true' if gpu else 'false')
 
@@ -342,7 +339,7 @@ def run_command(command: str, log_file: str = None, retries: int = 3):
 
 
 # noinspection PyBroadException
-def submit_command(client: Client, command: str, log_file: str, retries: int = 3):
+def submit_command(client: Client, command: str, log_file: str = None, retries: int = 3):
     failures = 0
     while failures < retries:
         try:
@@ -368,11 +365,12 @@ def parse_flow_repo(repo: str):
 
 def parse_bind_mount(workdir: str, bind_mount: str):
     split = bind_mount.rpartition(':')
-    return BindMount(host_path=split[0], container_path=split[2]) if len(split) > 0 else BindMount(host_path=workdir, container_path=bind_mount)
+    return {'host_path': split[0], 'container_path': split[2]} if len(split) > 0 else {'host_path': workdir, 'container_path': bind_mount}
 
 
-def format_bind_mount(workdir: str, bind_mount: BindMount):
-    return bind_mount.host_path + ':' + bind_mount.container_path if bind_mount.host_path != '' else workdir + ':' + bind_mount.container_path
+def format_bind_mount(workdir: str, bind_mount: dict):
+    return bind_mount['host_path'] + ':' + bind_mount['container_path'] if bind_mount['host_path'] != '' else workdir + ':' + bind_mount[
+        'container_path']
 
 
 BYTE_SYMBOLS = {

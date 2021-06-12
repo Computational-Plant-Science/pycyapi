@@ -2,8 +2,6 @@ import os
 import tempfile
 from os.path import join, isfile
 
-import pytest
-import requests
 from click.testing import CliRunner
 
 from plantit_cli.cli import run

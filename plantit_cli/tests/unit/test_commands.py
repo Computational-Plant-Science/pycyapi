@@ -6,7 +6,6 @@ from tempfile import TemporaryDirectory
 import pytest
 
 from plantit_cli import commands
-from plantit_cli.options import PlantITCLIOptions, FileInput, FilesInput, DirectoryInput, Parameter, BindMount
 from plantit_cli.tests.utils import clear_dir
 
 message = "Message"
@@ -39,25 +38,25 @@ def test_zip_all_files_are_included_by_default(file_name_1, file_name_2):
         clear_dir(test_dir)
 
 
-def test_zip_throws_error_when_total_size_exceeds_max(file_name_1, file_name_2):
-    zip_stem = 'test_zip'
-    zip_name = f"{zip_stem}.zip"
-
-    try:
-        with TemporaryDirectory() as temp_dir:
-            with open(join(temp_dir, file_name_1), "w") as file1, \
-                    open(join(temp_dir, file_name_2), "w") as file2, \
-                    open(join(temp_dir, 'excluded'), "w") as file3:
-                file1.write('Hello, 1!')
-                file2.write('Hello, 2!')
-                file3.write('Hello, 3!')
-
-            with pytest.raises(ValueError):
-                commands.zip(input_dir=temp_dir, output_dir=test_dir, name=zip_stem, max_size=10)
-
-        assert not isfile(join(test_dir, zip_name))
-    finally:
-        clear_dir(test_dir)
+# def test_zip_throws_error_when_total_size_exceeds_max(file_name_1, file_name_2):
+#     zip_stem = 'test_zip'
+#     zip_name = f"{zip_stem}.zip"
+#
+#     try:
+#         with TemporaryDirectory() as temp_dir:
+#             with open(join(temp_dir, file_name_1), "w") as file1, \
+#                     open(join(temp_dir, file_name_2), "w") as file2, \
+#                     open(join(temp_dir, 'excluded'), "w") as file3:
+#                 file1.write('Hello, 1!')
+#                 file2.write('Hello, 2!')
+#                 file3.write('Hello, 3!')
+#
+#             with pytest.raises(ValueError):
+#                 commands.zip(input_dir=temp_dir, output_dir=test_dir, name=zip_stem, max_size=10)
+#
+#         assert not isfile(join(test_dir, zip_name))
+#     finally:
+#         clear_dir(test_dir)
 
 
 def test_run_parameters(file_name_1, file_name_2):
@@ -69,11 +68,11 @@ def test_run_parameters(file_name_1, file_name_2):
             file1.write('Hello, 1!')
             file2.write('Hello, 2!')
 
-        options = PlantITCLIOptions(
-            workdir=temp_dir,
-            image='docker://alpine',
-            command='echo "$MESSAGE" > $WORKDIR/output.txt',
-            parameters=[Parameter(key='MESSAGE', value=message)])
+        options = {
+            'workdir': temp_dir,
+            'image': 'docker://alpine',
+            'command': 'echo "$MESSAGE" > $WORKDIR/output.txt',
+            'parameters': [{'key': 'MESSAGE', 'value': message}]}
         commands.run(
             options=options,
             docker_username=environ.get('DOCKER_USERNAME', None),
@@ -95,11 +94,11 @@ def test_run_bind_mounts(file_name_1, file_name_2):
             file1.write('Hello, 1!')
             file2.write('Hello, 2!')
 
-        options = PlantITCLIOptions(
-            workdir=test_dir,
-            image='docker://alpine',
-            command=f"echo '{message}' > $WORKDIR/output.txt",
-            bind_mounts=[BindMount(host_path=temp_dir, container_path=test_dir)])
+        options = {
+            'workdir': test_dir,
+            'image': 'docker://alpine',
+            'command': f"echo '{message}' > $WORKDIR/output.txt",
+            'bind_mounts': [{'host_path': temp_dir, 'container_path': test_dir}]}
         commands.run(
             options=options,
             docker_username=environ.get('DOCKER_USERNAME', None),
@@ -121,11 +120,11 @@ def test_run_directory_input(file_name_1, file_name_2):
             file1.write('Hello, 1!')
             file2.write('Hello, 2!')
 
-        options = PlantITCLIOptions(
-            workdir=temp_dir,
-            image='docker://alpine',
-            command='ls "$INPUT" > $WORKDIR/output.txt',
-            input=DirectoryInput(path=temp_dir))
+        options = {
+            'workdir': temp_dir,
+            'image': 'docker://alpine',
+            'command': 'ls "$INPUT" > $WORKDIR/output.txt',
+            'input': {'path': temp_dir, 'kind': 'directory'}}
         commands.run(
             options=options,
             docker_username=environ.get('DOCKER_USERNAME', None),
@@ -148,11 +147,11 @@ def test_run_files_input(file_name_1, file_name_2):
             file1.write('Hello, 1!')
             file2.write('Hello, 2!')
 
-        options = PlantITCLIOptions(
-            workdir=temp_dir,
-            image='docker://alpine',
-            command='echo "$INPUT" >> $WORKDIR/output.txt',
-            input=FilesInput(path=temp_dir))
+        options = {
+            'workdir': temp_dir,
+            'image': 'docker://alpine',
+            'command': 'echo "$INPUT" >> $WORKDIR/output.txt',
+            'input': {'path': temp_dir, 'kind': 'files'}}
         commands.run(
             options=options,
             docker_username=environ.get('DOCKER_USERNAME', None),
@@ -173,11 +172,12 @@ def test_run_file_input(file_name_1):
         with open(input_file_path, "w") as file1:
             file1.write(message)
 
-        options = PlantITCLIOptions(
-            workdir=temp_dir,
-            image='docker://alpine',
-            command='cat "$INPUT" > $WORKDIR/output.txt',
-            input=FileInput(path=input_file_path))
+        options = {
+            'workdir': temp_dir,
+            'image': 'docker://alpine',
+            'command': 'cat "$INPUT" > $WORKDIR/output.txt',
+            'input': {'path': input_file_path, 'kind': 'file'}
+        }
         commands.run(
             options=options,
             docker_username=environ.get('DOCKER_USERNAME', None),

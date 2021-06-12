@@ -9,7 +9,6 @@ import requests
 from requests import ReadTimeout, Timeout, HTTPError, RequestException
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
 
-from plantit_cli.options import FileChecksum
 from plantit_cli.store.store import Store
 from plantit_cli.utils import list_files
 
@@ -103,7 +102,7 @@ class TerrainStore(Store):
         retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
             RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
             Timeout) | retry_if_exception_type(HTTPError)))
-    def verify_checksums(self, from_path: str, expected_pairs: List[FileChecksum]):
+    def verify_checksums(self, from_path: str, expected_pairs: List[dict]):
         with requests.post('https://de.cyverse.org/terrain/secured/filesystem/stat',
                            headers={'Authorization': f"Bearer {self.token}"},
                            data={'paths': expected_pairs}) as response:
@@ -115,10 +114,10 @@ class TerrainStore(Store):
 
             for actual in actual_pairs:
                 expected = [pair for pair in expected_pairs if pair['name'] == actual[0]][0]
-                assert expected.file == actual[0]
-                assert expected.checksum == actual[1]
+                assert expected['file'] == actual[0]
+                assert expected['checksum'] == actual[1]
 
-    def pull_dir(self, from_path: str, to_path: str, patterns: List[str] = None, checksums: List[FileChecksum] = None, overwrite: bool = False):
+    def pull_dir(self, from_path: str, to_path: str, patterns: List[str] = None, checksums: List[dict] = None, overwrite: bool = False):
         check = checksums is not None and len(checksums) > 0
         match = lambda path: any(pattern.lower() in path.lower() for pattern in patterns)
         paths = self.list_dir(from_path)
