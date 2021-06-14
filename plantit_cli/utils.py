@@ -174,7 +174,7 @@ def parse_options(raw: dict) -> (List[str], dict):
         if 'header_skip' in jobqueue and not all(extra is str for extra in jobqueue['header_skip']):
             errors.append('Section \'jobqueue\'.\'header_skip\' must be a list of str')
 
-    return errors, {
+    return errors, del_none({
         'workdir': work_dir,
         'image': image,
         'command': command,
@@ -186,7 +186,7 @@ def parse_options(raw: dict) -> (List[str], dict):
         'jobqueue': jobqueue,
         'no_cache': no_cache,
         'gpu': gpu
-    }
+    })
 
 
 def update_status(state: int, description: str, api_url: str = None, api_token: str = None, retries: int = 3):
@@ -371,6 +371,24 @@ def parse_bind_mount(workdir: str, bind_mount: str):
 def format_bind_mount(workdir: str, bind_mount: dict):
     return bind_mount['host_path'] + ':' + bind_mount['container_path'] if bind_mount['host_path'] != '' else workdir + ':' + bind_mount[
         'container_path']
+
+
+def del_none(d) -> dict:
+    """
+    Delete keys with the value ``None`` in a dictionary, recursively.
+
+    This alters the input so you may wish to ``copy`` the dict first.
+
+    Referenced from https://stackoverflow.com/a/4256027.
+    """
+    # For Python 3, write `list(d.items())`; `d.items()` won’t work
+    # For Python 2, write `d.items()`; `d.iteritems()` won’t work
+    for key, value in list(d.items()):
+        if value is None:
+            del d[key]
+        elif isinstance(value, dict):
+            del_none(value)
+    return d  # For convenience
 
 
 BYTE_SYMBOLS = {
