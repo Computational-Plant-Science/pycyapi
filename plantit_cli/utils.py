@@ -285,7 +285,7 @@ def prep_command(
     parameters.append({'key': 'WORKDIR', 'value': work_dir})
     for parameter in parameters:
         print(f"Replacing '{parameter['key'].upper()}' with '{parameter['value']}'")
-        command = command.replace(f"${parameter['key'].upper()}", parameter['value'])
+        command = command.replace(f"${parameter['key'].upper()}", str(parameter['value']))
 
     command = command.replace("$GPU_MODE", 'true' if gpu else 'false')
 
