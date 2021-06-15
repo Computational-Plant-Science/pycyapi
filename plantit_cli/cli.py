@@ -63,7 +63,7 @@ def run(flow,
     with open(flow, 'r') as file:
         errors, options = parse_options(yaml.safe_load(file))
         if len(errors) > 0:
-            raise ValueError(f"Invalid configuration: {', '.join(errors[1])}")
+            raise ValueError(f"Invalid configuration: {', '.join(errors)}")
 
         commands.run(
             options=options,
