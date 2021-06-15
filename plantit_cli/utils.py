@@ -127,6 +127,24 @@ def parse_options(raw: dict) -> (List[str], dict):
         else:
             errors.append('Section \'input\' must include a \'file\', \'files\', or \'directory\' section')
 
+    input = None
+    if 'input' in raw:
+        if 'kind' not in raw['input']:
+            errors.append("Section \'input\' must include attribute \'kind\'")
+        if 'path' not in raw['input']:
+            errors.append("Section \'input\' must include attribute \'path\'")
+
+        kind = raw['input']['kind']
+        path = raw['input']['path']
+        if kind == 'file':
+            input = {'path':path, 'kind':'file'}
+        elif kind == 'files':
+            input = {'path':path, 'kind':'files', 'patterns':raw['input']['patterns'] if 'patterns' in raw['input'] else None}
+        elif kind == 'directory':
+            input = {'path':path, 'kind':'directory'}
+        else:
+            errors.append('Section \'input.kind\' must be \'file\', \'files\', or \'directory\'')
+
     log_file = None
     if 'log_file' in raw:
         log_file = raw['log_file']

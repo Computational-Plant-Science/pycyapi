@@ -116,8 +116,8 @@ To pull a file from the Data Store and spawn a single container to process it, u
 
 ```yaml
 input:
-  file:
-    path: /iplant/home/username/directory/file
+  kind: file
+  path: /iplant/home/username/directory/file
 ```
 
 ###### Files
@@ -126,11 +126,11 @@ To pull a directory from the Data Store and spawn a container for each file, use
 
 ```yaml
 input:
-  files:
-    path: /iplant/home/username/directory
-    patterns:  # optional
-    - jpg
-    - png
+  kind: files
+  path: /iplant/home/username/directory
+  patterns:  # optional
+  - jpg
+  - png
 ```
 
 ###### Directory
@@ -139,8 +139,8 @@ To pull the contents of a directory from the Data Store and spawn a single conta
 
 ```yaml
 input:
-  directory:
-    path: /iplant/home/username/directory
+  kind: directory
+  path: /iplant/home/username/directory
 ```
 
 ##### Bind mounts
