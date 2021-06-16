@@ -126,14 +126,14 @@ def run(options: dict,
                     work_dir=options['workdir'],
                     image=options['image'],
                     command=options['command'],
-                    parameters=params + [{'key': 'INPUT', 'value': input_path}],
+                    parameters=params + [{'key': 'INPUT', 'value': 'input'}],
                     bind_mounts=bind_mounts,
                     no_cache=no_cache,
                     gpu=gpu,
                     docker_username=docker_username,
                     docker_password=docker_password)
 
-                update_status(Status.RUNNING, f"Submitting container for directory '{input_path}'", plantit_url, plantit_token)
+                update_status(Status.RUNNING, f"Submitting container for directory '{input_path.rpartition('/')[2]}'", plantit_url, plantit_token)
                 future = submit_command(client, command, options['log_file'] if 'log_file' in options else None, 3)
                 future.result()
                 if future.status != 'finished':
@@ -228,14 +228,14 @@ def run(options: dict,
                     work_dir=options['workdir'],
                     image=options['image'],
                     command=options['command'],
-                    parameters=params + [{'key': 'INPUT', 'value': input_path}],
+                    parameters=params + [{'key': 'INPUT', 'value': input_path.rpartition('/')[2]}],
                     bind_mounts=bind_mounts,
                     no_cache=no_cache,
                     gpu=gpu,
                     docker_username=docker_username,
                     docker_password=docker_password)
 
-                update_status(Status.RUNNING, f"Submitting container for file '{input_path}'", plantit_url, plantit_token)
+                update_status(Status.RUNNING, f"Submitting container for file '{input_path.rpartition('/')[2]}'", plantit_url, plantit_token)
                 future = submit_command(client, command, options['log_file'] if 'log_file' in options else None, 3)
                 future.result()
                 if future.status != 'finished':
