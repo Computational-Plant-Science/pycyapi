@@ -88,16 +88,21 @@ def run(options: dict,
                 raise ValueError(f"Unsupported jobqueue configuration: {jobqueue}")
 
         if 'input' not in options:
+            params = options['parameters'] if 'parameters' in options else []
+            bind_mounts = options['bind_mounts'] if 'bind_mounts' in options else []
+            no_cache = options['no_cache'] if 'no_cache' in options else False
+            gpu = options['gpu'] if 'gpu' in options else False
+
             if 'jobqueue' not in options: cluster.scale(1)
             with Client(cluster) as client:
                 command = prep_command(
                     work_dir=options['workdir'],
                     image=options['image'],
                     command=options['command'],
-                    parameters=options['parameters'] if 'parameters' in options else [],
-                    bind_mounts=options['bind_mounts'] if 'bind_mounts' in options else [],
-                    no_cache=options['no_cache'] if 'no_cache' in options else False,
-                    gpu=options['gpu'] if 'gpu' in options else False,
+                    parameters=params,
+                    bind_mounts=bind_mounts,
+                    no_cache=no_cache,
+                    gpu=gpu,
                     docker_username=docker_username,
                     docker_password=docker_password)
 
@@ -110,16 +115,21 @@ def run(options: dict,
                     update_status(Status.RUNNING, f"Container completed", plantit_url, plantit_token)
         elif options['input']['kind'] == InputKind.DIRECTORY:
             input_path = options['input']['path']
+            params = options['parameters'] if 'parameters' in options else []
+            bind_mounts = options['bind_mounts'] if 'bind_mounts' in options else []
+            no_cache = options['no_cache'] if 'no_cache' in options else False
+            gpu = options['gpu'] if 'gpu' in options else False
+
             if 'jobqueue' in options: cluster.scale(1)
             with Client(cluster) as client:
                 command = prep_command(
                     work_dir=options['workdir'],
                     image=options['image'],
                     command=options['command'],
-                    parameters=(options['parameters'] if 'parameters' in options else []) + [{'key': 'INPUT', 'value': input_path}],
-                    bind_mounts=options['bind_mounts'] if 'bind_mounts' in options else [],
-                    no_cache=options['no_cache'] if 'no_cache' in options else False,
-                    gpu=options['gpu'] if 'gpu' in options else False,
+                    parameters=params + [{'key': 'INPUT', 'value': input_path}],
+                    bind_mounts=bind_mounts,
+                    no_cache=no_cache,
+                    gpu=gpu,
                     docker_username=docker_username,
                     docker_password=docker_password)
 
@@ -134,8 +144,12 @@ def run(options: dict,
             input_path = options['input']['path']
             if slurm_job_array:
                 files = os.listdir(input_path)
-                index = int(os.environ.get('SLURM_ARRAY_TASK_ID'))
-                file = files[index]
+                current_file = files[int(os.environ.get('SLURM_ARRAY_TASK_ID'))]
+
+                params = options['parameters'] if 'parameters' in options else []
+                bind_mounts = options['bind_mounts'] if 'bind_mounts' in options else []
+                no_cache = options['no_cache'] if 'no_cache' in options else False
+                gpu = options['gpu'] if 'gpu' in options else False
 
                 if 'jobqueue' in options: cluster.scale(1)
                 with Client(cluster) as client:
@@ -143,10 +157,10 @@ def run(options: dict,
                         work_dir=options['workdir'],
                         image=options['image'],
                         command=options['command'],
-                        parameters=(options['parameters'] if 'parameters' in options else []) + [{'key': 'INPUT', 'value': join(input_path, file)}],
-                        bind_mounts=options['bind_mounts'] if 'bind_mounts' in options else [],
-                        no_cache=options['no_cache'] if 'no_cache' in options else False,
-                        gpu=options['gpu'] if 'gpu' in options else False,
+                        parameters=params + [{'key': 'INPUT', 'value': join(input_path, current_file)}],
+                        bind_mounts=bind_mounts,
+                        no_cache=no_cache,
+                        gpu=gpu,
                         docker_username=docker_username,
                         docker_password=docker_password)
 
@@ -172,21 +186,25 @@ def run(options: dict,
                                   plantit_url, plantit_token)
                     cluster.scale(count)
 
+                params = deepcopy(options['parameters']) if 'parameters' in options else []
+                bind_mounts = options['bind_mounts'] if 'bind_mounts' in options else []
+                no_cache = options['no_cache'] if 'no_cache' in options else False
+                gpu = options['gpu'] if 'gpu' in options else False
+
                 with Client(cluster) as client:
-                    for file in files:
+                    for current_file in files:
                         command = prep_command(
                             work_dir=options['workdir'],
                             image=options['image'],
                             command=options['command'],
-                            parameters=(deepcopy(options['parameters']) if 'parameters' in options else []) + [
-                                {'key': 'INPUT', 'value': join(input_path, file)}],
-                            bind_mounts=options['bind_mounts'] if 'bind_mounts' in options else [],
-                            no_cache=options['no_cache'] if 'no_cache' in options else False,
-                            gpu=options['gpu'] if 'gpu' in options else False,
+                            parameters=params + [{'key': 'INPUT', 'value': join(input_path, current_file)}],
+                            bind_mounts=bind_mounts,
+                            no_cache=no_cache,
+                            gpu=gpu,
                             docker_username=docker_username,
                             docker_password=docker_password)
 
-                        update_status(Status.RUNNING, f"Submitting container for file: {file}", plantit_url, plantit_token)
+                        update_status(Status.RUNNING, f"Submitting container for file: {current_file}", plantit_url, plantit_token)
                         futures.append(submit_command(client, command, options['log_file'] if 'log_file' in options else None, 3))
 
                     finished = 0
@@ -199,16 +217,21 @@ def run(options: dict,
                             update_status(Status.RUNNING, f"Container completed for file {finished} of {len(futures)}", plantit_url, plantit_token)
         elif options['input']['kind'] == InputKind.FILE:
             input_path = options['input']['path']
+            params = options['parameters'] if 'parameters' in options else []
+            bind_mounts = options['bind_mounts'] if 'bind_mounts' in options else []
+            no_cache = options['no_cache'] if 'no_cache' in options else False
+            gpu = options['gpu'] if 'gpu' in options else False
+
             if 'jobqueue' in options: cluster.scale(1)
             with Client(cluster) as client:
                 command = prep_command(
                     work_dir=options['workdir'],
                     image=options['image'],
                     command=options['command'],
-                    parameters=(options['parameters'] if 'parameters' in options else []) + [{'key': 'INPUT', 'value': input_path}],
-                    bind_mounts=options['bind_mounts'] if 'bind_mounts' in options else [],
-                    no_cache=options['no_cache'] if 'no_cache' in options else False,
-                    gpu=options['gpu'] if 'gpu' in options else False,
+                    parameters=params + [{'key': 'INPUT', 'value': input_path}],
+                    bind_mounts=bind_mounts,
+                    no_cache=no_cache,
+                    gpu=gpu,
                     docker_username=docker_username,
                     docker_password=docker_password)
 

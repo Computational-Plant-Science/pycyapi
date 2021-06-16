@@ -118,11 +118,11 @@ def parse_options(raw: dict) -> (List[str], dict):
         kind = raw['input']['kind']
         path = raw['input']['path']
         if kind == 'file':
-            input = {'path':path, 'kind':'file'}
+            input = {'path': path, 'kind': 'file'}
         elif kind == 'files':
-            input = {'path':path, 'kind':'files', 'patterns':raw['input']['patterns'] if 'patterns' in raw['input'] else None}
+            input = {'path': path, 'kind': 'files', 'patterns': raw['input']['patterns'] if 'patterns' in raw['input'] else None}
         elif kind == 'directory':
-            input = {'path':path, 'kind':'directory'}
+            input = {'path': path, 'kind': 'directory'}
         else:
             errors.append('Section \'input.kind\' must be \'file\', \'files\', or \'directory\'')
 
@@ -177,7 +177,7 @@ def parse_options(raw: dict) -> (List[str], dict):
         'workdir': work_dir,
         'image': image,
         'command': command,
-        'imput': input,
+        'input': input,
         'parameters': parameters,
         'bind_mounts': bind_mounts,
         # 'checksums': checksums,
