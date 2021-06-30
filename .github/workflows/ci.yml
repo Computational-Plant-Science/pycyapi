@@ -60,6 +60,13 @@ jobs:
           mkdir -p /opt/plantit-cli/runs/
           coverage run --source=plantit_cli -m pytest /home/runner/work/plantit-cli/plantit-cli/plantit_cli/tests/unit -s
           coveralls
+      - name: Build & Push Docker image
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          docker build -t computationalplantscience/plantit-sandbox --no-cache -f dockerfiles/sandbox/Dockerfile .
+          docker push computationalplantscience/plantit-sandbox
   # integration-tests:
   #   runs-on: ubuntu-latest
   #   strategy:
