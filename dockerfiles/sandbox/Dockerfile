@@ -59,11 +59,11 @@ RUN mkdir /opt/go \
 
 # singularity
 RUN mkdir /opt/singularity; cd /opt/singularity \
-    && export VERSION=3.5.2  \
+    && export VERSION=3.8.0  \
     && export GOROOT=/usr/local/go \
     && export GOPATH=/opt/go \
     && export PATH=/usr/local/go/bin:$PATH \
-    && wget https://github.com/sylabs/singularity/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz \
+    && wget https://github.com/sylabs/singularity/releases/download/v${VERSION}/singularity-ce-${VERSION}.tar.gz \
     && tar -xzf singularity-${VERSION}.tar.gz \
     && cd singularity \
     && ./mconfig \
