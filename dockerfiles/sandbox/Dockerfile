@@ -64,8 +64,8 @@ RUN mkdir /opt/singularity; cd /opt/singularity \
     && export GOPATH=/opt/go \
     && export PATH=/usr/local/go/bin:$PATH \
     && wget https://github.com/sylabs/singularity/releases/download/v${VERSION}/singularity-ce-${VERSION}.tar.gz \
-    && tar -xzf singularity-${VERSION}.tar.gz \
-    && cd singularity \
+    && tar -xzf singularity-ce-${VERSION}.tar.gz \
+    && cd singularity-ce-${VERSION} \
     && ./mconfig \
     && make -C builddir \
     && make -C builddir install
