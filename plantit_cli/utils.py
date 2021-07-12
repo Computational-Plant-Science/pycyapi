@@ -101,6 +101,16 @@ def parse_options(raw: dict) -> (List[str], dict):
         else:
             parameters = [{'key': param['key'], 'value': param['value']} for param in raw['parameters']]
 
+    env = None
+    if 'env' in raw:
+        if not all(var != '' for var in raw['env']):
+            errors.append('Every environment variable must be non-empty')
+        else:
+            env = [{
+                'key': variable.rpartition('=')[0],
+                'value': variable.rpartition('=')[2]
+            } for variable in raw['env']]
+
     bind_mounts = None
     if 'bind_mounts' in raw:
         if not all(mount_point != '' for mount_point in raw['bind_mounts']):
@@ -179,6 +189,7 @@ def parse_options(raw: dict) -> (List[str], dict):
         'command': command,
         'input': input,
         'parameters': parameters,
+        'env': env,
         'bind_mounts': bind_mounts,
         # 'checksums': checksums,
         'log_file': log_file,
@@ -268,12 +279,20 @@ def prep_command(
         work_dir: str,
         image: str,
         command: str,
+        env: List[dict] = None,
         bind_mounts: List[dict] = None,
         parameters: List[dict] = None,
         no_cache: bool = False,
         gpu: bool = False,
         docker_username: str = None,
         docker_password: str = None):
+    cmd = ''
+
+    if env is not None:
+        if len(env) > 0:
+            cmd += ' '.join([f"SINGULARITYENV_{var['key']}={var['value']}" for var in env])
+        cmd += ' '
+
     cmd = f"singularity exec --home {work_dir}"
 
     if bind_mounts is not None and len(bind_mounts) > 0:

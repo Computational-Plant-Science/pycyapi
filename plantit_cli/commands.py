@@ -88,6 +88,7 @@ def run(options: dict,
                 raise ValueError(f"Unsupported jobqueue configuration: {jobqueue}")
 
         if 'input' not in options:
+            env = options['env'] if 'env' in options else []
             params = options['parameters'] if 'parameters' in options else []
             bind_mounts = options['bind_mounts'] if 'bind_mounts' in options else []
             no_cache = options['no_cache'] if 'no_cache' in options else False
@@ -99,6 +100,7 @@ def run(options: dict,
                     work_dir=options['workdir'],
                     image=options['image'],
                     command=options['command'],
+                    env=env,
                     parameters=params,
                     bind_mounts=bind_mounts,
                     no_cache=no_cache,
@@ -115,6 +117,7 @@ def run(options: dict,
                     update_status(Status.RUNNING, f"Container completed", plantit_url, plantit_token)
         elif options['input']['kind'] == InputKind.DIRECTORY:
             input_path = options['input']['path']
+            env = options['env'] if 'env' in options else []
             params = options['parameters'] if 'parameters' in options else []
             bind_mounts = options['bind_mounts'] if 'bind_mounts' in options else []
             no_cache = options['no_cache'] if 'no_cache' in options else False
@@ -126,6 +129,7 @@ def run(options: dict,
                     work_dir=options['workdir'],
                     image=options['image'],
                     command=options['command'],
+                    env=env,
                     parameters=params + [{'key': 'INPUT', 'value': input_path}],
                     bind_mounts=bind_mounts,
                     no_cache=no_cache,
@@ -146,6 +150,7 @@ def run(options: dict,
                 files = os.listdir(input_path)
                 current_file = files[int(os.environ.get('SLURM_ARRAY_TASK_ID'))]
 
+                env = options['env'] if 'env' in options else []
                 params = options['parameters'] if 'parameters' in options else []
                 bind_mounts = options['bind_mounts'] if 'bind_mounts' in options else []
                 no_cache = options['no_cache'] if 'no_cache' in options else False
@@ -157,6 +162,7 @@ def run(options: dict,
                         work_dir=options['workdir'],
                         image=options['image'],
                         command=options['command'],
+                        env=env,
                         parameters=params + [{'key': 'INPUT', 'value': join(input_path, current_file)}],
                         bind_mounts=bind_mounts,
                         no_cache=no_cache,
@@ -186,6 +192,7 @@ def run(options: dict,
                                   plantit_url, plantit_token)
                     cluster.scale(count)
 
+                env = options['env'] if 'env' in options else []
                 params = deepcopy(options['parameters']) if 'parameters' in options else []
                 bind_mounts = options['bind_mounts'] if 'bind_mounts' in options else []
                 no_cache = options['no_cache'] if 'no_cache' in options else False
@@ -197,6 +204,7 @@ def run(options: dict,
                             work_dir=options['workdir'],
                             image=options['image'],
                             command=options['command'],
+                            env=env,
                             parameters=params + [{'key': 'INPUT', 'value': join(input_path, current_file)}],
                             bind_mounts=bind_mounts,
                             no_cache=no_cache,
@@ -217,6 +225,7 @@ def run(options: dict,
                             update_status(Status.RUNNING, f"Container completed for file {finished} of {len(futures)}", plantit_url, plantit_token)
         elif options['input']['kind'] == InputKind.FILE:
             input_path = options['input']['path']
+            env = options['env'] if 'env' in options else []
             params = options['parameters'] if 'parameters' in options else []
             bind_mounts = options['bind_mounts'] if 'bind_mounts' in options else []
             no_cache = options['no_cache'] if 'no_cache' in options else False
@@ -228,6 +237,7 @@ def run(options: dict,
                     work_dir=options['workdir'],
                     image=options['image'],
                     command=options['command'],
+                    env=env,
                     parameters=params + [{'key': 'INPUT', 'value': input_path}],
                     bind_mounts=bind_mounts,
                     no_cache=no_cache,
