@@ -290,7 +290,7 @@ def prep_command(
             cmd += ' '.join([f"SINGULARITYENV_{var['key']}={var['value']}" for var in env])
         cmd += ' '
 
-    cmd = f"singularity exec --home {work_dir}"
+    cmd += f"singularity exec --home {work_dir}"
 
     if bind_mounts is not None and len(bind_mounts) > 0:
         cmd += (' --bind ' + ','.join([format_bind_mount(work_dir, mount_point) for mount_point in bind_mounts]))
