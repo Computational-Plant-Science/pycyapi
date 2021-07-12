@@ -106,10 +106,7 @@ def parse_options(raw: dict) -> (List[str], dict):
         if not all(var != '' for var in raw['env']):
             errors.append('Every environment variable must be non-empty')
         else:
-            env = [{
-                'key': variable.rpartition('=')[0],
-                'value': variable.rpartition('=')[2]
-            } for variable in raw['env']]
+            env = [variable for variable in raw['env']]
 
     bind_mounts = None
     if 'bind_mounts' in raw:
