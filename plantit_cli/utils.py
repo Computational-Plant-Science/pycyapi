@@ -110,10 +110,10 @@ def parse_options(raw: dict) -> (List[str], dict):
 
     bind_mounts = None
     if 'bind_mounts' in raw:
-        if not all(mount_point != '' for mount_point in raw['bind_mounts']):
-            errors.append('Every mount point must be non-empty')
+        if not len(raw['bind_mounts']) > 0:
+            errors.append('List of mount points must be non-empty')
         else:
-            bind_mounts = [parse_bind_mount(work_dir, mount_point) for mount_point in raw['bind_mounts']]
+            bind_mounts = [mount_point for mount_point in raw['bind_mounts']]
 
     input = None
     if 'input' in raw:
