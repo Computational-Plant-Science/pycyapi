@@ -100,7 +100,7 @@ def run(options: dict,
                     work_dir=options['workdir'],
                     image=options['image'],
                     command=options['command'],
-                    env=env,
+                    env=env + [{'key': 'INPUT_INDEX', 'value': 1}],
                     parameters=params,
                     bind_mounts=bind_mounts,
                     no_cache=no_cache,
@@ -129,7 +129,7 @@ def run(options: dict,
                     work_dir=options['workdir'],
                     image=options['image'],
                     command=options['command'],
-                    env=env,
+                    env=env + [{'key': 'INPUT_INDEX', 'value': 1}],
                     parameters=params + [{'key': 'INPUT', 'value': input_path}],
                     bind_mounts=bind_mounts,
                     no_cache=no_cache,
@@ -148,7 +148,8 @@ def run(options: dict,
             input_path = options['input']['path']
             if slurm_job_array:
                 files = os.listdir(input_path)
-                current_file = files[int(os.environ.get('SLURM_ARRAY_TASK_ID'))]
+                file_id = int(os.environ.get('SLURM_ARRAY_TASK_ID'))
+                current_file = files[file_id]
 
                 env = options['env'] if 'env' in options else []
                 params = options['parameters'] if 'parameters' in options else []
@@ -162,7 +163,7 @@ def run(options: dict,
                         work_dir=options['workdir'],
                         image=options['image'],
                         command=options['command'],
-                        env=env,
+                        env=env + [{'key': 'INPUT_INDEX', 'value': file_id}],
                         parameters=params + [{'key': 'INPUT', 'value': join(input_path, current_file)}],
                         bind_mounts=bind_mounts,
                         no_cache=no_cache,
@@ -199,12 +200,12 @@ def run(options: dict,
                 gpu = options['gpu'] if 'gpu' in options else False
 
                 with Client(cluster) as client:
-                    for current_file in files:
+                    for i, current_file in enumerate(files):
                         command = prep_command(
                             work_dir=options['workdir'],
                             image=options['image'],
                             command=options['command'],
-                            env=env,
+                            env=env + [{'key': 'INPUT_INDEX', 'value': i}],
                             parameters=params + [{'key': 'INPUT', 'value': join(input_path, current_file)}],
                             bind_mounts=bind_mounts,
                             no_cache=no_cache,
@@ -237,7 +238,7 @@ def run(options: dict,
                     work_dir=options['workdir'],
                     image=options['image'],
                     command=options['command'],
-                    env=env,
+                    env=env + [{'key': 'INPUT_INDEX', 'value': 1}],
                     parameters=params + [{'key': 'INPUT', 'value': input_path}],
                     bind_mounts=bind_mounts,
                     no_cache=no_cache,
