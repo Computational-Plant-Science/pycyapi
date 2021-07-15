@@ -1,5 +1,5 @@
 workdir: /opt/plantit-cli/runs
 image: docker://alpine
-command: ls > $WORKDIR/output.txt
+command: ls > $WORK_DIR/output.txt
 bind_mounts:
   - /opt/plantit-cli/samples:/opt/plantit-cli/runs

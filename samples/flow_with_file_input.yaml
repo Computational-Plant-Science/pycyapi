@@ -1,6 +1,6 @@
 workdir: /opt/plantit-cli/runs
 image: docker://alpine
-command: cat $INPUT > $WORKDIR/output.txt
+command: cat $INPUT > $WORK_DIR/output.txt
 input:
   file:
     path: /opt/plantit-cli/samples/data/file1.txt

@@ -79,7 +79,7 @@ def test_run_parameters_slurm():
         options = {
             'workdir': test_dir,
             'image': 'docker://alpine',
-            'command': 'echo "$MESSAGE" > $WORKDIR/output.txt',
+            'command': 'echo "$MESSAGE" > $WORK_DIR/output.txt',
             'parameters': [{'key': 'MESSAGE', 'value': message}],
             'jobqueue': {
                 'slurm': {
@@ -113,7 +113,7 @@ def test_run_bind_mounts_slurm():
         options = {
             'workdir': test_dir,
             'image': 'docker://alpine',
-            'command': f"ls > $WORKDIR/output.txt",
+            'command': f"ls > $WORK_DIR/output.txt",
             'bind_mounts': [{'host_path': '/opt/plantit-cli/samples', 'container_path': test_dir}],
             'jobqueue': {
                 'slurm': {
@@ -155,7 +155,7 @@ def test_run_directory_input_slurm(file_name_1, file_name_2):
             options = {
                 'workdir': test_dir,
                 'image': 'docker://alpine',
-                'command': 'pwd > $WORKDIR/output.txt',
+                'command': 'pwd > $WORK_DIR/output.txt',
                 'input': {'path': temp_dir, 'kind': 'directory'},
                 'jobqueue': {
                     'slurm': {
@@ -195,7 +195,7 @@ def test_run_files_input_slurm(file_name_1, file_name_2):
         options = {
             'workdir': test_dir,
             'image': 'docker://alpine',
-            'command': 'echo $INPUT >> $WORKDIR/output.txt',
+            'command': 'echo $INPUT >> $WORK_DIR/output.txt',
             'input': {'path': test_dir, 'kind': 'files'},
             'jobqueue': {
                 'slurm': {
@@ -234,7 +234,7 @@ def test_run_file_input_slurm(file_name_1):
         options = {
             'workdir': test_dir,
             'image': 'docker://alpine',
-            'command': 'cat $INPUT > $WORKDIR/output.txt',
+            'command': 'cat $INPUT > $WORK_DIR/output.txt',
             'input': {'path': input_file_path, 'kind': 'file'},
             'jobqueue': {
                 'slurm': {

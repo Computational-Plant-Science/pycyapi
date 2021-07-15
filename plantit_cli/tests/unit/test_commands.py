@@ -71,7 +71,7 @@ def test_run_parameters(file_name_1, file_name_2):
         options = {
             'workdir': temp_dir,
             'image': 'docker://alpine',
-            'command': 'echo "$MESSAGE" > $WORKDIR/output.txt',
+            'command': 'echo "$MESSAGE" > $WORK_DIR/output.txt',
             'parameters': [{'key': 'MESSAGE', 'value': message}]}
         commands.run(
             options=options,
@@ -97,7 +97,7 @@ def test_run_bind_mounts(file_name_1, file_name_2):
         options = {
             'workdir': test_dir,
             'image': 'docker://alpine',
-            'command': f"echo '{message}' > $WORKDIR/output.txt",
+            'command': f"echo '{message}' > $WORK_DIR/output.txt",
             'bind_mounts': [{'host_path': temp_dir, 'container_path': test_dir}]}
         commands.run(
             options=options,
@@ -123,7 +123,7 @@ def test_run_directory_input(file_name_1, file_name_2):
         options = {
             'workdir': temp_dir,
             'image': 'docker://alpine',
-            'command': 'ls "$INPUT" > $WORKDIR/output.txt',
+            'command': 'ls "$INPUT" > $WORK_DIR/output.txt',
             'input': {'path': temp_dir, 'kind': 'directory'}}
         commands.run(
             options=options,
@@ -150,7 +150,7 @@ def test_run_files_input(file_name_1, file_name_2):
         options = {
             'workdir': temp_dir,
             'image': 'docker://alpine',
-            'command': 'echo "$INPUT" >> $WORKDIR/output.txt',
+            'command': 'echo "$INPUT" >> $WORK_DIR/output.txt',
             'input': {'path': temp_dir, 'kind': 'files'}}
         commands.run(
             options=options,
@@ -175,7 +175,7 @@ def test_run_file_input(file_name_1):
         options = {
             'workdir': temp_dir,
             'image': 'docker://alpine',
-            'command': 'cat "$INPUT" > $WORKDIR/output.txt',
+            'command': 'cat "$INPUT" > $WORK_DIR/output.txt',
             'input': {'path': input_file_path, 'kind': 'file'}
         }
         commands.run(
