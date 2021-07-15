@@ -296,12 +296,12 @@ def prep_command(
     if bind_mounts is not None and len(bind_mounts) > 0:
         cmd += (' --bind ' + ','.join([format_bind_mount(work_dir, mount_point) for mount_point in bind_mounts]))
 
-    if parameters is None:
-        parameters = []
-    parameters.append({'key': 'WORKDIR', 'value': work_dir})
+    if parameters is None: parameters = []
+    parameters.append({'key': 'WORK_DIR', 'value': work_dir})
     for parameter in parameters:
-        print(f"Replacing '{parameter['key'].upper()}' with '{parameter['value']}'")
-        command = command.replace(f"${parameter['key'].upper()}", str(parameter['value']))
+        pattern = parameter['key'].replace(' ', '_').upper()
+        print(f"Replacing '{pattern}' with '{parameter['value']}'")
+        command = command.replace(f"${pattern}", str(parameter['value']))
 
     command = command.replace("$GPU_MODE", 'true' if gpu else 'false')
 
