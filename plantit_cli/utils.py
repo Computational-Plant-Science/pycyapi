@@ -107,6 +107,7 @@ def parse_options(raw: dict) -> (List[str], dict):
             errors.append('Every environment variable must be non-empty')
         else:
             env = [variable for variable in raw['env']]
+            env.append({'key': 'WORK_DIR', 'value': work_dir})
 
     bind_mounts = None
     if 'bind_mounts' in raw:

@@ -48,23 +48,21 @@ def pull(
 
 
 @cli.command()
-@click.argument('flow')
+@click.argument('task')
 @click.option('--plantit_token', required=False, type=str)
 @click.option('--plantit_url', required=False, type=str)
 @click.option('--docker_username', required=False, type=str)
 @click.option('--docker_password', required=False, type=str)
 @click.option('--slurm_job_array', is_flag=True)
-def run(flow,
+def run(task,
         plantit_token,
         plantit_url,
         docker_username,
         docker_password,
         slurm_job_array):
-    with open(flow, 'r') as file:
+    with open(task, 'r') as file:
         errors, options = parse_options(yaml.safe_load(file))
-        if len(errors) > 0:
-            raise ValueError(f"Invalid configuration: {', '.join(errors)}")
-
+        if len(errors) > 0: raise ValueError(f"Invalid configuration: {', '.join(errors)}")
         commands.run(
             options=options,
             plantit_url=plantit_url,
@@ -85,8 +83,7 @@ def run(flow,
 @click.option('--exclude_name', '-en', required=False, type=str, multiple=True)
 @click.option('--plantit_token', required=False, type=str)
 @click.option('--plantit_url', required=False, type=str)
-def zip(
-        input_dir,
+def zip(input_dir,
         output_dir,
         name,
         # max_size,
@@ -119,16 +116,15 @@ def zip(
 @click.option('--exclude_name', '-en', required=False, type=str, multiple=True)
 @click.option('--plantit_token', required=False, type=str)
 @click.option('--plantit_url', required=False, type=str)
-def push(
-        remote_path,
-        terrain_token,
-        local_path,
-        include_pattern,
-        include_name,
-        exclude_pattern,
-        exclude_name,
-        plantit_token,
-        plantit_url):
+def push(remote_path,
+         terrain_token,
+         local_path,
+         include_pattern,
+         include_name,
+         exclude_pattern,
+         exclude_name,
+         plantit_token,
+         plantit_url):
     terrain_commands.push(
         local_path=local_path,
         remote_path=remote_path,
