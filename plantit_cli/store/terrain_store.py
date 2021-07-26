@@ -78,14 +78,17 @@ class TerrainStore(Store):
         retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
             RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
             Timeout) | retry_if_exception_type(HTTPError)))
-    def pull_file(self, from_path: str, to_path: str, overwrite: bool = False):
+    def pull_file(self, from_path: str, to_path: str, index: int = None, overwrite: bool = False):
         to_path_full = f"{to_path}/{from_path.split('/')[-1]}"
 
         if isfile(to_path_full) and not overwrite:
             print(f"File {to_path_full} already exists, skipping download")
             return
         else:
-            print(f"Downloading '{from_path}' to '{to_path_full}'")
+            if index is None:
+                print(f"Downloading file '{from_path}' to '{to_path_full}'")
+            else:
+                print(f"Downloading file {index}")
 
         with requests.get(f"https://de.cyverse.org/terrain/secured/fileio/download?path={from_path}",
                           headers={'Authorization': f"Bearer {self.token}"}) as response:
@@ -129,7 +132,7 @@ class TerrainStore(Store):
 
         print(f"Downloading directory '{from_path}' with {len(paths)} file(s)")
         with closing(Pool(processes=multiprocessing.cpu_count())) as pool:
-            pool.starmap(self.pull_file, [(path, to_path) for path in paths])
+            pool.starmap(self.pull_file, [(path, to_path, i) for path, i in enumerate(paths)])
 
         # verify that input checksums haven't changed since download time
         # (maybe a bit excessive, and will add network latency, but probably prudent)

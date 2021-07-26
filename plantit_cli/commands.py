@@ -213,17 +213,17 @@ def run(options: dict,
                             docker_username=docker_username,
                             docker_password=docker_password)
 
-                        update_status(Status.RUNNING, f"Submitting container for file: {current_file}", plantit_url, plantit_token)
+                        update_status(Status.RUNNING, f"Submitting container for file {i}", plantit_url, plantit_token)
                         futures.append(submit_command(client, command, options['log_file'] if 'log_file' in options else None, 3))
 
                     finished = 0
                     for future in as_completed(futures):
                         finished += 1
                         if future.status != 'finished':
-                            update_status(Status.FAILED, f"Container failed for file {finished} of {len(futures)}: {future.exception}", plantit_url,
-                                          plantit_token)
+                            update_status(Status.FAILED, f"Container failed for file {finished}", plantit_url, plantit_token)
+                            update_status(Status.FAILED, future.exception, plantit_url, plantit_token)
                         else:
-                            update_status(Status.RUNNING, f"Container completed for file {finished} of {len(futures)}", plantit_url, plantit_token)
+                            update_status(Status.RUNNING, f"Container completed for file {finished}", plantit_url, plantit_token)
         elif options['input']['kind'] == InputKind.FILE:
             input_path = options['input']['path']
             env = options['env'] if 'env' in options else []
@@ -246,13 +246,14 @@ def run(options: dict,
                     docker_username=docker_username,
                     docker_password=docker_password)
 
-                update_status(Status.RUNNING, f"Submitting container for file '{input_path}'", plantit_url, plantit_token)
+                update_status(Status.RUNNING, f"Submitting container for file 1", plantit_url, plantit_token)
                 future = submit_command(client, command, options['log_file'] if 'log_file' in options else None, 3)
                 future.result()
                 if future.status != 'finished':
-                    update_status(Status.FAILED, f"Container failed for file '{input_path}': {future.exception}", plantit_url, plantit_token)
+                    update_status(Status.FAILED, f"Container failed for file 1", plantit_url, plantit_token)
+                    update_status(Status.FAILED, future.exception, plantit_url, plantit_token)
                 else:
-                    update_status(Status.RUNNING, f"Container completed for file '{input_path}'", plantit_url, plantit_token)
+                    update_status(Status.RUNNING, f"Container completed for file 1", plantit_url, plantit_token)
 
         update_status(Status.COMPLETED, f"Run succeeded", plantit_url, plantit_token)
     except:
