@@ -132,7 +132,7 @@ class TerrainStore(Store):
 
         print(f"Downloading directory '{from_path}' with {len(paths)} file(s)")
         with closing(Pool(processes=multiprocessing.cpu_count())) as pool:
-            pool.starmap(self.pull_file, [(path, to_path, i) for path, i in enumerate(paths)])
+            pool.starmap(self.pull_file, [(path, to_path, i) for i, path in enumerate(paths)])
 
         # verify that input checksums haven't changed since download time
         # (maybe a bit excessive, and will add network latency, but probably prudent)
