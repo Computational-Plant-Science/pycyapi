@@ -297,7 +297,7 @@ def prep_command(
         cmd += (' --bind ' + ','.join([format_bind_mount(work_dir, mount_point) for mount_point in bind_mounts]))
 
     if parameters is None: parameters = []
-    parameters.append({'key': 'WORK_DIR', 'value': work_dir})
+    parameters.append({'key': 'WORKDIR', 'value': work_dir})
     for parameter in parameters:
         pattern = parameter['key'].replace(' ', '_').upper()
         print(f"Replacing '{pattern}' with '{parameter['value']}'")
