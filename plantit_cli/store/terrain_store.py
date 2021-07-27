@@ -85,10 +85,8 @@ class TerrainStore(Store):
             print(f"File {to_path_full} already exists, skipping download")
             return
         else:
-            if index is None:
-                print(f"Downloading file '{from_path}' to '{to_path_full}'")
-            else:
-                print(f"Downloading file {index}")
+            if index is None: print(f"Downloading file '{from_path}' to '{to_path_full}'")
+            else: print(f"Downloading file '{from_path}' to '{to_path_full}' ({index})")
 
         with requests.get(f"https://de.cyverse.org/terrain/secured/fileio/download?path={from_path}",
                           headers={'Authorization': f"Bearer {self.token}"}) as response:
