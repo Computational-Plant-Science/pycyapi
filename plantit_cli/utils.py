@@ -302,12 +302,12 @@ def prep_command(
         pattern = parameter['key'].replace(' ', '_').upper()
         print(f"Replacing '{pattern}' with '{parameter['value']}'")
         command = command.replace(f"${pattern}", str(parameter['value']))
-        cmd = f"SINGULARITYENV_{parameter['key']}={parameter['value']} " + cmd
+        cmd = f"SINGULARITYENV_{parameter['key'].upper().replace(' ', '_')}={parameter['value']} " + cmd
     for var in env:
         pattern = var['key'].replace(' ', '_').upper()
         print(f"Replacing '{pattern}' with '{var['value']}'")
         command = command.replace(f"${pattern}", str(var['value']))
-        cmd = f"SINGULARITYENV_{var['key']}={var['value']} " + cmd
+        cmd = f"SINGULARITYENV_{var['key'].upper().replace(' ', '_')}={var['value']} " + cmd
 
     command = command.replace("$GPU_MODE", 'true' if gpu else 'false')
 
