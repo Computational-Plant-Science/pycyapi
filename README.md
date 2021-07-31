@@ -114,7 +114,7 @@ Runs involving inputs fall into 3 categories:
 - spawn a single container to process a single directory
 - spawn a container per file to process files in a directory
 
-To pull a file or directory, add an `input` section (whose `path` attribute will be substituted for `$INPUT` when your `command` is invoked).
+To pull a file or directory, add an `input` section.
 
 ###### File
 
@@ -251,7 +251,7 @@ The `plantit ping` command is used internally by the PlantIT web application to 
 
 ### Authenticating with Docker
 
-Docker Hub pull rate limits are quickly reached for large datasets. To authenticate and bypass rate limits, provide a `--docker_username` and `--docker_password`. For instance:
+To authenticate with Docker and bypass Docker Hub rate limits, provide a `--docker_username` and `--docker_password`. For instance:
 
 ```shell
 plantit run hello_world.yaml --docker_username <your username> --docker_password <your password>
