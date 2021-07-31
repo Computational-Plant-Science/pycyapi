@@ -4,13 +4,19 @@
 
 # PlantIT CLI
 
+Container orchestration for reproducible phenotyping on laptops, servers, & HPC/HTC clusters
+
+- Easy transfers to/from the CyVerse Data Store via the Terrain API
+- Deploy Docker images as Singularity containers to clusters/servers
+- Compatible with any substrate/scheduler supported by [Dask-Jobqueue](https://jobqueue.dask.org/en/latest/index.html)
+
+This package must be installed and available in the $PATH on agents bound to PlantIT
+
 ![CI](https://github.com/Computational-Plant-Science/plantit-cli/workflows/CI/badge.svg)
 [![PyPI version](https://badge.fury.io/py/plantit-cli.svg)](https://badge.fury.io/py/plantit-cli)
 [![Coverage Status](https://coveralls.io/repos/github/Computational-Plant-Science/plantit-cli/badge.svg?branch=master)](https://coveralls.io/github/Computational-Plant-Science/plantit-cli) 
 
-Deploy plant phenotyping workflows on laptops, servers, or HPC/HTC clusters.
-
-**This project is in open alpha and is not yet stable.**
+**This project is in open beta and is not yet stable.**
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -91,7 +97,7 @@ Optional arguments are:
 PlantIT workflows are defined in YAML files. To run a workflow defined in `hello_world.yaml`, use `plantit run hello_world.yaml`. At minimum, the schema should include the following attributes:
 
 ```yaml
-image: docker://alpine              # Docker or Singularity image
+image: docker://alpine              # Docker image
 workdir: /your/working/directory    # working directory
 command: echo "Hello, world!"       # entrypoint
 ```
@@ -153,7 +159,7 @@ bind_mounts:
   - path/relative/to/host/working/directory:/another/path/in/your/container
 ```
 
-##### GPU mode
+##### CUDA GPU mode
 
 To instruct Singularity to bind to NVIDIA GPU drivers on the host, add a `gpu: True` attribute to your configuration.
 
@@ -176,15 +182,15 @@ Substitute `pbs`, `moab`, `slurm`, or any other [Dask Jobqueue](https://jobqueue
 
 ###### Virtual memory
 
-For clusters with virtual memory, you may need to use `header_skip`:
+For clusters with virtual memory, you may need to use `header_skip` to alter Dask's resource request from the scheduler:
 
 ```yaml
 ...
 jobqueue:
   slurm:
     ...
-    header_skip: # for clusters with virtual memory
-      - '--mem'
+    header_skip:
+      - '--mem' # for clusters with virtual memory
 ```
 
 ###### Other resource requests

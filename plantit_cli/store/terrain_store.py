@@ -144,7 +144,7 @@ class TerrainStore(Store):
             RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
             Timeout) | retry_if_exception_type(HTTPError)))
     def push_file(self, from_path: str, to_prefix: str):
-        print(f"Uploading '{from_path}' to '{to_prefix}'")
+        print(f"Uploading file '{from_path}' to '{to_prefix}'")
         with open(from_path, 'rb') as file:
             with requests.post(f"https://de.cyverse.org/terrain/secured/fileio/upload?dest={to_prefix}",
                                headers={'Authorization': f"Bearer {self.token}"},
