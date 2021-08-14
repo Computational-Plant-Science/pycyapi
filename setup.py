@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='plantit-cli',
-    version='0.2.93',
+    version='0.2.94',
     description='Deploy PlantIT workflows on laptops, servers, or clusters.',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -23,6 +23,6 @@ setuptools.setup(
         ]
     },
     python_requires='>=3.6.8',
-    install_requires=['requests', 'pyaml', 'click', 'tenacity', 'dask', 'dask_jobqueue'],
+    install_requires=['requests', 'pyaml', 'click', 'tenacity', 'dask', 'dask_jobqueue', 'tqdm'],
     setup_requires=['wheel'],
     tests_require=['pytest', 'coveralls'])

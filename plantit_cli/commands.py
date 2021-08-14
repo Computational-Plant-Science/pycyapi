@@ -8,6 +8,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 from dask_jobqueue import SLURMCluster, PBSCluster, MoabCluster, SGECluster, LSFCluster, OARCluster
 from distributed import as_completed, LocalCluster, Client
+import tqdm
 
 from plantit_cli.options import InputKind
 from plantit_cli.status import Status
@@ -200,7 +201,8 @@ def run(options: dict,
                 gpu = options['gpu'] if 'gpu' in options else False
 
                 with Client(cluster) as client:
-                    for i, current_file in enumerate(files):
+                    num_files = len(files)
+                    for i, current_file in tqdm.tqdm(enumerate(files), total=num_files):
                         command = prep_command(
                             work_dir=options['workdir'],
                             image=options['image'],
@@ -217,7 +219,7 @@ def run(options: dict,
                         futures.append(submit_command(client, command, options['log_file'] if 'log_file' in options else None, 3))
 
                     finished = 0
-                    for future in as_completed(futures):
+                    for future in tqdm.tqdm(as_completed(futures), total=num_files):
                         finished += 1
                         if future.status != 'finished':
                             update_status(Status.FAILED, f"Container failed for file {finished}", plantit_url, plantit_token)

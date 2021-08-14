@@ -8,6 +8,7 @@ from typing import List
 import requests
 from requests import ReadTimeout, Timeout, HTTPError, RequestException
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
+import tqdm
 
 from plantit_cli.store.store import Store
 from plantit_cli.utils import list_files
@@ -97,6 +98,9 @@ class TerrainStore(Store):
                 for chunk in response.iter_content(chunk_size=8192):
                     file.write(chunk)
 
+    def pull_file_star(self, args):
+        self.pull_file(*args)
+
     @retry(
         wait=wait_exponential(multiplier=1, min=4, max=10),
         stop=stop_after_attempt(3),
@@ -123,6 +127,7 @@ class TerrainStore(Store):
         match = lambda path: any(pattern.lower() in path.lower() for pattern in patterns)
         paths = self.list_dir(from_path)
         paths = [path for path in paths if match(path)] if (patterns is not None and len(patterns) > 0) else paths
+        num_paths = len(paths)
 
         # verify  that input checksums haven't changed since submission time
         if check:
@@ -130,7 +135,8 @@ class TerrainStore(Store):
 
         print(f"Downloading directory '{from_path}' with {len(paths)} file(s)")
         with closing(Pool(processes=multiprocessing.cpu_count())) as pool:
-            pool.starmap(self.pull_file, [(path, to_path, i) for i, path in enumerate(paths)])
+            args = [(path, to_path, i) for i, path in enumerate(paths)]
+            list(tqdm.tqdm(pool.imap(self.pull_file_star, args), total=num_paths))
 
         # verify that input checksums haven't changed since download time
         # (maybe a bit excessive, and will add network latency, but probably prudent)
@@ -154,6 +160,9 @@ class TerrainStore(Store):
                 else:
                     response.raise_for_status()
 
+    def push_file_star(self, args):
+        self.push_file(*args)
+
     def push_dir(self,
                  from_path: str,
                  to_prefix: str,
@@ -168,9 +177,11 @@ class TerrainStore(Store):
             raise FileNotFoundError(f"Local path '{from_path}' does not exist")
         elif is_dir:
             from_paths = list_files(from_path, include_patterns, include_names, exclude_patterns, exclude_names)
+            num_from_paths = len(from_paths)
             print(f"Uploading directory '{from_path}' with {len(from_paths)} file(s) to '{to_prefix}'")
             with closing(Pool(processes=multiprocessing.cpu_count())) as pool:
-                pool.starmap(self.push_file, [(path, to_prefix) for path in [str(p) for p in from_paths]])
+                args = [(path, to_prefix) for path in [str(p) for p in from_paths]]
+                list(tqdm.tqdm(pool.imap(self.push_file_star, args), total=num_from_paths))
         elif is_file:
             self.push_file(from_path, to_prefix)
         else:
