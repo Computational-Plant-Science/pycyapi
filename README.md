@@ -1,22 +1,30 @@
-<p align="center">
-<img src="https://github.com/Computational-Plant-Science/plantit/blob/master/plantit/front_end/src/assets/logo.png?raw=true" />
-</p>
+<div align="center">
 
-# PlantIT CLI
+<img src="https://github.com/Computational-Plant-Science/plantit/blob/master/plantit/front_end/src/assets/logo.png?raw=true" style="position:relative;top: 75px" />
 
-Container orchestration for reproducible phenotyping on laptops, servers, & HPC/HTC clusters
+<h1 align="center"
+    style="text-decoration: underline;">
+        plant<small
+            class="mb-3 text-success"
+            style="text-decoration: underline;text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000; color: #d6df5D"
+            >IT</small><small style="text-decoration: underline;text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000; color: #dee2e6">CLI</small>
+</h1>
 
-- Easy transfers to/from the CyVerse Data Store via the Terrain API
-- Deploy Docker images as Singularity containers to clusters/servers
-- Compatible with any substrate/scheduler supported by [Dask-Jobqueue](https://jobqueue.dask.org/en/latest/index.html)
-
-This package must be installed and available in the $PATH on agents bound to PlantIT
+Container orchestration for reproducible phenotyping workflows on laptops, servers, or HPC
 
 ![CI](https://github.com/Computational-Plant-Science/plantit-cli/workflows/CI/badge.svg)
 [![PyPI version](https://badge.fury.io/py/plantit-cli.svg)](https://badge.fury.io/py/plantit-cli)
 [![Coverage Status](https://coveralls.io/repos/github/Computational-Plant-Science/plantit-cli/badge.svg?branch=master)](https://coveralls.io/github/Computational-Plant-Science/plantit-cli) 
 
-**This project is in open beta and is not yet stable.**
+</div>
+
+Features:
+
+- Easy transfers to/from the CyVerse Data Store via the Terrain API
+- Deploy Docker images as Singularity containers to clusters/servers
+- Compatible with any substrate/scheduler supported by [Dask-Jobqueue](https://jobqueue.dask.org/en/latest/index.html)
+
+This package must be installed and available in the $PATH on agents bound to PlantIT.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
