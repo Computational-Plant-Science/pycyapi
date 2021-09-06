@@ -1,5 +1,6 @@
 import subprocess
 import traceback
+import re
 from os import listdir
 from os.path import join, isfile, isdir
 from time import sleep
@@ -477,6 +478,16 @@ def readable_bytes(n, format='%(value).1f %(symbol)s', symbols='customary'):
             return format % locals()
 
     return format % dict(symbol=symbols[0], value=n)
+
+
+# referenced from https://stackoverflow.com/a/21857132/6514033
+def replace_text(path, pattern, replace, flags=0):
+    with open(path, "r+") as file:
+        contents = file.read()
+        contents = re.compile(re.escape(pattern), flags).sub(replace, contents)
+        file.seek(0)
+        file.truncate()
+        file.write(contents)
 
 
 # istarmap.py for Python <3.8

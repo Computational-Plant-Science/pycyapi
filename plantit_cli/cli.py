@@ -72,6 +72,13 @@ def run(task,
             slurm_job_array=slurm_job_array)
 
 
+@click.command()
+@click.argument('paths', nargs=-1)
+@click.option('--patterns', '-p', multiple=True, type=str)
+def clean(paths, patterns):
+    commands.clean(paths, patterns)
+
+
 @cli.command()
 @click.argument('input_dir')
 @click.option('--output_dir', '-o', required=False, type=str)

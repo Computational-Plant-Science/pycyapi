@@ -12,42 +12,16 @@ import tqdm
 
 from plantit_cli.options import InputKind
 from plantit_cli.status import Status
-from plantit_cli.utils import list_files, readable_bytes, prep_command, update_status, submit_command, run_command
+from plantit_cli.utils import list_files, readable_bytes, prep_command, update_status, submit_command, run_command, replace_text
 
 message = "Message"
 testdir = os.environ.get('TEST_DIRECTORY')
 
 
-def zip(
-        input_dir: str,
-        output_dir: str,
-        name: str,
-        # max_size: int = 1000000000,  # 1GB default
-        include_patterns: List[str] = None,
-        include_names: List[str] = None,
-        exclude_patterns: List[str] = None,
-        exclude_names: List[str] = None,
-        plantit_url: str = None,
-        plantit_token: str = None):
-    zip_path = join(output_dir, f"{name}.zip")
-    try:
-        files = list_files(input_dir, include_patterns, include_names, exclude_patterns, exclude_names)
-        sizes = [getsize(file) for file in files]
-        total = sum(sizes)
-
-        # if total > max_size:
-        #     msg = f"Cumulative filesize ({readable_bytes(total)}) exceeds maximum ({readable_bytes(max_size)})"
-        #     update_status(Status.ZIPPING, msg, plantit_url, plantit_token)
-        #     raise ValueError(msg)
-
-        update_status(Status.RUNNING, f"Zipping {readable_bytes(total)} into file: {zip_path}", plantit_url, plantit_token)
-        with ZipFile(zip_path, 'w', ZIP_DEFLATED) as zipped:
-            for file in files:
-                print(f"Zipping: {file}", plantit_url, plantit_token)
-                zipped.write(file, basename(file))
-    except:
-        update_status(Status.FAILED, f"Failed to create zip file: {traceback.format_exc()}", plantit_url, plantit_token)
-        raise
+def clean(paths: List[str], patterns: List[str]):
+    for path in paths:
+        for pattern in patterns:
+            replace_text(path, pattern, ''.join(['*' for _ in pattern]))
 
 
 def run(options: dict,
@@ -261,6 +235,39 @@ def run(options: dict,
     except:
         update_status(Status.FAILED, f"Run failed: {traceback.format_exc()}", plantit_url, plantit_token)
         raise
+
+
+def zip(
+        input_dir: str,
+        output_dir: str,
+        name: str,
+        # max_size: int = 1000000000,  # 1GB default
+        include_patterns: List[str] = None,
+        include_names: List[str] = None,
+        exclude_patterns: List[str] = None,
+        exclude_names: List[str] = None,
+        plantit_url: str = None,
+        plantit_token: str = None):
+    zip_path = join(output_dir, f"{name}.zip")
+    try:
+        files = list_files(input_dir, include_patterns, include_names, exclude_patterns, exclude_names)
+        sizes = [getsize(file) for file in files]
+        total = sum(sizes)
+
+        # if total > max_size:
+        #     msg = f"Cumulative filesize ({readable_bytes(total)}) exceeds maximum ({readable_bytes(max_size)})"
+        #     update_status(Status.ZIPPING, msg, plantit_url, plantit_token)
+        #     raise ValueError(msg)
+
+        update_status(Status.RUNNING, f"Zipping {readable_bytes(total)} into file: {zip_path}", plantit_url, plantit_token)
+        with ZipFile(zip_path, 'w', ZIP_DEFLATED) as zipped:
+            for file in files:
+                print(f"Zipping: {file}", plantit_url, plantit_token)
+                zipped.write(file, basename(file))
+    except:
+        update_status(Status.FAILED, f"Failed to create zip file: {traceback.format_exc()}", plantit_url, plantit_token)
+        raise
+
 
 # TODO test flow configuration validation
 

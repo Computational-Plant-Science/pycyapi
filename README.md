@@ -83,6 +83,7 @@ The CLI supports the following commands:
 - `ping`: Print `pong`.
 - `pull`: Download files from the CyVerse Data Store.
 - `run`: Run a workflow.
+- `clean`: Remove patterns from result files.
 - `zip`: Zip files produced by a workflow.
 - `push`: Upload files to the CyVerse Data Store.
 
@@ -212,6 +213,16 @@ jobqueue:
     ...
     extra:
       - '--gres=gpu:1'
+```
+
+#### Clean
+
+Due to cluster scheduler configuration quirks, when invoking the CLI with Docker username/password these secrets may end up in job output files. The `clean` command can be used to remove arbitrary patterns from files &mdash; it's recommended out of an abundance of caution to *always* use it prior to the `zip` or `push` commands.
+
+To remove `secret_password`  from `myjob.1234567.out` and `myjob.1234567.err` run:
+
+```bash
+plantit clean myjob.1234567.out myjob.1234567.err -p 'secret_password'
 ```
 
 #### Zip

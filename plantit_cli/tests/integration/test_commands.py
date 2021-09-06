@@ -5,11 +5,11 @@ from tempfile import TemporaryDirectory
 from plantit_cli import commands
 from plantit_cli.store import terrain_commands
 from plantit_cli.store.local_store import LocalStore
-from plantit_cli.tests.utils import clear_dir, get_token, check_hello
+from plantit_cli.tests.utils import clear_dir, check_hello, Token
 
 message = "Message"
 test_dir = environ.get('TEST_DIRECTORY')
-token = get_token()
+token = Token.get()
 
 
 # @pytest.mark.skip(reason='TODO debug')

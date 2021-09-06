@@ -23,33 +23,24 @@ def check_hello(file, name):
         assert f"Hello, {name}!" in line
 
 
-token = None
-
-
 class Token:
     __token = None
 
     @staticmethod
     def get():
+        if Token.__token is not None:
+            return Token.__token
+
+        cyverse_username = os.environ.get('CYVERSE_USERNAME', None)
+        cyverse_password = os.environ.get('CYVERSE_PASSWORD', None)
+
+        if cyverse_username is None: raise ValueError("Missing environment variable 'CYVERSE_USERNAME'")
+        if cyverse_password is None: raise ValueError("Missing environment variable 'CYVERSE_PASSWORD'")
+
+        print(f"Using CyVerse username '{cyverse_username}' and password '{cyverse_password}'")
+
+        response = requests.get('https://de.cyverse.org/terrain/token/cas', auth=(cyverse_username, cyverse_password)).json()
+        print(response)
+        Token.__token = response['access_token']
+
         return Token.__token
-
-    def __init__(self, token):
-        Token.__token = token
-
-
-def get_token():
-    cyverse_username = os.environ.get('CYVERSE_USERNAME', None)
-    cyverse_password = os.environ.get('CYVERSE_PASSWORD', None)
-
-    if cyverse_username is None:
-        raise ValueError("Missing environment variable 'CYVERSE_USERNAME'")
-    if cyverse_password is None:
-        raise ValueError("Missing environment variable 'CYVERSE_PASSWORD'")
-
-    if Token.get() is None:
-        response = requests.get(
-            'https://de.cyverse.org/terrain/token/cas',
-            auth=(cyverse_username, cyverse_password)).json()
-        Token(response['access_token'])
-
-    return Token.get()

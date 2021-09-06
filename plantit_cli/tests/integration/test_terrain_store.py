@@ -6,11 +6,11 @@ import pytest
 
 from plantit_cli.store.terrain_store import TerrainStore
 from plantit_cli.tests.integration.terrain_test_utils import delete_collection, upload_file, create_collection
-from plantit_cli.tests.utils import clear_dir, get_token
+from plantit_cli.tests.utils import clear_dir, Token
 
 message = "Message!"
 testdir = environ.get('TEST_DIRECTORY')
-token = get_token()
+token = Token.get()
 
 
 def test_directory_exists(remote_base_path):

@@ -1,4 +1,5 @@
 import zipfile
+import pprint
 from os import environ, listdir
 from os.path import join, isfile
 from tempfile import TemporaryDirectory
@@ -188,3 +189,20 @@ def test_run_file_input(file_name_1):
             lines = output_file.readlines()
             assert len(lines) >= 1
             assert any(message in line for line in lines)
+
+
+def test_clean():
+    with TemporaryDirectory() as temp_dir:
+        path = join(temp_dir, 'output.txt')
+        with open(path, "w") as file:
+            file.write(message)
+
+        pattern = 'sage'
+        commands.clean([path], [pattern])
+
+        assert isfile(path)
+        with open(path) as file:
+            lines = file.readlines()
+            assert not any(pattern in line for line in lines)
+            assert len(lines) == 1
+            assert lines[0] == message.replace(pattern, '****')

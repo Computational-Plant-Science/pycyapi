@@ -6,12 +6,12 @@ from os.path import join
 from plantit_cli import commands
 from plantit_cli.store import terrain_commands
 from plantit_cli.tests.integration.terrain_test_utils import create_collection, upload_file, delete_collection
-from plantit_cli.tests.utils import clear_dir, check_hello, get_token
+from plantit_cli.tests.utils import clear_dir, check_hello, Token
 
 message = "Message"
 testdir = '/opt/plantit-cli/runs'
 tempdir = tempfile.gettempdir()
-token = get_token()
+token = Token.get()
 DEFAULT_SLEEP = 45
 
 
