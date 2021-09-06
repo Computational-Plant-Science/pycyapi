@@ -20,9 +20,9 @@ Container orchestration for reproducible phenotyping workflows on laptops, serve
 
 Features:
 
-- Easy transfers to/from the CyVerse Data Store via the Terrain API
-- Deploy Docker images as Singularity containers to clusters/servers
-- Compatible with any substrate/scheduler supported by [Dask-Jobqueue](https://jobqueue.dask.org/en/latest/index.html)
+- Parallel transfers to/from the CyVerse Data Store with Terrain API
+- Deploy Docker images as Singularity containers on clusters/servers
+- Compatible with any cluster scheduler supported by [Dask-Jobqueue](https://jobqueue.dask.org/en/latest/index.html)
 
 This package must be installed and available in the $PATH on agents bound to PlantIT.
 
