@@ -11,7 +11,7 @@ from plantit_cli.tests.utils import clear_dir, check_hello, Token
 
 message = "Message"
 test_dir = environ.get('TEST_DIRECTORY')
-token = Token.get()
+token = '' # Token.get()
 jobqueue = {
     'slurm': {
         'cores': 1,

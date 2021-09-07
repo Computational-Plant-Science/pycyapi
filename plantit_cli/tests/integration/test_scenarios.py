@@ -13,7 +13,7 @@ from plantit_cli.tests.utils import clear_dir, check_hello, Token
 message = "Message"
 testdir = '/opt/plantit-cli/runs'
 tempdir = tempfile.gettempdir()
-token = Token.get()
+token = '' # Token.get()
 DEFAULT_SLEEP = 45
 
 

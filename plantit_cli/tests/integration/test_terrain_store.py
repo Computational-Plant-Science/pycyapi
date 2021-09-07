@@ -10,7 +10,7 @@ from plantit_cli.tests.utils import clear_dir, Token
 
 message = "Message!"
 testdir = environ.get('TEST_DIRECTORY')
-token = Token.get()
+token = '' # Token.get()
 
 
 @pytest.mark.skip(reason='debug')
