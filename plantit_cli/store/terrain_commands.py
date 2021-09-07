@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List
 
 from plantit_cli.status import Status
-from plantit_cli.store.terrain_store import TerrainStore
+from plantit_cli.store import terrain_store
 from plantit_cli.utils import update_status
 
 
@@ -18,16 +18,15 @@ def pull(
         plantit_url: str = None,
         plantit_token: str = None):
     try:
-        store = TerrainStore(cyverse_token)
         local_path = getcwd() if (local_path is None or local_path == '') else local_path
         Path(local_path).mkdir(exist_ok=True)
 
-        if store.dir_exists(remote_path):
-            store.pull_dir(from_path=remote_path, to_path=local_path, patterns=patterns, checksums=checksums, overwrite=overwrite)
-        elif store.file_exists(remote_path):
-            store.pull_file(from_path=remote_path, to_path=local_path, overwrite=overwrite)
+        if terrain_store.dir_exists(remote_path):
+            terrain_store.pull_dir(from_path=remote_path, to_path=local_path, token=cyverse_token, patterns=patterns, checksums=checksums, overwrite=overwrite)
+        elif terrain_store.file_exists(remote_path):
+            terrain_store.pull_file(from_path=remote_path, to_path=local_path, token=cyverse_token, overwrite=overwrite)
         else:
-            msg = f"Path does not exist in {type(store).__name__} store: {remote_path}"
+            msg = f"Path does not exist: {remote_path}"
             update_status(Status.FAILED, msg, plantit_url, plantit_token)
             raise ValueError(msg)
 
@@ -53,8 +52,7 @@ def push(local_path: str,
          plantit_url: str = None,
          plantit_token: str = None):
     try:
-        store = TerrainStore(cyverse_token)
-        store.push_dir(local_path, remote_path, include_patterns, include_names, exclude_patterns, exclude_names)
+        terrain_store.push_dir(local_path, remote_path, cyverse_token, include_patterns, include_names, exclude_patterns, exclude_names)
         update_status(Status.PUSHING, f"Pushed output(s)", plantit_url, plantit_token)
     except:
         update_status(Status.FAILED, f"Failed to push outputs: {traceback.format_exc()}", plantit_url, plantit_token)
