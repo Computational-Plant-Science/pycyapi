@@ -167,8 +167,8 @@ def push_file(from_path: str, to_prefix: str, token: str):
                 response.raise_for_status()
 
 
-def push_file_star(self, args):
-    self.push_file(*args)
+def push_file_star(args):
+    push_file(*args)
 
 
 def push_dir(from_path: str,
