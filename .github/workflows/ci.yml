@@ -58,9 +58,8 @@ jobs:
           COVERALLS_PARALLEL: true
         run: |
           mkdir -p /opt/plantit-cli/runs/
-          # TODO fix tests
-          # coverage run --source=plantit_cli -m pytest /home/runner/work/plantit-cli/plantit-cli/plantit_cli/tests/unit -s
-          # coveralls
+          coverage run --source=plantit_cli -m pytest /home/runner/work/plantit-cli/plantit-cli/plantit_cli/tests/unit -s
+          coveralls
   # integration-tests:
   #   runs-on: ubuntu-latest
   #   strategy:
@@ -157,8 +156,8 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
-          docker build -t computationalplantscience/plantit-sandbox --no-cache -f dockerfiles/sandbox/Dockerfile .
-          docker push computationalplantscience/plantit-sandbox
+          docker build -t computationalplantscience/plantit-cli --no-cache -f dockerfiles/cli/Dockerfile .
+          docker push computationalplantscience/plantit-cli
       - name: Slack success notification
         uses: rtCamp/action-slack-notify@v2
         env:
