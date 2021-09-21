@@ -141,7 +141,7 @@ def pull_dir(
     print(f"Downloading directory '{from_path}' with {len(paths)} file(s)")
     with closing(Pool(processes=multiprocessing.cpu_count())) as pool:
         args = [(path, to_path, token, i) for i, path in enumerate(paths)]
-        list(tqdm.tqdm(pool.imap(pull_file_star, args), total=num_paths))
+        pool.imap(pull_file_star, args)
 
     # verify that input checksums haven't changed since download time
     # (maybe a bit excessive, and will add network latency, but probably prudent)
@@ -167,10 +167,6 @@ def push_file(from_path: str, to_prefix: str, token: str):
                 response.raise_for_status()
 
 
-def push_file_star(args):
-    push_file(*args)
-
-
 def push_dir(from_path: str,
              to_prefix: str,
              token: str,
@@ -189,7 +185,7 @@ def push_dir(from_path: str,
         print(f"Uploading directory '{from_path}' with {len(from_paths)} file(s) to '{to_prefix}'")
         with closing(Pool(processes=multiprocessing.cpu_count())) as pool:
             args = [(path, to_prefix, token) for path in [str(p) for p in from_paths]]
-            list(tqdm.tqdm(pool.imap(push_file_star, args), total=num_from_paths))
+            pool.imap(push_file_star, args)
     elif is_file:
         push_file(from_path, to_prefix)
     else:
@@ -198,3 +194,7 @@ def push_dir(from_path: str,
 
 def pull_file_star(args):
     pull_file(*args)
+
+
+def push_file_star(args):
+    push_file(*args)
