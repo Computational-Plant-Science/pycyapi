@@ -23,7 +23,7 @@ def pull(
 
         if terrain_store.dir_exists(remote_path, cyverse_token):
             terrain_store.pull_dir(from_path=remote_path, to_path=local_path, token=cyverse_token, patterns=patterns, checksums=checksums, overwrite=overwrite)
-        elif terrain_store.file_exists(remote_path):
+        elif terrain_store.file_exists(remote_path, cyverse_token):
             terrain_store.pull_file(from_path=remote_path, to_path=local_path, token=cyverse_token, overwrite=overwrite)
         else:
             msg = f"Path does not exist: {remote_path}"
