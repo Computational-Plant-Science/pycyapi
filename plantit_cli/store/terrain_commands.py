@@ -21,7 +21,7 @@ def pull(
         local_path = getcwd() if (local_path is None or local_path == '') else local_path
         Path(local_path).mkdir(exist_ok=True)
 
-        if terrain_store.dir_exists(remote_path):
+        if terrain_store.dir_exists(remote_path, cyverse_token):
             terrain_store.pull_dir(from_path=remote_path, to_path=local_path, token=cyverse_token, patterns=patterns, checksums=checksums, overwrite=overwrite)
         elif terrain_store.file_exists(remote_path):
             terrain_store.pull_file(from_path=remote_path, to_path=local_path, token=cyverse_token, overwrite=overwrite)
