@@ -130,7 +130,7 @@ def pull_dir(
         overwrite: bool = False):
     check = checksums is not None and len(checksums) > 0
     match = lambda path: any(pattern.lower() in path.lower() for pattern in patterns)
-    paths = list_dir(from_path)
+    paths = list_dir(from_path, token)
     paths = [path for path in paths if match(path)] if (patterns is not None and len(patterns) > 0) else paths
     num_paths = len(paths)
 
