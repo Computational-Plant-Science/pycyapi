@@ -8,7 +8,6 @@ from typing import List
 import requests
 from requests import ReadTimeout, Timeout, HTTPError, RequestException
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
-import tqdm
 
 from plantit_cli.utils import list_files
 
@@ -121,6 +120,10 @@ def verify_checksums(from_path: str, token: str, expected_pairs: List[dict]):
             assert expected['checksum'] == actual[1]
 
 
+def match(path, patterns):
+    return any(pattern.lower() in path.lower() for pattern in patterns)
+
+
 def pull_dir(
         from_path: str,
         to_path: str,
@@ -129,9 +132,8 @@ def pull_dir(
         checksums: List[dict] = None,
         overwrite: bool = False):
     check = checksums is not None and len(checksums) > 0
-    match = lambda path: any(pattern.lower() in path.lower() for pattern in patterns)
     paths = list_dir(from_path, token)
-    paths = [path for path in paths if match(path)] if (patterns is not None and len(patterns) > 0) else paths
+    paths = [path for path in paths if match(path, patterns)] if (patterns is not None and len(patterns) > 0) else paths
     num_paths = len(paths)
 
     # verify  that input checksums haven't changed since submission time
@@ -141,7 +143,7 @@ def pull_dir(
     print(f"Downloading directory '{from_path}' with {len(paths)} file(s)")
     with closing(Pool(processes=multiprocessing.cpu_count())) as pool:
         args = [(path, to_path, token, i) for i, path in enumerate(paths)]
-        pool.imap(pull_file_star, args)
+        pool.starmap(pull_file, args)
 
     # verify that input checksums haven't changed since download time
     # (maybe a bit excessive, and will add network latency, but probably prudent)
@@ -185,16 +187,8 @@ def push_dir(from_path: str,
         print(f"Uploading directory '{from_path}' with {len(from_paths)} file(s) to '{to_prefix}'")
         with closing(Pool(processes=multiprocessing.cpu_count())) as pool:
             args = [(path, to_prefix, token) for path in [str(p) for p in from_paths]]
-            pool.imap(push_file_star, args)
+            pool.starmap(push_file, args)
     elif is_file:
         push_file(from_path, to_prefix)
     else:
         raise ValueError(f"Remote path '{to_prefix}' is a file; specify a directory path instead")
-
-
-def pull_file_star(args):
-    pull_file(*args)
-
-
-def push_file_star(args):
-    push_file(*args)

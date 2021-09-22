@@ -32,7 +32,7 @@ def pull(
 
         files = listdir(local_path)
         if len(files) == 0:
-            msg = f"No files found at path '{remote_path}'" + f" matching patterns '{patterns}'"
+            msg = f"No files found at path '{remote_path}'" + f" matching patterns {patterns}"
             update_status(Status.FAILED, msg, plantit_url, plantit_token)
             raise ValueError(msg)
         update_status(Status.PULLING, f"Pulled input(s): {', '.join(files)}", plantit_url, plantit_token)

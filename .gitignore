@@ -141,3 +141,5 @@ run_config.yaml
 runs/*
 
 config
+
+data

@@ -40,7 +40,7 @@ def pull(
     terrain_commands.pull(
         remote_path=remote_path,
         local_path=local_path,
-        patterns=pattern,
+        patterns=list(pattern),
         overwrite=overwrite,
         cyverse_token=terrain_token,
         plantit_url=plantit_url,
