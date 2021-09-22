@@ -128,6 +128,7 @@ def run(options: dict,
 
                 env = options['env'] if 'env' in options else []
                 params = options['parameters'] if 'parameters' in options else []
+                patterns = options['input']['patterns'] if 'patterns' in options['input'] else []
                 bind_mounts = options['bind_mounts'] if 'bind_mounts' in options else []
                 no_cache = options['no_cache'] if 'no_cache' in options else False
                 gpu = options['gpu'] if 'gpu' in options else False
@@ -138,7 +139,7 @@ def run(options: dict,
                         work_dir=options['workdir'],
                         image=options['image'],
                         command=options['command'],
-                        env=env + [{'key': 'INDEX', 'value': file_id}],
+                        env=env + [{'key': 'INDEX', 'value': file_id}] + [{'key': 'PATTERNS', 'value': ','.join(patterns)}],
                         parameters=params + [{'key': 'INPUT', 'value': join(input_path, current_file)}],
                         bind_mounts=bind_mounts,
                         no_cache=no_cache,
@@ -170,6 +171,7 @@ def run(options: dict,
 
                 env = options['env'] if 'env' in options else []
                 params = deepcopy(options['parameters']) if 'parameters' in options else []
+                patterns = options['input']['patterns'] if 'patterns' in options['input'] else []
                 bind_mounts = options['bind_mounts'] if 'bind_mounts' in options else []
                 no_cache = options['no_cache'] if 'no_cache' in options else False
                 gpu = options['gpu'] if 'gpu' in options else False
@@ -181,7 +183,7 @@ def run(options: dict,
                             work_dir=options['workdir'],
                             image=options['image'],
                             command=options['command'],
-                            env=env + [{'key': 'INDEX', 'value': i}],
+                            env=env + [{'key': 'INDEX', 'value': i}] + [{'key': 'PATTERNS', 'value': ','.join(patterns)}],
                             parameters=params + [{'key': 'INPUT', 'value': join(input_path, current_file)}],
                             bind_mounts=bind_mounts,
                             no_cache=no_cache,
@@ -204,6 +206,7 @@ def run(options: dict,
             input_path = options['input']['path']
             env = options['env'] if 'env' in options else []
             params = options['parameters'] if 'parameters' in options else []
+            patterns = options['input']['patterns'] if 'patterns' in options['input'] else []
             bind_mounts = options['bind_mounts'] if 'bind_mounts' in options else []
             no_cache = options['no_cache'] if 'no_cache' in options else False
             gpu = options['gpu'] if 'gpu' in options else False
@@ -214,7 +217,7 @@ def run(options: dict,
                     work_dir=options['workdir'],
                     image=options['image'],
                     command=options['command'],
-                    env=env + [{'key': 'INDEX', 'value': 1}],
+                    env=env + [{'key': 'INDEX', 'value': 1}] + [{'key': 'PATTERNS', 'value': ','.join(patterns)}],
                     parameters=params + [{'key': 'INPUT', 'value': input_path}],
                     bind_mounts=bind_mounts,
                     no_cache=no_cache,
