@@ -155,8 +155,8 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
-          docker build -t computationalplantscience/plantit-cli --no-cache -f dockerfiles/cli/Dockerfile .
-          docker push computationalplantscience/plantit-cli
+          docker build -t computationalplantscience/sind --no-cache -f dockerfiles/sind/Dockerfile .
+          docker push computationalplantscience/sind
       - name: Slack success notification
         uses: rtCamp/action-slack-notify@v2
         env:
