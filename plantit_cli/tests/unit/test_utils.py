@@ -10,12 +10,12 @@ def test_parse_docker_image_components():
 
 
 def test_docker_image_exists_returns_true_when_does_exist():
-    full = "docker://computationalplantscience/3d-model-reconstruction:cuda"
+    full = "docker://computationalplantscience/plantit"
     owner, name, tag = parse_docker_image_components(full)
     assert docker_image_exists(name, owner, tag)
 
 
 def test_docker_image_exists_returns_false_when_does_not_exist():
-    full = "docker://computationalplantscience/doesnt-exist"
+    full = "docker://computationalplantscience/dne"
     owner, name, tag = parse_docker_image_components(full)
     assert not docker_image_exists(name, owner, tag)
