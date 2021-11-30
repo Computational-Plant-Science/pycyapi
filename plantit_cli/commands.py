@@ -29,6 +29,7 @@ def run(options: dict,
         plantit_token: str = None,
         docker_username: str = None,
         docker_password: str = None,
+        docker: bool = False,
         slurm_job_array: bool = False):
     try:
         if 'jobqueue' not in options:
@@ -81,7 +82,8 @@ def run(options: dict,
                     no_cache=no_cache,
                     gpu=gpu,
                     docker_username=docker_username,
-                    docker_password=docker_password)
+                    docker_password=docker_password,
+                    docker=docker)
 
                 update_status(Status.RUNNING, f"Submitting container", plantit_url, plantit_token)
                 future = submit_command(client, command, options['log_file'] if 'log_file' in options else None, 3)
@@ -110,7 +112,8 @@ def run(options: dict,
                     no_cache=no_cache,
                     gpu=gpu,
                     docker_username=docker_username,
-                    docker_password=docker_password)
+                    docker_password=docker_password,
+                    docker=docker)
 
                 update_status(Status.RUNNING, f"Submitting container for directory '{input_path}'", plantit_url, plantit_token)
                 future = submit_command(client, command, options['log_file'] if 'log_file' in options else None, 3)
@@ -145,7 +148,8 @@ def run(options: dict,
                         no_cache=no_cache,
                         gpu=gpu,
                         docker_username=docker_username,
-                        docker_password=docker_password)
+                        docker_password=docker_password,
+                        docker=docker)
 
                     update_status(Status.RUNNING, f"Submitting container for file '{input_path}'", plantit_url, plantit_token)
                     future = submit_command(client, command, options['log_file'] if 'log_file' in options else None, 3)
@@ -189,7 +193,8 @@ def run(options: dict,
                             no_cache=no_cache,
                             gpu=gpu,
                             docker_username=docker_username,
-                            docker_password=docker_password)
+                            docker_password=docker_password,
+                            docker=docker)
 
                         update_status(Status.RUNNING, f"Submitting container for file {i}", plantit_url, plantit_token)
                         futures.append(submit_command(client, command, options['log_file'] if 'log_file' in options else None, 3))
@@ -223,7 +228,8 @@ def run(options: dict,
                     no_cache=no_cache,
                     gpu=gpu,
                     docker_username=docker_username,
-                    docker_password=docker_password)
+                    docker_password=docker_password,
+                    docker=docker)
 
                 update_status(Status.RUNNING, f"Submitting container for file 1", plantit_url, plantit_token)
                 future = submit_command(client, command, options['log_file'] if 'log_file' in options else None, 3)

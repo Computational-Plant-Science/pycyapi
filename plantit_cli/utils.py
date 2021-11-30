@@ -284,46 +284,79 @@ def prep_command(
         no_cache: bool = False,
         gpu: bool = False,
         docker_username: str = None,
-        docker_password: str = None):
+        docker_password: str = None,
+        docker: bool = None):
     cmd = ''
 
-    if env is not None:
-        if len(env) > 0:
-            cmd += ' '.join([f"SINGULARITYENV_{var['key'].upper().replace(' ', '_').replace('$', '')}={var['value']}" for var in env])
-        cmd += ' '
+    if docker:
+        cmd += f"docker run -v $(pwd):{work_dir} "
 
-    cmd += f"singularity exec --home {work_dir}"
+        if bind_mounts is not None and len(bind_mounts) > 0:
+            cmd += (' '.join([f"-v {format_bind_mount(work_dir, mount_point)}" for mount_point in bind_mounts]))
+            cmd += ' '
 
-    if bind_mounts is not None and len(bind_mounts) > 0:
-        cmd += (' --bind ' + ','.join([format_bind_mount(work_dir, mount_point) for mount_point in bind_mounts]))
+        if env is not None:
+            if len(env) > 0: cmd += ' '.join([f"-e {var['key'].upper().replace(' ', '_').replace('$', '')}={var['value']}" for var in env])
+            cmd += ' '
 
-    if parameters is None: parameters = []
-    parameters.append({'key': 'WORKDIR', 'value': work_dir})
-    for parameter in parameters:
-        pattern = parameter['key'].replace(' ', '_').upper()
-        print(f"Replacing '{pattern}' with '{parameter['value']}'")
-        command = command.replace(f"${pattern}", str(parameter['value']))
-        cmd = f"SINGULARITYENV_{parameter['key'].upper().replace(' ', '_').replace('$', '')}={parameter['value']} " + cmd
-    for var in env:
-        pattern = var['key'].replace(' ', '_').upper()
-        print(f"Replacing '{pattern}' with '{var['value']}'")
-        command = command.replace(f"${pattern}", str(var['value']))
-        cmd = f"SINGULARITYENV_{var['key'].upper().replace(' ', '_').replace('$', '')}={var['value']} " + cmd
+        if parameters is None: parameters = []
+        parameters.append({'key': 'WORKDIR', 'value': work_dir})
+        for parameter in parameters:
+            pattern = parameter['key'].replace(' ', '_').upper()
+            print(f"Replacing '{pattern}' with '{parameter['value']}'")
+            command = command.replace(f"${pattern}", str(parameter['value']))
+            cmd += f"-e {parameter['key'].upper().replace(' ', '_').replace('$', '')}={parameter['value']} "
+        for var in env:
+            pattern = var['key'].replace(' ', '_').upper()
+            print(f"Replacing '{pattern}' with '{var['value']}'")
+            command = command.replace(f"${pattern}", str(var['value']))
+            cmd += f"-e {var['key'].upper().replace(' ', '_').replace('$', '')}={var['value']} "
 
-    command = command.replace("$GPU_MODE", 'true' if gpu else 'false')
+        command = command.replace("$GPU_MODE", 'true' if gpu else 'false')
 
-    if no_cache:
-        cmd += ' --disable-cache'
+        if gpu:
+            cmd += ' --gpus all '
 
-    if gpu:
-        cmd += ' --nv'
+        cmd += f" {image} {command}"
+        print(f"Using command: '{cmd}'")
+    else:
+        if env is not None:
+            if len(env) > 0:
+                cmd += ' '.join([f"SINGULARITYENV_{var['key'].upper().replace(' ', '_').replace('$', '')}={var['value']}" for var in env])
+            cmd += ' '
 
-    cmd += f" {image} {command}"
-    print(f"Using command: '{cmd}'")
+        cmd += f"singularity exec --home {work_dir}"
 
-    # wait until now to add env variables so we don't reveal auth info to the end user
-    if docker_username is not None and docker_password is not None:
-        cmd = f"SINGULARITY_DOCKER_USERNAME={docker_username} SINGULARITY_DOCKER_PASSWORD={docker_password} " + cmd
+        if bind_mounts is not None and len(bind_mounts) > 0:
+            cmd += (' --bind ' + ','.join([format_bind_mount(work_dir, mount_point) for mount_point in bind_mounts]))
+
+        if parameters is None: parameters = []
+        parameters.append({'key': 'WORKDIR', 'value': work_dir})
+        for parameter in parameters:
+            pattern = parameter['key'].replace(' ', '_').upper()
+            print(f"Replacing '{pattern}' with '{parameter['value']}'")
+            command = command.replace(f"${pattern}", str(parameter['value']))
+            cmd = f"SINGULARITYENV_{parameter['key'].upper().replace(' ', '_').replace('$', '')}={parameter['value']} " + cmd
+        for var in env:
+            pattern = var['key'].replace(' ', '_').upper()
+            print(f"Replacing '{pattern}' with '{var['value']}'")
+            command = command.replace(f"${pattern}", str(var['value']))
+            cmd = f"SINGULARITYENV_{var['key'].upper().replace(' ', '_').replace('$', '')}={var['value']} " + cmd
+
+        command = command.replace("$GPU_MODE", 'true' if gpu else 'false')
+
+        if no_cache:
+            cmd += ' --disable-cache'
+
+        if gpu:
+            cmd += ' --nv'
+
+        cmd += f" {image} {command}"
+        print(f"Using command: '{cmd}'")
+
+        # wait until now to add env variables so we don't reveal auth info to the end user
+        if docker_username is not None and docker_password is not None:
+            cmd = f"SINGULARITY_DOCKER_USERNAME={docker_username} SINGULARITY_DOCKER_PASSWORD={docker_password} " + cmd
 
     return cmd
 

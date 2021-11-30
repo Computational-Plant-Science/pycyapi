@@ -116,6 +116,10 @@ command: echo "Hello, world!"       # entrypoint
 
 Note that your `command` may fail on some images if it contains `&&`. If you must run multiple consecutive commands, it's probably best to package them into a script.
 
+##### Singularity vs. Docker
+
+By default, the CLI will invoke Singularity to execute workflows. To instruct it to use Docker instead, use the `--docker` flag.
+
 ##### Inputs
 
 Runs involving inputs fall into 3 categories:
@@ -311,10 +315,20 @@ To set up a development environment, clone the repo with `git clone https://gith
 
 ### Tests
 
-To run unit tests:
+To verify that the CLI can correctly invoke Singularity, unit tests can be run inside the `computationalplantscience/sind` container. This container can be built from the definition at `/dockerfiles/sind/Dockerfile` with:
 
-```docker compose -f docker-compose.test.yml run -w /opt/plantit-cli/runs slurmctld python3 -m pytest /opt/plantit-cli/plantit_cli/tests/unit -s```
+```shell
+docker build --build-arg SINGULARITY_COMMITISH=v3.8.0 -t computationalplantscience/sind -f dockerfiles/sind/Dockerfile .
+```
 
-Note that integration tests invoke the Terrain API and may take some time to complete; they're rigged with a delay to allow writes to propagate from Terrain to the CyVerse Data Store (some pass/fail non-determinism occurs otherwise). To run integration tests:
+Unit tests can be run inside the container with:
 
-```docker compose -f docker-compose.test.yml run -w /opt/plantit-cli/runs slurmctld python3 -m pytest /opt/plantit-cli/plantit_cli/tests/integration -s```
+```shell
+docker run -v $(pwd):/opt/dev -w /opt/dev -it --privileged computationalplantscience/sind python -m pytest /opt/dev/plantit_cli/tests/unit -s
+```
+
+Integration tests can be run with:
+
+```shell
+docker run -v $(pwd):/opt/dev -w /opt/dev -it --privileged computationalplantscience/sind python -m pytest /opt/dev/plantit_cli/tests/integration -s
+```

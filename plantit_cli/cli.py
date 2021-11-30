@@ -53,12 +53,14 @@ def pull(
 @click.option('--plantit_url', required=False, type=str)
 @click.option('--docker_username', required=False, type=str)
 @click.option('--docker_password', required=False, type=str)
+@click.option('--docker', is_flag=True)
 @click.option('--slurm_job_array', is_flag=True)
 def run(task,
         plantit_token,
         plantit_url,
         docker_username,
         docker_password,
+        docker,
         slurm_job_array):
     with open(task, 'r') as file:
         errors, options = parse_options(yaml.safe_load(file))
@@ -69,6 +71,7 @@ def run(task,
             plantit_token=plantit_token,
             docker_username=docker_username,
             docker_password=docker_password,
+            docker=docker,
             slurm_job_array=slurm_job_array)
 
 
