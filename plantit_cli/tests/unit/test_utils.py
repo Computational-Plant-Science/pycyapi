@@ -2,11 +2,11 @@ from plantit_cli.utils import parse_docker_image_components, docker_image_exists
 
 
 def test_parse_docker_image_components():
-    full = "docker://computationalplantscience/3d-model-reconstruction:cuda"
+    full = "docker://computationalplantscience/plantit"
     owner, name, tag = parse_docker_image_components(full)
     assert owner == "computationalplantscience"
-    assert name == "3d-model-reconstruction"
-    assert tag == "cuda"
+    assert name == "plantit"
+    # assert tag == "latest"
 
 
 def test_docker_image_exists_returns_true_when_does_exist():
