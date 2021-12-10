@@ -1,16 +1,14 @@
 <div align="center">
-
 <img src="https://github.com/Computational-Plant-Science/plantit/blob/master/plantit/front_end/src/assets/logo.png?raw=true" style="position:relative;top: 75px" />
-
-<h1 align="center"
-    style="text-decoration: underline;">
-        plant<small
-            class="mb-3 text-success"
-            style="text-decoration: underline;text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000; color: #d6df5D"
-            >IT</small><small style="text-decoration: underline;text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000; color: #dee2e6">CLI</small>
+<h1 class="text-dark">
+    <span style="text-decoration: underline">plant<small
+        class="mb-3 text-success"
+        style="text-decoration: underline;text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000; color: #d6df5D"
+        >it</small
+    ></span><small>CLI</small>
 </h1>
 
-Container orchestration for reproducible phenotyping workflows on laptops, servers, or HPC
+Container workflows for image-based plant phenotyping on laptops, servers, or HPC
 
 ![CI](https://github.com/Computational-Plant-Science/plantit-cli/workflows/CI/badge.svg)
 [![PyPI version](https://badge.fury.io/py/plantit-cli.svg)](https://badge.fury.io/py/plantit-cli)
@@ -20,9 +18,8 @@ Container orchestration for reproducible phenotyping workflows on laptops, serve
 
 Features:
 
-- Parallel transfers to/from the CyVerse Data Store with Terrain API
-- Deploy Docker images as Singularity containers on clusters/servers
-- Compatible with any cluster scheduler supported by [Dask-Jobqueue](https://jobqueue.dask.org/en/latest/index.html)
+- Parallel transfers to/from the [CyVerse](https://www.cyverse.org/) [Data Store](https://www.cyverse.org/data-store) via [Terrain API](https://learning.cyverse.org/en/latest/power_users.html?highlight=tapis#cyverse-s-apis)
+- Deploy Docker images as Singularity containers on HPC clusters
 
 This package must be installed and available in the $PATH on agents bound to PlantIT.
 
@@ -64,7 +61,7 @@ This package must be installed and available in the $PATH on agents bound to Pla
 
 - Python 3.6.9+
 - [Singularity](https://sylabs.io/docs/)
-
+- a scheduler supported by [Dask-Jobqueue](https://jobqueue.dask.org/en/latest/index.html) (only required for HPC deployments)
 ## Installation
 
 To install the PlantIT CLI, use pip:

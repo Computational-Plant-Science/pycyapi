@@ -68,7 +68,7 @@ def run(options: dict,
             params = options['parameters'] if 'parameters' in options else []
             bind_mounts = options['bind_mounts'] if 'bind_mounts' in options else []
             no_cache = options['no_cache'] if 'no_cache' in options else False
-            gpu = options['gpu'] if 'gpu' in options else False
+            gpus = options['gpu'] if 'gpu' in options else False
 
             if 'jobqueue' not in options: cluster.scale(1)
             with Client(cluster) as client:
@@ -80,7 +80,7 @@ def run(options: dict,
                     parameters=params,
                     bind_mounts=bind_mounts,
                     no_cache=no_cache,
-                    gpu=gpu,
+                    gpus=gpus,
                     docker_username=docker_username,
                     docker_password=docker_password,
                     docker=docker)
@@ -110,7 +110,7 @@ def run(options: dict,
                     parameters=params + [{'key': 'INPUT', 'value': input_path}],
                     bind_mounts=bind_mounts,
                     no_cache=no_cache,
-                    gpu=gpu,
+                    gpus=gpu,
                     docker_username=docker_username,
                     docker_password=docker_password,
                     docker=docker)
@@ -146,7 +146,7 @@ def run(options: dict,
                         parameters=params + [{'key': 'INPUT', 'value': join(input_path, current_file)}],
                         bind_mounts=bind_mounts,
                         no_cache=no_cache,
-                        gpu=gpu,
+                        gpus=gpu,
                         docker_username=docker_username,
                         docker_password=docker_password,
                         docker=docker)
@@ -191,7 +191,7 @@ def run(options: dict,
                             parameters=params + [{'key': 'INPUT', 'value': join(input_path, current_file)}],
                             bind_mounts=bind_mounts,
                             no_cache=no_cache,
-                            gpu=gpu,
+                            gpus=gpu,
                             docker_username=docker_username,
                             docker_password=docker_password,
                             docker=docker)
@@ -226,7 +226,7 @@ def run(options: dict,
                     parameters=params + [{'key': 'INPUT', 'value': input_path}],
                     bind_mounts=bind_mounts,
                     no_cache=no_cache,
-                    gpu=gpu,
+                    gpus=gpu,
                     docker_username=docker_username,
                     docker_password=docker_password,
                     docker=docker)

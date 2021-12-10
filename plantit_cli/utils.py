@@ -282,7 +282,7 @@ def prep_command(
         bind_mounts: List[dict] = None,
         parameters: List[dict] = None,
         no_cache: bool = False,
-        gpu: bool = False,
+        gpus: int = 0,
         docker_username: str = None,
         docker_password: str = None,
         docker: bool = None):
@@ -312,9 +312,9 @@ def prep_command(
             command = command.replace(f"${pattern}", str(var['value']))
             cmd += f"-e {var['key'].upper().replace(' ', '_').replace('$', '')}={var['value']} "
 
-        command = command.replace("$GPU_MODE", 'true' if gpu else 'false')
+        command = command.replace("$GPUS", gpus if gpus else 0)
 
-        if gpu:
+        if gpus:
             cmd += ' --gpus all '
 
         cmd += f" {image} {command}"
@@ -343,12 +343,12 @@ def prep_command(
             command = command.replace(f"${pattern}", str(var['value']))
             cmd = f"SINGULARITYENV_{var['key'].upper().replace(' ', '_').replace('$', '')}={var['value']} " + cmd
 
-        command = command.replace("$GPU_MODE", 'true' if gpu else 'false')
+        command = command.replace("$GPUS", gpus if gpus else 0)
 
         if no_cache:
             cmd += ' --disable-cache'
 
-        if gpu:
+        if gpus:
             cmd += ' --nv'
 
         cmd += f" {image} {command}"
