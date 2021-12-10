@@ -312,7 +312,7 @@ def prep_command(
             command = command.replace(f"${pattern}", str(var['value']))
             cmd += f"-e {var['key'].upper().replace(' ', '_').replace('$', '')}={var['value']} "
 
-        command = command.replace("$GPUS", gpus if gpus else 0)
+        command = command.replace("$GPUS", str(gpus if gpus else 0))
 
         if gpus:
             cmd += ' --gpus all '
@@ -343,7 +343,7 @@ def prep_command(
             command = command.replace(f"${pattern}", str(var['value']))
             cmd = f"SINGULARITYENV_{var['key'].upper().replace(' ', '_').replace('$', '')}={var['value']} " + cmd
 
-        command = command.replace("$GPUS", gpus if gpus else 0)
+        command = command.replace("$GPUS", str(gpus if gpus else 0))
 
         if no_cache:
             cmd += ' --disable-cache'
