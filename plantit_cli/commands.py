@@ -5,6 +5,7 @@ from os.path import join, getsize, basename
 from pprint import pprint
 from typing import List
 from zipfile import ZIP_DEFLATED, ZipFile
+import glob
 
 from dask_jobqueue import SLURMCluster, PBSCluster, MoabCluster, SGECluster, LSFCluster, OARCluster
 from distributed import as_completed, LocalCluster, Client
@@ -19,7 +20,7 @@ testdir = os.environ.get('TEST_DIRECTORY')
 
 
 def clean(paths: List[str], patterns: List[str]):
-    for path in paths:
+    for path in [pth for p in [glob.glob(path) for path in paths] for pth in p]:
         for pattern in patterns:
             replace_text(path, pattern, ''.join(['*' for _ in pattern]))
 
