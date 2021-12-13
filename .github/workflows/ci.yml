@@ -35,11 +35,11 @@ jobs:
           pip install -e .
           
           # install go
-          curl -OL https://golang.org/dl/go1.16.7.linux-amd64.tar.gz
-          sha256sum go1.16.7.linux-amd64.tar.gz
-          sudo tar -C /usr/local -xvf go1.16.7.linux-amd64.tar.gz
-          echo "export PATH=$PATH:/usr/local/go/bin" >> ~/.profile
-          source ~/.profile
+          # curl -OL https://golang.org/dl/go1.16.7.linux-amd64.tar.gz
+          # sha256sum go1.16.7.linux-amd64.tar.gz
+          # sudo tar -C /usr/local -xvf go1.16.7.linux-amd64.tar.gz
+          # echo "export PATH=$PATH:/usr/local/go/bin" >> ~/.profile
+          # source ~/.profile
           
           # install singularity
           wget https://github.com/sylabs/singularity/releases/download/v${SINGULARITY_VERSION}/singularity-ce-${SINGULARITY_VERSION}.tar.gz
@@ -153,18 +153,18 @@ jobs:
             python setup.py sdist bdist_wheel
             python -m twine upload dist/*
           fi
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Build & push Docker image
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        run: |
-          docker build -t computationalplantscience/sind --no-cache -f dockerfiles/sind/Dockerfile .
-          docker push computationalplantscience/sind
+      # - name: Login to Docker Hub
+      #   uses: docker/login-action@v1
+      #   with:
+      #     username: ${{ secrets.DOCKER_USERNAME }}
+      #     password: ${{ secrets.DOCKER_PASSWORD }}
+      # - name: Build & push Docker image
+      #   env:
+      #     DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      #     DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      #   run: |
+      #     docker build -t computationalplantscience/sind --no-cache -f dockerfiles/sind/Dockerfile .
+      #     docker push computationalplantscience/sind
       - name: Slack success notification
         uses: rtCamp/action-slack-notify@v2
         env:
