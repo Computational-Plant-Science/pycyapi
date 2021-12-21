@@ -172,7 +172,7 @@ bind_mounts:
 
 ##### CUDA GPU mode
 
-To instruct Singularity to bind to NVIDIA GPU drivers on the host, add a `gpu: True` attribute to your configuration.
+To instruct Singularity to bind to NVIDIA GPU drivers on the host, add a `gpus` attribute to your configuration, with an integer value corresponding to the number of GPU devices to request/use.
 
 ##### HPC/HTC
 

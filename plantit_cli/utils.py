@@ -149,11 +149,11 @@ def parse_options(raw: dict) -> (List[str], dict):
         if not isinstance(no_cache, bool):
             errors.append('Attribute \'no_cache\' must be a bool')
 
-    gpu = None
-    if 'gpu' in raw:
-        gpu = raw['gpu']
-        if not isinstance(gpu, bool):
-            errors.append('Attribute \'gpu\' must be a bool')
+    gpus = None
+    if 'gpus' in raw:
+        gpus = raw['gpus']
+        if not isinstance(gpus, bool):
+            errors.append('Attribute \'gpus\' must be an int')
 
     jobqueue = None
     if 'jobqueue' in raw:
@@ -194,7 +194,7 @@ def parse_options(raw: dict) -> (List[str], dict):
         'log_file': log_file,
         'jobqueue': jobqueue,
         'no_cache': no_cache,
-        'gpu': gpu
+        'gpus': gpus
     })
 
 
