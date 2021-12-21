@@ -152,7 +152,7 @@ def parse_options(raw: dict) -> (List[str], dict):
     gpus = None
     if 'gpus' in raw:
         gpus = raw['gpus']
-        if not isinstance(gpus, bool):
+        if not isinstance(gpus, int):
             errors.append('Attribute \'gpus\' must be an int')
 
     jobqueue = None
