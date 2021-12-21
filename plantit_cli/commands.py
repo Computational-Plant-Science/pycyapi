@@ -71,7 +71,7 @@ def run(options: dict,
             no_cache = options['no_cache'] if 'no_cache' in options else False
             gpus = options['gpu'] if 'gpu' in options else False
 
-            if 'jobqueue' not in options: cluster.scale(1)
+            if 'jobqueue' in options: cluster.scale(1)
             with Client(cluster) as client:
                 command = prep_command(
                     work_dir=options['workdir'],
