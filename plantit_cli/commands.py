@@ -65,6 +65,8 @@ def run(options: dict,
             else:
                 raise ValueError(f"Unsupported jobqueue configuration: {jobqueue}")
 
+            print(f"Cluster job script: {cluster.job_script()}")
+
         if 'output' in options and 'from' in options['output']: output_path = options['output']['from']
         else: output_path = '.'
 
@@ -73,7 +75,7 @@ def run(options: dict,
             params = options['parameters'] if 'parameters' in options else []
             bind_mounts = options['bind_mounts'] if 'bind_mounts' in options else []
             no_cache = options['no_cache'] if 'no_cache' in options else False
-            gpus = options['gpus'] if 'gpus' in options else False
+            gpus = options['gpus'] if 'gpus' in options else 0
 
             if 'jobqueue' in options: cluster.scale(1)
             with Client(cluster) as client:
@@ -103,7 +105,7 @@ def run(options: dict,
             params = options['parameters'] if 'parameters' in options else []
             bind_mounts = options['bind_mounts'] if 'bind_mounts' in options else []
             no_cache = options['no_cache'] if 'no_cache' in options else False
-            gpus = options['gpus'] if 'gpus' in options else False
+            gpus = options['gpus'] if 'gpus' in options else 0
 
             if 'jobqueue' in options: cluster.scale(1)
             with Client(cluster) as client:
@@ -139,7 +141,7 @@ def run(options: dict,
                 patterns = options['input']['patterns'] if 'patterns' in options['input'] else []
                 bind_mounts = options['bind_mounts'] if 'bind_mounts' in options else []
                 no_cache = options['no_cache'] if 'no_cache' in options else False
-                gpus = options['gpus'] if 'gpus' in options else False
+                gpus = options['gpus'] if 'gpus' in options else 0
 
                 if 'jobqueue' in options: cluster.scale(1)
                 with Client(cluster) as client:
@@ -183,7 +185,7 @@ def run(options: dict,
                 patterns = options['input']['patterns'] if 'patterns' in options['input'] else []
                 bind_mounts = options['bind_mounts'] if 'bind_mounts' in options else []
                 no_cache = options['no_cache'] if 'no_cache' in options else False
-                gpus = options['gpus'] if 'gpus' in options else False
+                gpus = options['gpus'] if 'gpus' in options else 0
 
                 with Client(cluster) as client:
                     num_files = len(files)
@@ -219,7 +221,7 @@ def run(options: dict,
             patterns = options['input']['patterns'] if 'patterns' in options['input'] else []
             bind_mounts = options['bind_mounts'] if 'bind_mounts' in options else []
             no_cache = options['no_cache'] if 'no_cache' in options else False
-            gpus = options['gpus'] if 'gpus' in options else False
+            gpus = options['gpus'] if 'gpus' in options else 0
 
             if 'jobqueue' in options: cluster.scale(1)
             with Client(cluster) as client:
