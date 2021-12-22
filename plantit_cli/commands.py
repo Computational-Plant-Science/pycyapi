@@ -37,31 +37,31 @@ def run(options: dict,
             cluster = LocalCluster()
         else:
             jobqueue = options['jobqueue']
-            if 'gpus' in options and int(options['gpus']) > 0: jobqueue['extra'] = [f"--gres=gpu:{options['gpus']}"]
+            gpus = options['gpus']
             if 'slurm' in jobqueue:
                 print("Requesting SLURM cluster:")
                 pprint(jobqueue['slurm'])
-                cluster = SLURMCluster(**jobqueue['slurm'])
+                cluster = SLURMCluster(extra=[f"--gres=gpu:{gpus}"], **jobqueue['slurm']) if gpus else SLURMCluster(**jobqueue['slurm'])
             elif 'pbs' in jobqueue:
                 print("Requesting PBS cluster:")
                 pprint(jobqueue['pbs'])
-                cluster = PBSCluster(**jobqueue['pbs'])
+                cluster = PBSCluster(extra=[f"--gres=gpu:{gpus}"], **jobqueue['pbs']) if gpus else PBSCluster(**jobqueue['pbs'])
             elif 'moab' in jobqueue:
                 print("Requesting MOAB cluster:")
                 pprint(jobqueue['moab'])
-                cluster = MoabCluster(**jobqueue['moab'])
+                cluster = MoabCluster(extra=[f"--gres=gpu:{gpus}"], **jobqueue['moab']) if gpus else MoabCluster(**jobqueue['moab'])
             elif 'sge' in jobqueue:
                 print("Requesting SGE cluster:")
-                cluster = SGECluster(**jobqueue['sge'])
                 pprint(jobqueue['sge'])
+                cluster = SGECluster(extra=[f"--gres=gpu:{gpus}"], **jobqueue['sge']) if gpus else SGECluster(**jobqueue['sge'])
             elif 'lsf' in jobqueue:
                 print("Requesting LSF cluster:")
-                cluster = LSFCluster(**jobqueue['lsf'])
                 pprint(jobqueue['lsf'])
+                cluster = LSFCluster(extra=[f"--gres=gpu:{gpus}"], **jobqueue['lsf']) if gpus else LSFCluster(**jobqueue['lsf'])
             elif 'oar' in jobqueue:
                 print("Requesting OAR cluster:")
                 pprint(jobqueue['oar'])
-                cluster = OARCluster(**jobqueue['oar'])
+                cluster = OARCluster(extra=[f"--gres=gpu:{gpus}"], **jobqueue['oar']) if gpus else OARCluster(**jobqueue['oar'])
             else:
                 raise ValueError(f"Unsupported jobqueue configuration: {jobqueue}")
 
