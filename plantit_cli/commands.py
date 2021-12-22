@@ -37,6 +37,7 @@ def run(options: dict,
             cluster = LocalCluster()
         else:
             jobqueue = options['jobqueue']
+            if 'gpus' in options and int(options['gpus']) > 0: jobqueue['extra'] = [f"--gres=gpu:{options['gpus']}"]
             if 'slurm' in jobqueue:
                 print("Requesting SLURM cluster:")
                 pprint(jobqueue['slurm'])
