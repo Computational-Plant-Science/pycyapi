@@ -169,6 +169,10 @@ def push_file(from_path: str, to_prefix: str, token: str):
                 response.raise_for_status()
 
 
+def push_file_wrapper(from_path: str, to_prefix: str, token: str):
+    push_file(from_path, to_prefix, token)
+
+
 def push_dir(from_path: str,
              to_prefix: str,
              token: str,
@@ -187,7 +191,9 @@ def push_dir(from_path: str,
         print(f"Uploading directory '{from_path}' with {len(from_paths)} file(s) to '{to_prefix}'")
         with closing(Pool(processes=multiprocessing.cpu_count())) as pool:
             args = [(path, to_prefix, token) for path in [str(p) for p in from_paths]]
-            pool.starmap(push_file, args)
+            # use wrapper to avoid Pickle error (probably caused by tenacity annotation)
+            # https://stackoverflow.com/questions/63069243/multiprocessing-pool-maybeencodingerror-error-sending-result-occurs-at-last-obj
+            pool.starmap(push_file_wrapper, args)
     elif is_file:
         push_file(from_path, to_prefix)
     else:
