@@ -151,12 +151,12 @@ def pull_dir(
         verify_checksums(from_path, paths)
 
 
-@retry(
-    wait=wait_exponential(multiplier=1, min=4, max=10),
-    stop=stop_after_attempt(3),
-    retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
-        RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
-        Timeout) | retry_if_exception_type(HTTPError)))
+# @retry(
+#     wait=wait_exponential(multiplier=1, min=4, max=10),
+#     stop=stop_after_attempt(3),
+#     retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
+#         RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
+#         Timeout) | retry_if_exception_type(HTTPError)))
 def push_file(from_path: str, to_prefix: str, token: str):
     print(f"Uploading file '{from_path}' to '{to_prefix}'")
     with open(from_path, 'rb') as file:
