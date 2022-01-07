@@ -1,7 +1,7 @@
 import json
 import multiprocessing
 from contextlib import closing
-from multiprocessing import Pool
+from multiprocessing.dummy import Pool
 from os.path import isdir, isfile, basename, join
 from typing import List
 
@@ -151,12 +151,12 @@ def pull_dir(
         verify_checksums(from_path, paths)
 
 
-# @retry(
-#     wait=wait_exponential(multiplier=1, min=4, max=10),
-#     stop=stop_after_attempt(3),
-#     retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
-#         RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
-#         Timeout) | retry_if_exception_type(HTTPError)))
+@retry(
+    wait=wait_exponential(multiplier=1, min=4, max=10),
+    stop=stop_after_attempt(3),
+    retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
+        RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
+        Timeout) | retry_if_exception_type(HTTPError)))
 def push_file(from_path: str, to_prefix: str, token: str):
     print(f"Uploading file '{from_path}' to '{to_prefix}'")
     with open(from_path, 'rb') as file:
@@ -167,10 +167,6 @@ def push_file(from_path: str, to_prefix: str, token: str):
                 print(f"File '{join(to_prefix, basename(file.name))}' already exists, skipping upload")
             else:
                 response.raise_for_status()
-
-
-def push_file_wrapper(from_path: str, to_prefix: str, token: str):
-    push_file(from_path, to_prefix, token)
 
 
 def push_dir(from_path: str,
@@ -193,7 +189,7 @@ def push_dir(from_path: str,
             args = [(path, to_prefix, token) for path in [str(p) for p in from_paths]]
             # use wrapper to avoid Pickle error (probably caused by tenacity annotation)
             # https://stackoverflow.com/questions/63069243/multiprocessing-pool-maybeencodingerror-error-sending-result-occurs-at-last-obj
-            pool.starmap(push_file_wrapper, args)
+            pool.starmap(push_file, args)
     elif is_file:
         push_file(from_path, to_prefix)
     else:
