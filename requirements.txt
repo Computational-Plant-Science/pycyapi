@@ -1,0 +1,9 @@
+requests
+pyaml
+click
+tenacity
+dask
+dask_jobqueue
+tqdm
+pytest
+python-irodsclient

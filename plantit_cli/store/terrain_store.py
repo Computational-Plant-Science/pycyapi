@@ -75,7 +75,12 @@ def list_dir(path: str, token: str) -> List[str]:
     retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
         RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
         Timeout) | retry_if_exception_type(HTTPError)))
-def pull_file(from_path: str, to_path: str, token: str, index: int = None, overwrite: bool = False):
+def pull_file(
+        from_path: str,
+        to_path: str,
+        token: str,
+        index: int = None,
+        overwrite: bool = False):
     to_path_full = f"{to_path}/{from_path.split('/')[-1]}"
 
     if isfile(to_path_full) and not overwrite:
@@ -104,7 +109,10 @@ def pull_file(from_path: str, to_path: str, token: str, index: int = None, overw
     retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
         RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
         Timeout) | retry_if_exception_type(HTTPError)))
-def verify_checksums(from_path: str, token: str, expected_pairs: List[dict]):
+def verify_checksums(
+        from_path: str,
+        token: str,
+        expected_pairs: List[dict]):
     with requests.post('https://de.cyverse.org/terrain/secured/filesystem/stat',
                        headers={'Authorization': f"Bearer {token}"},
                        data={'paths': expected_pairs}) as response:
