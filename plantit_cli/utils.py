@@ -198,29 +198,6 @@ def parse_options(raw: dict) -> (List[str], dict):
     })
 
 
-def update_status(state: int, description: str, api_url: str = None, api_token: str = None, retries: int = 3):
-    print(description)
-    if api_url is not None and api_url != '':
-        if api_token is None or api_token == '':
-            raise ValueError(f"You must provide a PlantIT API access token if you provide an API URL")
-
-        failures = 1
-        while failures <= retries:
-            try:
-                requests.post(
-                    api_url,
-                    data={'state': int(state), 'description': description},
-                    headers={"Authorization": f"Token {api_token}"})
-                break
-            except Exception:
-                print(traceback.format_exc())
-                if failures > retries:
-                    print(f"Failed to report status to PlantIT after {failures} failures")
-                    break
-                sleep(failures * 0.5)
-                failures += 1
-
-
 def docker_image_exists(name, owner=None, tag=None):
     url = f"https://hub.docker.com/v2/repositories/{owner if owner is not None else 'library'}/{name}/"
     if tag is not None:

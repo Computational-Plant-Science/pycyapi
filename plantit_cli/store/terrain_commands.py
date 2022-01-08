@@ -1,59 +1,58 @@
+import logging
 import traceback
 from os import listdir, getcwd
 from pathlib import Path
 from typing import List
 
-from plantit_cli.status import Status
 from plantit_cli.store import terrain_store
-from plantit_cli.utils import update_status
+
+logger = logging.getLogger(__name__)
 
 
 def pull(
+        token: str,
         remote_path: str,
         local_path: str = None,
-        cyverse_token: str = None,
         patterns: List[str] = None,
         checksums: List[dict] = None,
-        overwrite: bool = False,
-        plantit_url: str = None,
-        plantit_token: str = None):
+        overwrite: bool = False):
     try:
         local_path = getcwd() if (local_path is None or local_path == '') else local_path
         Path(local_path).mkdir(exist_ok=True)
 
-        if terrain_store.dir_exists(remote_path, cyverse_token):
-            terrain_store.pull_dir(from_path=remote_path, to_path=local_path, token=cyverse_token, patterns=patterns, checksums=checksums, overwrite=overwrite)
-        elif terrain_store.file_exists(remote_path, cyverse_token):
-            terrain_store.pull_file(from_path=remote_path, to_path=local_path, token=cyverse_token, overwrite=overwrite)
+        if terrain_store.dir_exists(remote_path, token):
+            terrain_store.pull_dir(from_path=remote_path, to_path=local_path, token=token, patterns=patterns, checksums=checksums,
+                                   overwrite=overwrite)
+        elif terrain_store.file_exists(remote_path, token):
+            terrain_store.pull_file(from_path=remote_path, to_path=local_path, token=token, overwrite=overwrite)
         else:
             msg = f"Path does not exist: {remote_path}"
-            update_status(Status.FAILED, msg, plantit_url, plantit_token)
+            logger.error(msg)
             raise ValueError(msg)
 
         files = listdir(local_path)
         if len(files) == 0:
             msg = f"No files found at path '{remote_path}'" + f" matching patterns {patterns}"
-            update_status(Status.FAILED, msg, plantit_url, plantit_token)
+            logger.error(msg)
             raise ValueError(msg)
-        update_status(Status.PULLING, f"Pulled input(s): {', '.join(files)}", plantit_url, plantit_token)
+        logger.info(f"Pulled input(s): {', '.join(files)}")
         return local_path
     except:
-        update_status(Status.FAILED, f"Failed to pull inputs: {traceback.format_exc()}", plantit_url, plantit_token)
+        logger.error(f"Pull failed: {traceback.format_exc()}")
         raise
 
 
-def push(local_path: str,
-         remote_path: str,
-         cyverse_token: str,
-         include_patterns: List[str] = None,
-         include_names: List[str] = None,
-         exclude_patterns: List[str] = None,
-         exclude_names: List[str] = None,
-         plantit_url: str = None,
-         plantit_token: str = None):
+def push(
+        token: str,
+        local_path: str,
+        remote_path: str,
+        include_patterns: List[str] = None,
+        include_names: List[str] = None,
+        exclude_patterns: List[str] = None,
+        exclude_names: List[str] = None):
     try:
-        terrain_store.push_dir(local_path, remote_path, cyverse_token, include_patterns, include_names, exclude_patterns, exclude_names)
-        update_status(Status.PUSHING, f"Pushed output(s)", plantit_url, plantit_token)
+        terrain_store.push_dir(local_path, remote_path, token, include_patterns, include_names, exclude_patterns, exclude_names)
+        logger.info(f"Pushed output(s)")
     except:
-        update_status(Status.FAILED, f"Failed to push outputs: {traceback.format_exc()}", plantit_url, plantit_token)
+        logger.error(f"Failed to push outputs: {traceback.format_exc()}")
         raise
