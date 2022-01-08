@@ -3,7 +3,7 @@ import pprint
 from os.path import basename
 import requests
 
-DEFAULT_SLEEP = 20
+DEFAULT_SLEEP = 10
 
 
 def list_files(path, token):
@@ -16,7 +16,6 @@ def list_files(path, token):
 
 
 def create_collection(path, token, sleep=DEFAULT_SLEEP):
-    time.sleep(sleep)
     with requests.post('https://de.cyverse.org/terrain/secured/filesystem/directory/create',
                        json={'path': path},
                        headers={'Authorization': 'Bearer ' + token}) as response:
@@ -32,7 +31,7 @@ def upload_file(local_path, remote_path, token, sleep=DEFAULT_SLEEP):
                            files={'file': (basename(local_path), file, 'application/octet-stream')}) as response:
             pprint.pprint(response.json())
             response.raise_for_status()
-    time.sleep(sleep)
+    time.sleep(sleep * 3)
 
 
 def delete_collection(path, token, sleep=DEFAULT_SLEEP):

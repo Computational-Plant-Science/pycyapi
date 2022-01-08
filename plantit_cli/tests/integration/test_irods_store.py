@@ -6,6 +6,7 @@ from os.path import join, isfile
 import pytest
 from irods.session import iRODSSession
 from irods.ticket import Ticket
+from irods.exception import CollectionDoesNotExist
 
 from plantit_cli.store import irods_store
 from plantit_cli.tests.integration.test_utils import delete_collection, upload_file, create_collection
@@ -55,9 +56,14 @@ def test_file_exists(remote_base_path):
         # upload files
         upload_file(file1_path, remote_path, token)
 
+        # create iRODS session
+        session = iRODSSession(host='data.cyverse.org', port=1247, user='anonymous', password='', zone='iplant')
+        ticket = TerrainTicket.get(join(remote_path, file1_name), uses=2)
+        Ticket(session, ticket).supply()
+
         # test remote files exist
-        assert irods_store.file_exists(join(remote_path, file1_name), token)
-        assert not irods_store.file_exists(join(remote_path, file2_name), token)
+        assert irods_store.file_exists(join(remote_path, file1_name), session)
+        assert not irods_store.file_exists(join(remote_path, file2_name), session)
     finally:
         clear_dir(testdir)
         delete_collection(remote_path, token)
@@ -84,8 +90,13 @@ def test_list_directory(remote_base_path):
         upload_file(file1_path, remote_path, token)
         upload_file(file2_path, remote_path, token)
 
+        # create iRODS session
+        session = iRODSSession(host='data.cyverse.org', port=1247, user='anonymous', password='', zone='iplant')
+        ticket = TerrainTicket.get(remote_path)
+        Ticket(session, ticket).supply()
+
         # list files
-        files = irods_store.list_dir(remote_path, token)
+        files = irods_store.list_dir(remote_path, session)
 
         # check files
         assert join(remote_path, file1_name) in files
@@ -95,18 +106,28 @@ def test_list_directory(remote_base_path):
         delete_collection(remote_path, token)
 
 
-# @pytest.mark.skip(reason='debug')
+#TODO move next 2 to test irods commands
+
+@pytest.mark.skip(reason='debug')
 def test_list_directory_no_retries_when_path_does_not_exist(remote_base_path):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
-    with pytest.raises(ValueError):
-        irods_store.list_dir(remote_path, token)
+    # create iRODS session
+    session = iRODSSession(host='data.cyverse.org', port=1247, user='anonymous', password='', zone='iplant')
+    ticket = TerrainTicket.get(remote_path)
+    Ticket(session, ticket).supply()
+    with pytest.raises(CollectionDoesNotExist):
+        irods_store.list_dir(remote_path, session)
 
 
-# @pytest.mark.skip(reason='debug')
+@pytest.mark.skip(reason='debug')
 def test_list_directory_retries_when_token_invalid(remote_base_path):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
-    with pytest.raises(ValueError):
-        irods_store.list_dir(remote_path, token)
+    # create iRODS session
+    session = iRODSSession(host='data.cyverse.org', port=1247, user='anonymous', password='', zone='iplant')
+    ticket = TerrainTicket.get(remote_path)
+    Ticket(session, ticket).supply()
+    with pytest.raises(CollectionDoesNotExist):
+        irods_store.list_dir(remote_path, session)
 
 
 # @pytest.mark.skip(reason='debug')

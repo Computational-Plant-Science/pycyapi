@@ -27,12 +27,11 @@ def check_hello(file, name):
 class TerrainTicket:
     @staticmethod
     def get(path: str, mode: str = 'read', public: bool = True, uses: int = 1):
-        print(path)
         response = requests.post(
             f"https://de.cyverse.org/terrain/secured/filesystem/tickets?mode={mode}&public={str(public).lower()}&uses-limit={uses}",
             data=json.dumps({'paths': [path]}),
             headers={'Authorization': f"Bearer {TerrainToken.get()}", 'Content-Type': 'application/json'}).json()
-        print(response)
+        # print(response)
         return response['tickets'][0]['ticket-id']
 
 
@@ -51,7 +50,6 @@ class TerrainToken:
         if cyverse_password is None: raise ValueError("Missing environment variable 'CYVERSE_PASSWORD'")
 
         response = requests.get('https://de.cyverse.org/terrain/token/cas', auth=(cyverse_username, cyverse_password)).json()
-        print(response)
+        # print(response)
         TerrainToken.__token = response['access_token']
-
         return TerrainToken.__token

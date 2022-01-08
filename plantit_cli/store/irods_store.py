@@ -14,6 +14,7 @@ Ticket(s, <ticket>).supply()
 
 import json
 import multiprocessing
+import traceback
 from contextlib import closing
 from multiprocessing.dummy import Pool
 from os.path import isdir, isfile, basename, join
@@ -23,7 +24,8 @@ import requests
 from requests import ReadTimeout, Timeout, HTTPError, RequestException
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
 from irods.session import iRODSSession
-from irods.models import Collection
+from irods.models import Collection, DataObject
+from irods.exception import CollectionDoesNotExist, NoResultFound
 
 from plantit_cli.utils import list_files
 
@@ -35,7 +37,7 @@ from plantit_cli.utils import list_files
         RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
         Timeout) | retry_if_exception_type(HTTPError)))
 def dir_exists(path: str, session: iRODSSession) -> bool:
-    results = session.query(Collection).filter(Collection.name == path).all()
+    results = session.query(Collection).filter(Collection.name == path).one()
     return len(results) > 0
 
 @retry(
@@ -45,7 +47,12 @@ def dir_exists(path: str, session: iRODSSession) -> bool:
         RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
         Timeout) | retry_if_exception_type(HTTPError)))
 def file_exists(path: str, session: iRODSSession) -> bool:
-    pass
+    try:
+        session.data_objects.get(path)
+        return True
+    except (NoResultFound, CollectionDoesNotExist):
+        # print(traceback.format_exc())
+        return False
 
 
 @retry(
@@ -55,7 +62,11 @@ def file_exists(path: str, session: iRODSSession) -> bool:
         RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
         Timeout) | retry_if_exception_type(HTTPError)))
 def list_dir(path: str, session: iRODSSession) -> List[str]:
-    pass
+    collection = session.collections.get(path)
+    objects = collection.data_objects
+    subcols = collection.subcollections
+    return [col.path for col in subcols] + [obj.path for obj in objects]
+
 
 
 @retry(
