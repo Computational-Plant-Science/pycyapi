@@ -1,6 +1,7 @@
 import os
 from os import listdir, remove
 from os.path import isdir, isfile, islink, join
+import json
 import shutil
 import requests
 
@@ -23,13 +24,25 @@ def check_hello(file, name):
         assert f"Hello, {name}!" in line
 
 
-class Token:
+class TerrainTicket:
+    @staticmethod
+    def get(path: str, mode: str = 'read', public: bool = True, uses: int = 1):
+        print(path)
+        response = requests.post(
+            f"https://de.cyverse.org/terrain/secured/filesystem/tickets?mode={mode}&public={str(public).lower()}&uses-limit={uses}",
+            data=json.dumps({'paths': [path]}),
+            headers={'Authorization': f"Bearer {TerrainToken.get()}", 'Content-Type': 'application/json'}).json()
+        print(response)
+        return response['tickets'][0]['ticket-id']
+
+
+class TerrainToken:
     __token = None
 
     @staticmethod
     def get():
-        if Token.__token is not None:
-            return Token.__token
+        if TerrainToken.__token is not None:
+            return TerrainToken.__token
 
         cyverse_username = os.environ.get('CYVERSE_USERNAME', None)
         cyverse_password = os.environ.get('CYVERSE_PASSWORD', None)
@@ -39,6 +52,6 @@ class Token:
 
         response = requests.get('https://de.cyverse.org/terrain/token/cas', auth=(cyverse_username, cyverse_password)).json()
         print(response)
-        Token.__token = response['access_token']
+        TerrainToken.__token = response['access_token']
 
-        return Token.__token
+        return TerrainToken.__token

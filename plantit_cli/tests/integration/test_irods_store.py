@@ -4,10 +4,12 @@ from os import environ
 from os.path import join, isfile
 
 import pytest
-from plantit_cli.store import terrain_store
+from irods.session import iRODSSession
+from irods.ticket import Ticket
 
+from plantit_cli.store import irods_store
 from plantit_cli.tests.integration.test_utils import delete_collection, upload_file, create_collection
-from plantit_cli.tests.utils import clear_dir, TerrainToken
+from plantit_cli.tests.utils import clear_dir, TerrainToken, TerrainTicket
 
 message = "Message!"
 testdir = environ.get('TEST_DIRECTORY')
@@ -22,12 +24,17 @@ def test_directory_exists(remote_base_path):
         # prep collection
         create_collection(remote_path, token)
 
+        # create iRODS session
+        session = iRODSSession(host='data.cyverse.org', port=1247, user='anonymous', password='', zone='iplant')
+        ticket = TerrainTicket.get(remote_path)
+        Ticket(session, ticket).supply()
+
         # test remote directories exist
-        assert terrain_store.dir_exists(remote_path, token)
-        assert not terrain_store.dir_exists(join(remote_base_path, "notCollection"), token)
+        assert irods_store.dir_exists(remote_path, session)
+        assert not irods_store.dir_exists(join(remote_base_path, "notCollection"), session)
     finally:
         clear_dir(testdir)
-        delete_collection(remote_path, token)
+        # delete_collection(remote_path, token)
 
 
 # @pytest.mark.skip(reason='debug')
@@ -49,8 +56,8 @@ def test_file_exists(remote_base_path):
         upload_file(file1_path, remote_path, token)
 
         # test remote files exist
-        assert terrain_store.file_exists(join(remote_path, file1_name), token)
-        assert not terrain_store.file_exists(join(remote_path, file2_name), token)
+        assert irods_store.file_exists(join(remote_path, file1_name), token)
+        assert not irods_store.file_exists(join(remote_path, file2_name), token)
     finally:
         clear_dir(testdir)
         delete_collection(remote_path, token)
@@ -78,7 +85,7 @@ def test_list_directory(remote_base_path):
         upload_file(file2_path, remote_path, token)
 
         # list files
-        files = terrain_store.list_dir(remote_path, token)
+        files = irods_store.list_dir(remote_path, token)
 
         # check files
         assert join(remote_path, file1_name) in files
@@ -92,14 +99,14 @@ def test_list_directory(remote_base_path):
 def test_list_directory_no_retries_when_path_does_not_exist(remote_base_path):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
     with pytest.raises(ValueError):
-        terrain_store.list_dir(remote_path, token)
+        irods_store.list_dir(remote_path, token)
 
 
 # @pytest.mark.skip(reason='debug')
 def test_list_directory_retries_when_token_invalid(remote_base_path):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
     with pytest.raises(ValueError):
-        terrain_store.list_dir(remote_path, token)
+        irods_store.list_dir(remote_path, token)
 
 
 # @pytest.mark.skip(reason='debug')
@@ -120,7 +127,7 @@ def test_download_file(remote_base_path):
         upload_file(file_path, remote_path, token)
 
         # download file
-        terrain_store.pull_file(join(remote_path, file_name), testdir, token)
+        irods_store.pull_file(join(remote_path, file_name), testdir, token)
 
         # check download
         assert isfile(file_path)
@@ -155,7 +162,7 @@ def test_download_directory(remote_base_path):
         os.remove(file2_path)
 
         # download files
-        terrain_store.pull_dir(remote_path, testdir, token, ['.txt'])
+        irods_store.pull_dir(remote_path, testdir, ['.txt'], token)
 
         # check downloads
         assert isfile(file1_path)

@@ -3,7 +3,16 @@ import pprint
 from os.path import basename
 import requests
 
-DEFAULT_SLEEP = 50
+DEFAULT_SLEEP = 20
+
+
+def list_files(path, token):
+    with requests.get(f"https://de.cyverse.org/terrain/secured/filesystem/paged-directory?path={path}&limit=1000",
+                      headers={'Authorization': 'Bearer ' + token}) as response:
+        content = response.json()
+        pprint.pprint(content)
+        response.raise_for_status()
+        return content['files']
 
 
 def create_collection(path, token, sleep=DEFAULT_SLEEP):
@@ -14,16 +23,6 @@ def create_collection(path, token, sleep=DEFAULT_SLEEP):
         pprint.pprint(response.json())
         response.raise_for_status()
     time.sleep(sleep)
-
-
-def list_files(path, token, sleep=DEFAULT_SLEEP):
-    time.sleep(sleep)
-    with requests.get(f"https://de.cyverse.org/terrain/secured/filesystem/paged-directory?path={path}&limit=1000",
-                      headers={'Authorization': 'Bearer ' + token}) as response:
-        content = response.json()
-        pprint.pprint(content)
-        response.raise_for_status()
-        return content['files']
 
 
 def upload_file(local_path, remote_path, token, sleep=DEFAULT_SLEEP):

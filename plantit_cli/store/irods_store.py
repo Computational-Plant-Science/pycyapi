@@ -35,7 +35,7 @@ from plantit_cli.utils import list_files
         RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
         Timeout) | retry_if_exception_type(HTTPError)))
 def dir_exists(path: str, session: iRODSSession) -> bool:
-    results = session.query(Collection).filter(path in Collection.name)
+    results = session.query(Collection).filter(Collection.name == path).all()
     return len(results) > 0
 
 @retry(
