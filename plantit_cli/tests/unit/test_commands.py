@@ -3,10 +3,13 @@ from os import environ, listdir
 from os.path import join, isfile
 from tempfile import TemporaryDirectory
 
+import pytest
+
 from plantit_cli import commands
 from plantit_cli.tests.utils import clear_dir
 
-message = "Message"
+message = "Message!"
+testdir = environ.get('TEST_DIRECTORY')
 
 
 def test_zip_all_files_are_included_by_default(file_name_1, file_name_2):
@@ -29,7 +32,6 @@ def test_zip_all_files_are_included_by_default(file_name_1, file_name_2):
 
             with zipfile.ZipFile(join(test_dir, zip_name), 'r') as zip_file:
                 zip_file.extractall(test_dir)
-                print(listdir(test_dir))
                 assert isfile(join(test_dir, file_name_1))
                 assert isfile(join(test_dir, file_name_2))
         finally:
@@ -57,74 +59,77 @@ def test_zip_all_files_are_included_by_default(file_name_1, file_name_2):
 #         clear_dir(test_dir)
 
 
-def test_run_parameters(file_name_1, file_name_2):
-    with TemporaryDirectory() as temp_dir:
-        input_file_path_1 = join(temp_dir, file_name_1)
-        input_file_path_2 = join(temp_dir, file_name_2)
-        output_file_path = join(temp_dir, 'output.txt')
-        with open(input_file_path_1, "w") as file1, open(input_file_path_2, "w") as file2:
-            file1.write('Hello, 1!')
-            file2.write('Hello, 2!')
-
+def test_run_parameters():
+    try:
         options = {
-            'workdir': temp_dir,
+            'workdir': testdir,
             'image': 'docker://alpine',
             'command': 'echo "$MESSAGE" > $WORKDIR/output.txt',
             'parameters': [{'key': 'MESSAGE', 'value': message}]}
         commands.run(
             options=options,
+            docker=True,
             docker_username=environ.get('DOCKER_USERNAME', None),
             docker_password=environ.get('DOCKER_PASSWORD', None))
 
+        output_file_path = join(testdir, 'output.txt')
         assert isfile(output_file_path)
         with open(output_file_path) as output_file:
             lines = output_file.readlines()
             assert len(lines) >= 1
             assert any(message in line for line in lines)
+    finally:
+        clear_dir(testdir)
 
 
+@pytest.mark.skip(reason='debug')
 def test_run_bind_mounts(file_name_1, file_name_2):
-    with TemporaryDirectory() as temp_dir, TemporaryDirectory() as test_dir:
-        input_file_path_1 = join(test_dir, file_name_1)
-        input_file_path_2 = join(test_dir, file_name_2)
-        output_file_path = join(test_dir, 'output.txt')
-        with open(input_file_path_1, "w") as file1, open(input_file_path_2, "w") as file2:
-            file1.write('Hello, 1!')
-            file2.write('Hello, 2!')
+    try:
+        with TemporaryDirectory() as temp_dir:
+            input_file_path_1 = join(testdir, file_name_1)
+            input_file_path_2 = join(testdir, file_name_2)
+            output_file_path = join(testdir, 'output.txt')
+            with open(input_file_path_1, "w") as file1, open(input_file_path_2, "w") as file2:
+                file1.write('Hello, 1!')
+                file2.write('Hello, 2!')
 
-        options = {
-            'workdir': test_dir,
-            'image': 'docker://alpine',
-            'command': f"echo '{message}' > $WORKDIR/output.txt",
-            'bind_mounts': [{'host_path': temp_dir, 'container_path': test_dir}]}
-        commands.run(
-            options=options,
-            docker_username=environ.get('DOCKER_USERNAME', None),
-            docker_password=environ.get('DOCKER_PASSWORD', None))
+            options = {
+                'workdir': testdir,
+                'image': 'docker://alpine',
+                'command': f"echo '{message}' > $WORKDIR/output.txt",
+                'bind_mounts': [{'host_path': temp_dir, 'container_path': testdir}]}
+            commands.run(
+                options=options,
+                docker=True,
+                docker_username=environ.get('DOCKER_USERNAME', None),
+                docker_password=environ.get('DOCKER_PASSWORD', None))
 
-        assert isfile(output_file_path)
-        with open(output_file_path) as output_file:
-            lines = output_file.readlines()
-            assert len(lines) >= 1
-            assert any(message in line for line in lines)
+            assert isfile(output_file_path)
+            with open(output_file_path) as output_file:
+                lines = output_file.readlines()
+                assert len(lines) >= 1
+                assert any(message in line for line in lines)
+    finally:
+        clear_dir(testdir)
 
 
 def test_run_directory_input(file_name_1, file_name_2):
-    with TemporaryDirectory() as temp_dir, TemporaryDirectory() as test_dir:
-        input_file_path_1 = join(temp_dir, file_name_1)
-        input_file_path_2 = join(temp_dir, file_name_2)
-        output_file_path = join(temp_dir, 'output.txt')
+    try:
+        input_file_path_1 = join(testdir, file_name_1)
+        input_file_path_2 = join(testdir, file_name_2)
+        output_file_path = join(testdir, 'output.txt')
         with open(input_file_path_1, "w") as file1, open(input_file_path_2, "w") as file2:
             file1.write('Hello, 1!')
             file2.write('Hello, 2!')
 
         options = {
-            'workdir': temp_dir,
+            'workdir': testdir,
             'image': 'docker://alpine',
             'command': 'ls "$INPUT" > $WORKDIR/output.txt',
-            'input': {'path': temp_dir, 'kind': 'directory'}}
+            'input': {'path': testdir, 'kind': 'directory'}}
         commands.run(
             options=options,
+            docker=True,
             docker_username=environ.get('DOCKER_USERNAME', None),
             docker_password=environ.get('DOCKER_PASSWORD', None))
 
@@ -134,24 +139,26 @@ def test_run_directory_input(file_name_1, file_name_2):
             assert len(lines) >= 2
             assert any(file_name_1 in line for line in lines)
             assert any(file_name_2 in line for line in lines)
+    finally:
+        clear_dir(testdir)
 
 
 def test_run_files_input(file_name_1, file_name_2):
-    with TemporaryDirectory() as temp_dir, TemporaryDirectory() as test_dir:
-        input_file_path_1 = join(temp_dir, file_name_1)
-        input_file_path_2 = join(temp_dir, file_name_2)
-        output_file_path = join(temp_dir, 'output.txt')
+        input_file_path_1 = join(testdir, file_name_1)
+        input_file_path_2 = join(testdir, file_name_2)
+        output_file_path = join(testdir, 'output.txt')
         with open(input_file_path_1, "w") as file1, open(input_file_path_2, "w") as file2:
             file1.write('Hello, 1!')
             file2.write('Hello, 2!')
 
         options = {
-            'workdir': temp_dir,
+            'workdir': testdir,
             'image': 'docker://alpine',
             'command': 'echo "$INPUT" >> $WORKDIR/output.txt',
-            'input': {'path': temp_dir, 'kind': 'files'}}
+            'input': {'path': testdir, 'kind': 'files'}}
         commands.run(
             options=options,
+            docker=True,
             docker_username=environ.get('DOCKER_USERNAME', None),
             docker_password=environ.get('DOCKER_PASSWORD', None))
 
@@ -164,20 +171,20 @@ def test_run_files_input(file_name_1, file_name_2):
 
 
 def test_run_file_input(file_name_1):
-    with TemporaryDirectory() as temp_dir, TemporaryDirectory() as test_dir:
-        input_file_path = join(temp_dir, file_name_1)
-        output_file_path = join(temp_dir, 'output.txt')
+        input_file_path = join(testdir, file_name_1)
+        output_file_path = join(testdir, 'output.txt')
         with open(input_file_path, "w") as file1:
             file1.write(message)
 
         options = {
-            'workdir': temp_dir,
+            'workdir': testdir,
             'image': 'docker://alpine',
             'command': 'cat "$INPUT" > $WORKDIR/output.txt',
             'input': {'path': input_file_path, 'kind': 'file'}
         }
         commands.run(
             options=options,
+            docker=True,
             docker_username=environ.get('DOCKER_USERNAME', None),
             docker_password=environ.get('DOCKER_PASSWORD', None))
 

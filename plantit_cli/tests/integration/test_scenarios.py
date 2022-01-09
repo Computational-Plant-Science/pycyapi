@@ -8,12 +8,12 @@ import pytest
 from plantit_cli import commands
 from plantit_cli.store import terrain_commands
 from plantit_cli.tests.integration.test_utils import create_collection, upload_file, delete_collection
-from plantit_cli.tests.utils import clear_dir, check_hello, Token
+from plantit_cli.tests.utils import clear_dir, check_hello, TerrainToken
 
 message = "Message"
 testdir = '/opt/plantit-cli/runs'
 tempdir = tempfile.gettempdir()
-token = '' # Token.get()
+token = TerrainToken.get()
 DEFAULT_SLEEP = 45
 
 

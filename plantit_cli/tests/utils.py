@@ -3,6 +3,8 @@ from os import listdir, remove
 from os.path import isdir, isfile, islink, join
 import json
 import shutil
+from typing import List
+
 import requests
 
 
@@ -26,12 +28,11 @@ def check_hello(file, name):
 
 class TerrainTicket:
     @staticmethod
-    def get(path: str, mode: str = 'read', public: bool = True, uses: int = 1):
+    def get(paths: List[str], mode: str = 'read', public: bool = False, uses: int = 10):
         response = requests.post(
             f"https://de.cyverse.org/terrain/secured/filesystem/tickets?mode={mode}&public={str(public).lower()}&uses-limit={uses}",
-            data=json.dumps({'paths': [path]}),
+            data=json.dumps({'paths': paths}),
             headers={'Authorization': f"Bearer {TerrainToken.get()}", 'Content-Type': 'application/json'}).json()
-        # print(response)
         return response['tickets'][0]['ticket-id']
 
 

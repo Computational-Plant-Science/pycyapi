@@ -9,7 +9,7 @@ import requests
 from requests import ReadTimeout, Timeout, HTTPError, RequestException
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
 
-from plantit_cli.utils import list_files
+from plantit_cli.utils import list_files, pattern_match
 
 
 @retry(
@@ -128,10 +128,6 @@ def verify_checksums(
             assert expected['checksum'] == actual[1]
 
 
-def match(path, patterns):
-    return any(pattern.lower() in path.lower() for pattern in patterns)
-
-
 def pull_dir(
         from_path: str,
         to_path: str,
@@ -141,22 +137,20 @@ def pull_dir(
         overwrite: bool = False):
     check = checksums is not None and len(checksums) > 0
     paths = list_dir(from_path, token)
-    paths = [path for path in paths if match(path, patterns)] if (patterns is not None and len(patterns) > 0) else paths
+    paths = [path for path in paths if pattern_match(path, patterns)] if (patterns is not None and len(patterns) > 0) else paths
     num_paths = len(paths)
 
     # verify  that input checksums haven't changed since submission time
-    if check:
-        verify_checksums(from_path, checksums)
+    if check: verify_checksums(from_path, checksums)
 
     print(f"Downloading directory '{from_path}' with {len(paths)} file(s)")
     with closing(Pool(processes=multiprocessing.cpu_count())) as pool:
         args = [(path, to_path, token, i) for i, path in enumerate(paths)]
         pool.starmap(pull_file, args)
 
-    # verify that input checksums haven't changed since download time
+    # TODO: verify that input checksums haven't changed since download time?
     # (maybe a bit excessive, and will add network latency, but probably prudent)
-    if check:
-        verify_checksums(from_path, paths)
+    # if check: verify_checksums(from_path, checksums)
 
 
 @retry(

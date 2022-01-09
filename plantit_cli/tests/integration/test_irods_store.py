@@ -1,9 +1,12 @@
+import traceback
 import uuid
 import os
 from os import environ
 from os.path import join, isfile
 
 import pytest
+from irods.collection import iRODSCollection
+from irods.models import Collection
 from irods.session import iRODSSession
 from irods.ticket import Ticket
 from irods.exception import CollectionDoesNotExist
@@ -17,7 +20,6 @@ testdir = environ.get('TEST_DIRECTORY')
 token = TerrainToken.get()
 
 
-# @pytest.mark.skip(reason='debug')
 def test_directory_exists(remote_base_path):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
 
@@ -27,18 +29,18 @@ def test_directory_exists(remote_base_path):
 
         # create iRODS session
         session = iRODSSession(host='data.cyverse.org', port=1247, user='anonymous', password='', zone='iplant')
-        ticket = TerrainTicket.get(remote_path)
+        ticket = TerrainTicket.get([remote_path])
         Ticket(session, ticket).supply()
 
         # test remote directories exist
         assert irods_store.dir_exists(remote_path, session)
-        assert not irods_store.dir_exists(join(remote_base_path, "notCollection"), session)
+        assert not irods_store.dir_exists(join(remote_base_path, "not_a_collection"), session)
     finally:
         clear_dir(testdir)
-        # delete_collection(remote_path, token)
+        delete_collection(remote_path, token)
 
 
-# @pytest.mark.skip(reason='debug')
+@pytest.mark.skip(reason="ticket won't be granted if file doesn't exist")
 def test_file_exists(remote_base_path):
     file1_name = 'f1.txt'
     file2_name = 'f2.txt'
@@ -58,7 +60,7 @@ def test_file_exists(remote_base_path):
 
         # create iRODS session
         session = iRODSSession(host='data.cyverse.org', port=1247, user='anonymous', password='', zone='iplant')
-        ticket = TerrainTicket.get(join(remote_path, file1_name), uses=2)
+        ticket = TerrainTicket.get([join(remote_path, file1_name)], uses=2)
         Ticket(session, ticket).supply()
 
         # test remote files exist
@@ -69,7 +71,6 @@ def test_file_exists(remote_base_path):
         delete_collection(remote_path, token)
 
 
-# @pytest.mark.skip(reason='debug')
 def test_list_directory(remote_base_path):
     file1_name = 'f1.txt'
     file2_name = 'f2.txt'
@@ -92,7 +93,7 @@ def test_list_directory(remote_base_path):
 
         # create iRODS session
         session = iRODSSession(host='data.cyverse.org', port=1247, user='anonymous', password='', zone='iplant')
-        ticket = TerrainTicket.get(remote_path)
+        ticket = TerrainTicket.get([remote_path])
         Ticket(session, ticket).supply()
 
         # list files
@@ -106,35 +107,11 @@ def test_list_directory(remote_base_path):
         delete_collection(remote_path, token)
 
 
-#TODO move next 2 to test irods commands
-
-@pytest.mark.skip(reason='debug')
-def test_list_directory_no_retries_when_path_does_not_exist(remote_base_path):
-    remote_path = join(remote_base_path, str(uuid.uuid4()))
-    # create iRODS session
-    session = iRODSSession(host='data.cyverse.org', port=1247, user='anonymous', password='', zone='iplant')
-    ticket = TerrainTicket.get(remote_path)
-    Ticket(session, ticket).supply()
-    with pytest.raises(CollectionDoesNotExist):
-        irods_store.list_dir(remote_path, session)
-
-
-@pytest.mark.skip(reason='debug')
-def test_list_directory_retries_when_token_invalid(remote_base_path):
-    remote_path = join(remote_base_path, str(uuid.uuid4()))
-    # create iRODS session
-    session = iRODSSession(host='data.cyverse.org', port=1247, user='anonymous', password='', zone='iplant')
-    ticket = TerrainTicket.get(remote_path)
-    Ticket(session, ticket).supply()
-    with pytest.raises(CollectionDoesNotExist):
-        irods_store.list_dir(remote_path, session)
-
-
-# @pytest.mark.skip(reason='debug')
 def test_download_file(remote_base_path):
     file_name = 'f1.txt'
     file_path = join(testdir, file_name)
     remote_path = join(remote_base_path, str(uuid.uuid4()))
+    local_path = join(testdir, f"d{file_name}")
 
     try:
         # prep collection
@@ -147,17 +124,21 @@ def test_download_file(remote_base_path):
         # upload files
         upload_file(file_path, remote_path, token)
 
-        # download file
-        irods_store.pull_file(join(remote_path, file_name), testdir, token)
+        # create iRODS session and get ticket
+        with iRODSSession(host='data.cyverse.org', port=1247, user='anonymous', password='', zone='iplant') as session:
+            ticket = TerrainTicket.get([remote_path], 'write', False)
+            Ticket(session, ticket).supply()
+
+            # download file
+            irods_store.pull_file(join(remote_path, file_name), local_path, session=session)
 
         # check download
-        assert isfile(file_path)
+        assert isfile(local_path)
     finally:
         clear_dir(testdir)
         delete_collection(remote_path, token)
 
 
-# @pytest.mark.skip(reason='debug')
 def test_download_directory(remote_base_path):
     file1_name = 'f1.txt'
     file2_name = 'f2.txt'
@@ -178,16 +159,62 @@ def test_download_directory(remote_base_path):
         upload_file(file1_path, remote_path, token)
         upload_file(file2_path, remote_path, token)
 
-        # remove files locally
+        # remove local files
         os.remove(file1_path)
         os.remove(file2_path)
 
-        # download files
-        irods_store.pull_dir(remote_path, testdir, ['.txt'], token)
+        # create iRODS session and get ticket
+        with iRODSSession(host='data.cyverse.org', port=1247, user='anonymous', password='', zone='iplant') as session:
+            ticket = TerrainTicket.get(remote_path, 'write', False)
+            Ticket(session, ticket).supply()
+
+            # download files
+            irods_store.pull_dir(remote_path, testdir, session=session, patterns=['.txt'])
 
         # check downloads
         assert isfile(file1_path)
         assert isfile(file2_path)
+    finally:
+        clear_dir(testdir)
+        delete_collection(remote_path, token)
+
+
+def test_upload_file(remote_base_path):
+    pass
+
+
+def test_upload_directory(remote_base_path):
+    file1_name = 'f1.txt'
+    file2_name = 'f2.txt'
+    file1_path = join(testdir, file1_name)
+    file2_path = join(testdir, file2_name)
+    coll_name = str(uuid.uuid4())
+    remote_path = join(remote_base_path, coll_name)
+
+    try:
+        # prep collection
+        create_collection(remote_path, token)
+
+        # create files
+        with open(file1_path, "w") as file1, open(file2_path, "w") as file2:
+            file1.write('Hello, 1!')
+            file2.write('Hello, 2!')
+
+        # create iRODS session and get ticket
+        with iRODSSession(host='data.cyverse.org', port=1247, user='anonymous', password='', zone='iplant') as session:
+            ticket = TerrainTicket.get([join(remote_path, file1_name), join(remote_path, file2_name)], 'write', False)
+            Ticket(session, ticket).supply()
+
+            # upload files
+            irods_store.push_dir(testdir, remote_path, session=session, include_patterns=['.txt'])
+
+            # check uploads
+            coll = session.query(Collection).one()
+            collection = iRODSCollection(session.collections, coll)
+            file_names = [o.name for o in collection.data_objects]
+            print(file_names)
+            assert file1_name in file_names
+            assert file2_name in file_names
     finally:
         clear_dir(testdir)
         delete_collection(remote_path, token)

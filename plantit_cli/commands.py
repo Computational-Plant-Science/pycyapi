@@ -1,4 +1,5 @@
 import os
+import logging
 import traceback
 from copy import deepcopy
 from os.path import join, getsize, basename
@@ -12,11 +13,9 @@ from distributed import as_completed, LocalCluster, Client
 import tqdm
 
 from plantit_cli.options import InputKind
-from plantit_cli.status import Status
-from plantit_cli.utils import list_files, readable_bytes, prep_command, update_status, submit_command, run_command, replace_text
+from plantit_cli.utils import list_files, readable_bytes, prep_command, submit_command, replace_text
 
-message = "Message"
-testdir = os.environ.get('TEST_DIRECTORY')
+logger = logging.getLogger(__name__)
 
 
 def clean(paths: List[str], patterns: List[str]):
@@ -26,8 +25,6 @@ def clean(paths: List[str], patterns: List[str]):
 
 
 def run(options: dict,
-        plantit_url: str = None,
-        plantit_token: str = None,
         docker_username: str = None,
         docker_password: str = None,
         docker: bool = False,
@@ -92,13 +89,13 @@ def run(options: dict,
                     docker_password=docker_password,
                     docker=docker)
 
-                update_status(Status.RUNNING, f"Submitting container", plantit_url, plantit_token)
+                logger.info(f"Submitting container")
                 future = submit_command(client, command, options['log_file'] if 'log_file' in options else None, 3)
                 future.result()
                 if future.status != 'finished':
-                    update_status(Status.FAILED, f"Container failed: {future.exception}", plantit_url, plantit_token)
+                    logger.error(f"Container failed: {future.exception}")
                 else:
-                    update_status(Status.RUNNING, f"Container completed", plantit_url, plantit_token)
+                    logger.info(f"Container completed")
         elif options['input']['kind'] == InputKind.DIRECTORY:
             input_path = options['input']['path']
             env = options['env'] if 'env' in options else []
@@ -122,13 +119,13 @@ def run(options: dict,
                     docker_password=docker_password,
                     docker=docker)
 
-                update_status(Status.RUNNING, f"Submitting container for directory '{input_path}'", plantit_url, plantit_token)
+                logger.info(f"Submitting container for directory '{input_path}'")
                 future = submit_command(client, command, options['log_file'] if 'log_file' in options else None, 3)
                 future.result()
                 if future.status != 'finished':
-                    update_status(Status.FAILED, f"Container failed for directory '{input_path}': {future.exception}", plantit_url, plantit_token)
+                    logger.error(f"Container failed for directory '{input_path}': {future.exception}")
                 else:
-                    update_status(Status.RUNNING, f"Container completed for directory '{input_path}'", plantit_url, plantit_token)
+                    logger.info(f"Container completed for directory '{input_path}'")
         elif options['input']['kind'] == InputKind.FILES:
             input_path = options['input']['path']
             if slurm_job_array:
@@ -158,26 +155,24 @@ def run(options: dict,
                         docker_password=docker_password,
                         docker=docker)
 
-                    update_status(Status.RUNNING, f"Submitting container for file '{input_path}'", plantit_url, plantit_token)
+                    logger.info(f"Submitting container for file '{input_path}'")
                     future = submit_command(client, command, options['log_file'] if 'log_file' in options else None, 3)
                     future.result()
                     if future.status != 'finished':
-                        update_status(Status.FAILED, f"Container failed for file '{input_path}': {future.exception}", plantit_url, plantit_token)
+                        logger.error(f"Container failed for file '{input_path}': {future.exception}")
                     else:
-                        update_status(Status.RUNNING, f"Container completed for file '{input_path}'", plantit_url, plantit_token)
+                        logger.info(f"Container completed for file '{input_path}'")
 
-                update_status(Status.COMPLETED, f"Run succeeded", plantit_url, plantit_token)
+                logger.info(f"Run succeeded")
             else:
                 files = os.listdir(input_path)
                 count = len(files)
                 futures = []
 
                 if 'jobqueue' not in options:
-                    update_status(Status.RUNNING, f"Processing {count} files in '{input_path}'", plantit_url, plantit_token)
+                    logger.info(f"Processing {count} files in '{input_path}'")
                 else:
-                    update_status(Status.RUNNING,
-                                  f"Requesting {count} nodes to process {count} files in '{input_path}' with job script:\n{cluster.job_script()}",
-                                  plantit_url, plantit_token)
+                    logger.info(f"Requesting {count} nodes to process {count} files in '{input_path}' with job script:\n{cluster.job_script()}")
                     cluster.scale(count)
 
                 env = options['env'] if 'env' in options else []
@@ -203,17 +198,16 @@ def run(options: dict,
                             docker_password=docker_password,
                             docker=docker)
 
-                        update_status(Status.RUNNING, f"Submitting container for file {i}", plantit_url, plantit_token)
+                        logger.info(f"Submitting container for file {i}")
                         futures.append(submit_command(client, command, options['log_file'] if 'log_file' in options else None, 3))
 
                     finished = 0
                     for future in tqdm.tqdm(as_completed(futures), total=num_files):
                         finished += 1
                         if future.status != 'finished':
-                            update_status(Status.FAILED, f"Container failed for file {finished}", plantit_url, plantit_token)
-                            update_status(Status.FAILED, future.exception, plantit_url, plantit_token)
+                            logger.error(f"Container failed for file {finished}: {future.exception}")
                         else:
-                            update_status(Status.RUNNING, f"Container completed for file {finished}", plantit_url, plantit_token)
+                            logger.info(f"Container completed for file {finished}")
         elif options['input']['kind'] == InputKind.FILE:
             input_path = options['input']['path']
             env = options['env'] if 'env' in options else []
@@ -238,18 +232,18 @@ def run(options: dict,
                     docker_password=docker_password,
                     docker=docker)
 
-                update_status(Status.RUNNING, f"Submitting container for file 1", plantit_url, plantit_token)
+                logger.info(f"Submitting container for file 1")
                 future = submit_command(client, command, options['log_file'] if 'log_file' in options else None, 3)
                 future.result()
                 if future.status != 'finished':
-                    update_status(Status.FAILED, f"Container failed for file 1", plantit_url, plantit_token)
-                    update_status(Status.FAILED, future.exception, plantit_url, plantit_token)
+                    logger.error(f"Container failed for file 1")
+                    logger.error(future.exception)
                 else:
-                    update_status(Status.RUNNING, f"Container completed for file 1", plantit_url, plantit_token)
+                    logger.info(f"Container completed for file 1")
 
-        update_status(Status.COMPLETED, f"Run succeeded", plantit_url, plantit_token)
+        logger.info(f"Run succeeded")
     except:
-        update_status(Status.FAILED, f"Run failed: {traceback.format_exc()}", plantit_url, plantit_token)
+        logger.error(f"Run failed: {traceback.format_exc()}")
         raise
 
 
@@ -261,9 +255,7 @@ def zip(
         include_patterns: List[str] = None,
         include_names: List[str] = None,
         exclude_patterns: List[str] = None,
-        exclude_names: List[str] = None,
-        plantit_url: str = None,
-        plantit_token: str = None):
+        exclude_names: List[str] = None):
     zip_path = join(output_dir, f"{name}.zip")
     try:
         files = list_files(input_dir, include_patterns, include_names, exclude_patterns, exclude_names)
@@ -275,17 +267,17 @@ def zip(
         #     update_status(Status.ZIPPING, msg, plantit_url, plantit_token)
         #     raise ValueError(msg)
 
-        update_status(Status.RUNNING, f"Zipping {readable_bytes(total)} into file: {zip_path}", plantit_url, plantit_token)
+        logger.info(f"Zipping {readable_bytes(total)} into file: {zip_path}")
         with ZipFile(zip_path, 'w', ZIP_DEFLATED) as zipped:
             for file in files:
-                print(f"Zipping: {file}", plantit_url, plantit_token)
+                logger.debug(f"Zipping: {file}")
                 zipped.write(file, basename(file))
     except:
-        update_status(Status.FAILED, f"Failed to create zip file: {traceback.format_exc()}", plantit_url, plantit_token)
+        logger.error(f"Failed to create zip file: {traceback.format_exc()}")
         raise
 
 
-# TODO test flow configuration validation
+# TODO test flow configuration validation (move to tests)
 
 # @pytest.mark.skip(reason="y dis fail on CI VM")
 # def test_run_logs_to_file_when_file_logging_enabled():

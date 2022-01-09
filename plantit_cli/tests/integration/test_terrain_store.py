@@ -14,7 +14,6 @@ testdir = environ.get('TEST_DIRECTORY')
 token = TerrainToken.get()
 
 
-# @pytest.mark.skip(reason='debug')
 def test_directory_exists(remote_base_path):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
 
@@ -30,7 +29,6 @@ def test_directory_exists(remote_base_path):
         delete_collection(remote_path, token)
 
 
-# @pytest.mark.skip(reason='debug')
 def test_file_exists(remote_base_path):
     file1_name = 'f1.txt'
     file2_name = 'f2.txt'
@@ -56,7 +54,6 @@ def test_file_exists(remote_base_path):
         delete_collection(remote_path, token)
 
 
-# @pytest.mark.skip(reason='debug')
 def test_list_directory(remote_base_path):
     file1_name = 'f1.txt'
     file2_name = 'f2.txt'
@@ -88,21 +85,18 @@ def test_list_directory(remote_base_path):
         delete_collection(remote_path, token)
 
 
-# @pytest.mark.skip(reason='debug')
 def test_list_directory_no_retries_when_path_does_not_exist(remote_base_path):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
     with pytest.raises(ValueError):
         terrain_store.list_dir(remote_path, token)
 
 
-# @pytest.mark.skip(reason='debug')
 def test_list_directory_retries_when_token_invalid(remote_base_path):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
     with pytest.raises(ValueError):
         terrain_store.list_dir(remote_path, token)
 
 
-# @pytest.mark.skip(reason='debug')
 def test_download_file(remote_base_path):
     file_name = 'f1.txt'
     file_path = join(testdir, file_name)
@@ -129,7 +123,6 @@ def test_download_file(remote_base_path):
         delete_collection(remote_path, token)
 
 
-# @pytest.mark.skip(reason='debug')
 def test_download_directory(remote_base_path):
     file1_name = 'f1.txt'
     file2_name = 'f2.txt'

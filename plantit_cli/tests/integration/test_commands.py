@@ -8,12 +8,12 @@ import tempfile
 from plantit_cli import commands
 from plantit_cli.store import terrain_commands
 from plantit_cli.store.local_store import LocalStore
-from plantit_cli.tests.utils import clear_dir, check_hello, Token
+from plantit_cli.tests.utils import clear_dir, check_hello, TerrainToken
 
 message = "Message"
 # test_dir = environ.get('TEST_DIRECTORY')
 # test_dir = Temp
-token = '' # Token.get()
+token = TerrainToken.get()
 jobqueue = {
     'slurm': {
         'cores': 1,
@@ -85,6 +85,7 @@ def test_terrain_push(remote_base_path, file_name_1, file_name_2):
             clear_dir(test_dir)
 
 
+@pytest.mark.skip(reason="debug")
 def test_run_parameters_local():
     with TemporaryDirectory() as test_dir:
         try:
@@ -201,6 +202,7 @@ def test_run_bind_mounts_slurm():
             clear_dir(test_dir)
 
 
+@pytest.mark.skip(reason="debug")
 def test_run_directory_input_local(file_name_1, file_name_2):
     with TemporaryDirectory() as test_dir:
         try:
@@ -271,6 +273,7 @@ def test_run_directory_input_slurm(file_name_1, file_name_2):
             clear_dir(test_dir)
 
 
+@pytest.mark.skip(reason="debug")
 def test_run_files_input_local(file_name_1, file_name_2):
     with TemporaryDirectory() as test_dir:
         try:
@@ -341,6 +344,7 @@ def test_run_files_input_slurm(file_name_1, file_name_2):
             clear_dir(test_dir)
 
 
+@pytest.mark.skip(reason="debug")
 def test_run_file_input_local(file_name_1):
     with TemporaryDirectory() as test_dir:
         try:
