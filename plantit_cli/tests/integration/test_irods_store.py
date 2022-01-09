@@ -165,7 +165,7 @@ def test_download_directory(remote_base_path):
 
         # create iRODS session and get ticket
         with iRODSSession(host='data.cyverse.org', port=1247, user='anonymous', password='', zone='iplant') as session:
-            ticket = TerrainTicket.get(remote_path, 'write', False)
+            ticket = TerrainTicket.get([remote_path], 'write', False)
             Ticket(session, ticket).supply()
 
             # download files
