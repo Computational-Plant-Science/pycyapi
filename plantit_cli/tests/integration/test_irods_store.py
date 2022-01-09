@@ -179,10 +179,12 @@ def test_download_directory(remote_base_path):
         delete_collection(remote_path, token)
 
 
+@pytest.mark.skip(reason="waiting for resolution: https://github.com/irods/python-irodsclient/issues/327")
 def test_upload_file(remote_base_path):
     pass
 
 
+@pytest.mark.skip(reason="waiting for resolution: https://github.com/irods/python-irodsclient/issues/327")
 def test_upload_directory(remote_base_path):
     file1_name = 'f1.txt'
     file2_name = 'f2.txt'

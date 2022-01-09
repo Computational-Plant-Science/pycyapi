@@ -18,7 +18,7 @@ Container workflows for image-based plant phenotyping on laptops, servers, or HP
 
 Features:
 
-- Parallel transfers to/from the [CyVerse](https://www.cyverse.org/) [Data Store](https://www.cyverse.org/data-store) via [Terrain API](https://learning.cyverse.org/en/latest/power_users.html?highlight=tapis#cyverse-s-apis)
+- Parallel transfers to/from the [CyVerse](https://www.cyverse.org/) [Data Store](https://www.cyverse.org/data-store) via [Python iRODS client](https://github.com/irods/python-irodsclient) or [Terrain API](https://learning.cyverse.org/en/latest/power_users.html?highlight=tapis#cyverse-s-apis)
 - Deploy Docker images as Singularity containers on HPC clusters
 
 This package must be installed and available in the $PATH on agents bound to PlantIT.
