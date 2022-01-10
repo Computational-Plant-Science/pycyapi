@@ -1,6 +1,6 @@
 import uuid
 from os import environ
-from tempfile import gettempdi
+from tempfile import TemporaryDirectory
 from os.path import join, isdir
 
 import pytest

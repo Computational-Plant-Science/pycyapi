@@ -3,7 +3,7 @@ from os.path import join, isfile
 from tempfile import TemporaryDirectory
 
 import pytest
-from tempfile import gettempdir
+from tempfile import TemporaryDirectory
 
 from plantit_cli import commands
 from plantit_cli.store import terrain_commands

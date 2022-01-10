@@ -1,5 +1,5 @@
 import os
-import tempfile
+from tempfile import TemporaryDirectory
 from os import remove, environ
 from os.path import join
 
@@ -11,98 +11,96 @@ from plantit_cli.tests.integration.test_utils import create_collection, upload_f
 from plantit_cli.tests.utils import clear_dir, check_hello, TerrainToken
 
 message = "Message"
-testdir = '/opt/plantit-cli/runs'
-tempdir = tempfile.gettempdir()
 token = TerrainToken.get()
 DEFAULT_SLEEP = 45
 
 
 @pytest.mark.skip(reason='debug')
 def test_pull_then_run_file_input(remote_base_path, file_name_1):
-    local_path = join(testdir, file_name_1)
-    remote_path = join(remote_base_path, "testCollection")
-    options = {
-        'workdir': testdir,
-        'image': "docker://alpine:latest",
-        'command': 'cat "$INPUT" > "$INPUT.output"',
-        'input': {'path': join(testdir, file_name_1), 'kind': 'file'}
-    }
+    with tempfile.TemporaryDirectory() as testdir:
+        local_path = join(testdir, file_name_1)
+        remote_path = join(remote_base_path, "testCollection")
+        options = {
+            'workdir': testdir,
+            'image': "docker://alpine:latest",
+            'command': 'cat "$INPUT" > "$INPUT.output"',
+            'input': {'path': join(testdir, file_name_1), 'kind': 'file'}
+        }
 
-    try:
-        # prep CyVerse collection
-        create_collection(remote_path, token)
+        try:
+            # prep CyVerse collection
+            create_collection(remote_path, token)
 
-        # prep file
-        with open(local_path, "w") as file1:
-            file1.write('Hello, 1!')
-        upload_file(local_path, remote_path, token)
-        remove(local_path)
+            # prep file
+            with open(local_path, "w") as file1:
+                file1.write('Hello, 1!')
+            upload_file(local_path, remote_path, token)
+            remove(local_path)
 
-        # pull file to test directory
-        terrain_commands.pull(remote_path, testdir, cyverse_token=token)
+            # pull file to test directory
+            terrain_commands.pull(remote_path, testdir, cyverse_token=token)
 
-        # check file was pulled
-        downloaded_path = join(testdir, file_name_1)
-        check_hello(downloaded_path, 1)
-        remove(downloaded_path)
+            # check file was pulled
+            downloaded_path = join(testdir, file_name_1)
+            check_hello(downloaded_path, 1)
+            remove(downloaded_path)
 
-        # expect 1 container
-        commands.run(
-            options=options,
-            docker_username=environ.get('DOCKER_USERNAME', None),
-            docker_password=environ.get('DOCKER_PASSWORD', None))
+            # expect 1 container
+            commands.run(
+                options=options,
+                docker_username=environ.get('DOCKER_USERNAME', None),
+                docker_password=environ.get('DOCKER_PASSWORD', None))
 
-        # check local output file was written
-        output_1 = f"{downloaded_path}.output"
-        check_hello(output_1, 1)
-        remove(output_1)
-    finally:
-        clear_dir(testdir)
-        delete_collection(remote_path, token)
+            # check local output file was written
+            output_1 = f"{downloaded_path}.output"
+            check_hello(output_1, 1)
+            remove(output_1)
+        finally:
+            delete_collection(remote_path, token)
 
 
 @pytest.mark.skip(reason='debug')
 def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
-    local_path = join(testdir, file_name_1)
-    remote_path = join(remote_base_path, "testCollection")
-    options = {
-        'workdir': testdir,
-        'image': "docker://alpine:latest",
-        'command': 'cat $INPUT > $INPUT.$TAG.output',
-        'input': {'path': local_path, 'kind': 'file'},
-        'parameters': [{'key': 'TAG', 'value': message}]
-    }
+    with tempfile.TemporaryDirectory() as testdir:
+        local_path = join(testdir, file_name_1)
+        remote_path = join(remote_base_path, "testCollection")
+        options = {
+            'workdir': testdir,
+            'image': "docker://alpine:latest",
+            'command': 'cat $INPUT > $INPUT.$TAG.output',
+            'input': {'path': local_path, 'kind': 'file'},
+            'parameters': [{'key': 'TAG', 'value': message}]
+        }
 
-    try:
-        # prep CyVerse collection
-        create_collection(remote_path, token)
+        try:
+            # prep CyVerse collection
+            create_collection(remote_path, token)
 
-        # prep file
-        with open(local_path, "w") as file1:
-            file1.write('Hello, 1!')
-        upload_file(local_path, remote_path, token)
-        os.remove(local_path)
+            # prep file
+            with open(local_path, "w") as file1:
+                file1.write('Hello, 1!')
+            upload_file(local_path, remote_path, token)
+            os.remove(local_path)
 
-        # pull file to test directory
-        terrain_commands.pull(remote_path, testdir, cyverse_token=token)
+            # pull file to test directory
+            terrain_commands.pull(remote_path, testdir, cyverse_token=token)
 
-        # check file was pulled
-        check_hello(local_path, 1)
-        remove(local_path)
+            # check file was pulled
+            check_hello(local_path, 1)
+            remove(local_path)
 
-        # expect 1 container
-        commands.run(
-            options=options,
-            docker_username=environ.get('DOCKER_USERNAME', None),
-            docker_password=environ.get('DOCKER_PASSWORD', None))
+            # expect 1 container
+            commands.run(
+                options=options,
+                docker_username=environ.get('DOCKER_USERNAME', None),
+                docker_password=environ.get('DOCKER_PASSWORD', None))
 
-        # check local output file was written
-        output_1 = f"{local_path}.{message}.output"
-        check_hello(output_1, 1)
-        remove(output_1)
-    finally:
-        clear_dir(testdir)
-        delete_collection(remote_path, token)
+            # check local output file was written
+            output_1 = f"{local_path}.{message}.output"
+            check_hello(output_1, 1)
+            remove(output_1)
+        finally:
+            delete_collection(remote_path, token)
 
 # def test_run_fails_with_no_params_and_file_input_and_no_output_when_no_inputs_found(remote_base_path, file_name_1):
 #    time.sleep(DEFAULT_SLEEP)
