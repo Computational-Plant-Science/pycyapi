@@ -5,6 +5,7 @@ from os.path import join
 
 import pytest
 
+import plantit_cli.runner.dask_commands
 from plantit_cli import commands
 from plantit_cli.store import terrain_commands
 from plantit_cli.tests.integration.test_utils import create_collection, upload_file, delete_collection
@@ -17,7 +18,7 @@ DEFAULT_SLEEP = 45
 
 @pytest.mark.skip(reason='debug')
 def test_pull_then_run_file_input(remote_base_path, file_name_1):
-    with tempfile.TemporaryDirectory() as testdir:
+    with TemporaryDirectory() as testdir:
         local_path = join(testdir, file_name_1)
         remote_path = join(remote_base_path, "testCollection")
         options = {
@@ -46,7 +47,7 @@ def test_pull_then_run_file_input(remote_base_path, file_name_1):
             remove(downloaded_path)
 
             # expect 1 container
-            commands.run(
+            plantit_cli.runner.dask_commands.run_dask(
                 options=options,
                 docker_username=environ.get('DOCKER_USERNAME', None),
                 docker_password=environ.get('DOCKER_PASSWORD', None))
@@ -61,7 +62,7 @@ def test_pull_then_run_file_input(remote_base_path, file_name_1):
 
 @pytest.mark.skip(reason='debug')
 def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
-    with tempfile.TemporaryDirectory() as testdir:
+    with TemporaryDirectory() as testdir:
         local_path = join(testdir, file_name_1)
         remote_path = join(remote_base_path, "testCollection")
         options = {
@@ -90,7 +91,7 @@ def test_pull_then_run_file_input_and_parameters(remote_base_path, file_name_1):
             remove(local_path)
 
             # expect 1 container
-            commands.run(
+            plantit_cli.runner.dask_commands.run_dask(
                 options=options,
                 docker_username=environ.get('DOCKER_USERNAME', None),
                 docker_password=environ.get('DOCKER_PASSWORD', None))

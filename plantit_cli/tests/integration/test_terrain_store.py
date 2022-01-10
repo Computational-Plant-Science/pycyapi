@@ -6,7 +6,7 @@ from os.path import join, isfile
 import pytest
 from plantit_cli.store import terrain_store
 
-from plantit_cli.tests.integration.test_utils import delete_collection, upload_file, create_collection
+from plantit_cli.tests.integration.test_utils import delete_collection, upload_file, create_collection, list_files
 from plantit_cli.tests.utils import TerrainToken
 
 message = "Message!"
@@ -152,5 +152,57 @@ def test_download_directory(remote_base_path):
             # check downloads
             assert isfile(file1_path)
             assert isfile(file2_path)
+        finally:
+            delete_collection(remote_path, token)
+
+
+def test_upload_file(remote_base_path):
+    with TemporaryDirectory() as testdir:
+        file_name = 'f1.txt'
+        file_path = join(testdir, file_name)
+        remote_path = join(remote_base_path, str(uuid.uuid4()))
+
+        try:
+            # prep collection
+            create_collection(remote_path, token)
+
+            # create files
+            with open(file_path, "w") as file:
+                file.write('Hello, 1!')
+
+            # upload file
+            terrain_store.push_file(file_path, remote_path, token)
+
+            # check download
+            files = list_files(remote_path, token)
+            assert file_name in files
+        finally:
+            delete_collection(remote_path, token)
+
+
+def test_upload_directory(remote_base_path):
+    with TemporaryDirectory() as testdir:
+        file_name1 = 'f1.txt'
+        file_name2 = 'f2.txt'
+        file_path1 = join(testdir, file_name1)
+        file_path2 = join(testdir, file_name2)
+        remote_path = join(remote_base_path, str(uuid.uuid4()))
+
+        try:
+            # prep collection
+            create_collection(remote_path, token)
+
+            # create files
+            with open(file_path1, "w") as file1, open(file_path2, "w") as file2:
+                file1.write('Hello, 1!')
+                file2.write('Hello, 2!')
+
+            # upload directory
+            terrain_store.push_dir(testdir, remote_path, token)
+
+            # check download
+            files = list_files(remote_path, token)
+            assert file_name1 in files
+            assert file_name2 in files
         finally:
             delete_collection(remote_path, token)

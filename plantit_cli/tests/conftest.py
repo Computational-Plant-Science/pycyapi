@@ -23,4 +23,3 @@ def file_name_1():
 @pytest.fixture
 def file_name_2():
     return "test2.txt"
-

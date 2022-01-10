@@ -5,6 +5,7 @@ from tempfile import TemporaryDirectory
 
 import pytest
 
+import plantit_cli.runner.dask_commands
 from plantit_cli import commands
 from plantit_cli.tests.utils import clear_dir
 
@@ -65,7 +66,7 @@ def test_run_parameters():
             'image': 'docker://alpine',
             'command': 'echo "$MESSAGE" > $WORKDIR/output.txt',
             'parameters': [{'key': 'MESSAGE', 'value': message}]}
-        commands.run(
+        plantit_cli.runner.dask_commands.run_dask(
             options=options,
             docker=True,
             docker_username=environ.get('DOCKER_USERNAME', None),
@@ -79,22 +80,21 @@ def test_run_parameters():
             assert any(message in line for line in lines)
 
 
-@pytest.mark.skip(reason='debug')
 def test_run_bind_mounts(file_name_1, file_name_2):
-    with TemporaryDirectory() as tempdir, TemporaryDirectory() as testdir:
+    with TemporaryDirectory() as tempdir, TemporaryDirectory() as workdir, TemporaryDirectory() as testdir:
         input_file_path_1 = join(testdir, file_name_1)
         input_file_path_2 = join(testdir, file_name_2)
-        output_file_path = join(testdir, 'output.txt')
+        output_file_path = join(tempdir, 'output.txt')
         with open(input_file_path_1, "w") as file1, open(input_file_path_2, "w") as file2:
             file1.write('Hello, 1!')
             file2.write('Hello, 2!')
 
         options = {
-            'workdir': testdir,
+            'workdir': workdir,
             'image': 'docker://alpine',
-            'command': f"echo '{message}' > $WORKDIR/output.txt",
+            'command': f"echo '{message}' > {testdir}/output.txt",
             'bind_mounts': [{'host_path': tempdir, 'container_path': testdir}]}
-        commands.run(
+        plantit_cli.runner.dask_commands.run_dask(
             options=options,
             docker=True,
             docker_username=environ.get('DOCKER_USERNAME', None),
@@ -121,7 +121,7 @@ def test_run_directory_input(file_name_1, file_name_2):
             'image': 'docker://alpine',
             'command': 'ls "$INPUT" > $WORKDIR/output.txt',
             'input': {'path': testdir, 'kind': 'directory'}}
-        commands.run(
+        plantit_cli.runner.dask_commands.run_dask(
             options=options,
             docker=True,
             docker_username=environ.get('DOCKER_USERNAME', None),
@@ -149,7 +149,7 @@ def test_run_files_input(file_name_1, file_name_2):
             'image': 'docker://alpine',
             'command': 'echo "$INPUT" >> $WORKDIR/output.txt',
             'input': {'path': testdir, 'kind': 'files'}}
-        commands.run(
+        plantit_cli.runner.dask_commands.run_dask(
             options=options,
             docker=True,
             docker_username=environ.get('DOCKER_USERNAME', None),
@@ -176,7 +176,7 @@ def test_run_file_input(file_name_1):
             'command': 'cat "$INPUT" > $WORKDIR/output.txt',
             'input': {'path': input_file_path, 'kind': 'file'}
         }
-        commands.run(
+        plantit_cli.runner.dask_commands.run_dask(
             options=options,
             docker=True,
             docker_username=environ.get('DOCKER_USERNAME', None),

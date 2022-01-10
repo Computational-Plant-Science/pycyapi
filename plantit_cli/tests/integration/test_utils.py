@@ -12,7 +12,7 @@ def list_files(path, token):
         content = response.json()
         pprint.pprint(content)
         response.raise_for_status()
-        return content['files']
+        return [f['label'] for f in content['files']]
 
 
 def create_collection(path, token, sleep=DEFAULT_SLEEP):

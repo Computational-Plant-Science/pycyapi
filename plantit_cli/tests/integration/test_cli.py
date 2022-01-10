@@ -5,7 +5,7 @@ from os.path import join, isfile
 import pytest
 from click.testing import CliRunner
 
-from plantit_cli.cli.base import run
+from plantit_cli.cli.dask import run
 from plantit_cli.tests.utils import clear_dir
 
 from_path = f"/iplant/home/{os.environ.get('CYVERSE_USERNAME')}"

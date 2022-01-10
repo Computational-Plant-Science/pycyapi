@@ -1,8 +1,6 @@
 import click
-import yaml
 
 from plantit_cli import commands
-from plantit_cli.utils import parse_options
 
 
 @click.group()
@@ -20,37 +18,19 @@ def irods():
     pass
 
 
+@cli.group()
+def dask():
+    pass
+
+
+@cli.group()
+def launcher():
+    pass
+
+
 @cli.command()
 def ping():
     print('pong')
-
-
-@cli.command()
-@click.argument('task')
-@click.option('--plantit_token', required=False, type=str)
-@click.option('--plantit_url', required=False, type=str)
-@click.option('--docker_username', required=False, type=str)
-@click.option('--docker_password', required=False, type=str)
-@click.option('--docker', is_flag=True)
-@click.option('--slurm_job_array', is_flag=True)
-def run(task,
-        plantit_token,
-        plantit_url,
-        docker_username,
-        docker_password,
-        docker,
-        slurm_job_array):
-    with open(task, 'r') as file:
-        errors, options = parse_options(yaml.safe_load(file))
-        if len(errors) > 0: raise ValueError(f"Invalid configuration: {', '.join(errors)}")
-        commands.run(
-            options=options,
-            plantit_url=plantit_url,
-            plantit_token=plantit_token,
-            docker_username=docker_username,
-            docker_password=docker_password,
-            docker=docker,
-            slurm_job_array=slurm_job_array)
 
 
 @cli.command()
