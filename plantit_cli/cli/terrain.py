@@ -40,8 +40,8 @@ def push(remote_path,
          exclude_pattern,
          exclude_name):
     terrain_commands.push(
-        local_path=local_path,
         token=token,
+        local_path=local_path,
         remote_path=remote_path,
         include_patterns=include_pattern,
         include_names=include_name,

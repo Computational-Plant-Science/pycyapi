@@ -4,14 +4,14 @@ from os.path import join
 from tempfile import TemporaryDirectory
 
 from plantit_cli.store import terrain_commands
-from plantit_cli.tests.utils import clear_dir, check_hello, TerrainToken
-from plantit_cli.tests.integration.test_utils import delete_collection, upload_file, create_collection
+from plantit_cli.tests.utils import check_hello, TerrainToken
+from plantit_cli.tests.integration.test_utils import delete_collection, upload_file, create_collection, list_files
 
 message = "Message"
 token = TerrainToken.get()
 
 
-def test_terrain_pull(remote_base_path, file_name_1, file_name_2):
+def test_pull(remote_base_path, file_name_1, file_name_2):
     with TemporaryDirectory() as test_dir:
         local_path_1 = join(test_dir, file_name_1)
         local_path_2 = join(test_dir, file_name_2)
@@ -27,9 +27,11 @@ def test_terrain_pull(remote_base_path, file_name_1, file_name_2):
                 file2.write('Hello, 2!')
 
             # TODO push files to remote directory
+            upload_file(local_path_1, remote_path, token)
+            upload_file(local_path_2, remote_path, token)
 
             # pull directory
-            terrain_commands.pull(remote_path, test_dir, token)
+            terrain_commands.pull(token, remote_path, test_dir)
 
             # check files were pulled
             downloaded_path_1 = join(test_dir, file_name_1)
@@ -42,7 +44,7 @@ def test_terrain_pull(remote_base_path, file_name_1, file_name_2):
             delete_collection(remote_path, token)
 
 
-def test_terrain_push(remote_base_path, file_name_1, file_name_2):
+def test_push(remote_base_path, file_name_1, file_name_2):
     with TemporaryDirectory() as test_dir:
         local_path_1 = join(test_dir, file_name_1)
         local_path_2 = join(test_dir, file_name_2)
@@ -57,20 +59,13 @@ def test_terrain_push(remote_base_path, file_name_1, file_name_2):
                 file1.write('Hello, 1!')
                 file2.write('Hello, 2!')
 
-            # TODO push files to remote directory
-
             # push directory
-            terrain_commands.push(test_dir, remote_path, token)
+            terrain_commands.push(token, test_dir, remote_path)
 
-            # check files were pushed
-            uploaded_path_1 = join(remote_path, file_name_1)
-            uploaded_path_2 = join(remote_path, file_name_2)
-
-            # TODO check files (included zipped) were pushed to store
-            # files = store.list_dir(remote_path)
-            # print(files)
-            # assert len(files) == 2
-            # assert store.file_exists(uploaded_path_1)
-            # assert store.file_exists(uploaded_path_2)
+            # check files were pushed to store
+            files = list_files(remote_path, token)
+            assert len(files) == 2
+            assert file_name_1 in files
+            assert file_name_2 in files
         finally:
             delete_collection(remote_path, token)
