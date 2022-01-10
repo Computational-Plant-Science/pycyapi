@@ -1,18 +1,17 @@
-import uuid
 import os
-from tempfile import TemporaryDirectory
+import uuid
 from os.path import join, isfile
+from tempfile import TemporaryDirectory
 
 import pytest
 from irods.collection import iRODSCollection
 from irods.models import Collection
 from irods.session import iRODSSession
 from irods.ticket import Ticket
-from irods.exception import CollectionDoesNotExist
 
 from plantit_cli.store import irods_store
 from plantit_cli.tests.integration.test_utils import delete_collection, upload_file, create_collection
-from plantit_cli.tests.utils import clear_dir, TerrainToken, TerrainTicket
+from plantit_cli.tests.utils import TerrainToken, TerrainTicket
 
 message = "Message!"
 token = TerrainToken.get()
