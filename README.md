@@ -49,7 +49,6 @@ This package must be installed and available in the $PATH on agents bound to Pla
     - [Ping](#ping)
   - [Authenticating with Docker](#authenticating-with-docker)
   - [Authenticating with Terrain](#authenticating-with-terrain)
-  - [Authenticating with PlantIT](#authenticating-with-plantit)
   - [Logging](#logging)
 - [Development](#development)
   - [Tests](#tests)
@@ -293,10 +292,6 @@ A CyVerse access token can be obtained from the Terrain API with a `GET` request
 ```shell script
 GET https://de.cyverse.org/terrain/token/cas
 ```
-
-### Authenticating with PlantIT
-
-When the `run` command is invoked, `--plantit_url` and `--plantit_token` options may be provided to authenticate with PlantIT's RESTful API and push task status updates and logs back to the web application. This is only intended for internal use &mdash; requests with an invalid token or for a nonexistent task will be rejected.
 
 ### Logging
 

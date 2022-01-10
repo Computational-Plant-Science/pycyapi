@@ -1,10 +1,8 @@
 import os
-from os import environ
 
 import pytest
 
 message = "Message!"
-testdir = environ.get('TEST_DIRECTORY')
 
 
 @pytest.fixture(scope="module")

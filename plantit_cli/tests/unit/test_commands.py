@@ -1,5 +1,5 @@
 import zipfile
-from os import environ, listdir
+from os import environ
 from os.path import join, isfile
 from tempfile import TemporaryDirectory
 
@@ -9,7 +9,6 @@ from plantit_cli import commands
 from plantit_cli.tests.utils import clear_dir
 
 message = "Message!"
-testdir = environ.get('TEST_DIRECTORY')
 
 
 def test_zip_all_files_are_included_by_default(file_name_1, file_name_2):
@@ -60,7 +59,7 @@ def test_zip_all_files_are_included_by_default(file_name_1, file_name_2):
 
 
 def test_run_parameters():
-    try:
+    with TemporaryDirectory() as testdir:
         options = {
             'workdir': testdir,
             'image': 'docker://alpine',
@@ -78,43 +77,38 @@ def test_run_parameters():
             lines = output_file.readlines()
             assert len(lines) >= 1
             assert any(message in line for line in lines)
-    finally:
-        clear_dir(testdir)
 
 
 @pytest.mark.skip(reason='debug')
 def test_run_bind_mounts(file_name_1, file_name_2):
-    try:
-        with TemporaryDirectory() as temp_dir:
-            input_file_path_1 = join(testdir, file_name_1)
-            input_file_path_2 = join(testdir, file_name_2)
-            output_file_path = join(testdir, 'output.txt')
-            with open(input_file_path_1, "w") as file1, open(input_file_path_2, "w") as file2:
-                file1.write('Hello, 1!')
-                file2.write('Hello, 2!')
+    with TemporaryDirectory() as tempdir, TemporaryDirectory() as testdir:
+        input_file_path_1 = join(testdir, file_name_1)
+        input_file_path_2 = join(testdir, file_name_2)
+        output_file_path = join(testdir, 'output.txt')
+        with open(input_file_path_1, "w") as file1, open(input_file_path_2, "w") as file2:
+            file1.write('Hello, 1!')
+            file2.write('Hello, 2!')
 
-            options = {
-                'workdir': testdir,
-                'image': 'docker://alpine',
-                'command': f"echo '{message}' > $WORKDIR/output.txt",
-                'bind_mounts': [{'host_path': temp_dir, 'container_path': testdir}]}
-            commands.run(
-                options=options,
-                docker=True,
-                docker_username=environ.get('DOCKER_USERNAME', None),
-                docker_password=environ.get('DOCKER_PASSWORD', None))
+        options = {
+            'workdir': testdir,
+            'image': 'docker://alpine',
+            'command': f"echo '{message}' > $WORKDIR/output.txt",
+            'bind_mounts': [{'host_path': tempdir, 'container_path': testdir}]}
+        commands.run(
+            options=options,
+            docker=True,
+            docker_username=environ.get('DOCKER_USERNAME', None),
+            docker_password=environ.get('DOCKER_PASSWORD', None))
 
-            assert isfile(output_file_path)
-            with open(output_file_path) as output_file:
-                lines = output_file.readlines()
-                assert len(lines) >= 1
-                assert any(message in line for line in lines)
-    finally:
-        clear_dir(testdir)
+        assert isfile(output_file_path)
+        with open(output_file_path) as output_file:
+            lines = output_file.readlines()
+            assert len(lines) >= 1
+            assert any(message in line for line in lines)
 
 
 def test_run_directory_input(file_name_1, file_name_2):
-    try:
+    with TemporaryDirectory() as testdir:
         input_file_path_1 = join(testdir, file_name_1)
         input_file_path_2 = join(testdir, file_name_2)
         output_file_path = join(testdir, 'output.txt')
@@ -139,11 +133,10 @@ def test_run_directory_input(file_name_1, file_name_2):
             assert len(lines) >= 2
             assert any(file_name_1 in line for line in lines)
             assert any(file_name_2 in line for line in lines)
-    finally:
-        clear_dir(testdir)
 
 
 def test_run_files_input(file_name_1, file_name_2):
+    with TemporaryDirectory() as testdir:
         input_file_path_1 = join(testdir, file_name_1)
         input_file_path_2 = join(testdir, file_name_2)
         output_file_path = join(testdir, 'output.txt')
@@ -171,6 +164,7 @@ def test_run_files_input(file_name_1, file_name_2):
 
 
 def test_run_file_input(file_name_1):
+    with TemporaryDirectory() as testdir:
         input_file_path = join(testdir, file_name_1)
         output_file_path = join(testdir, 'output.txt')
         with open(input_file_path, "w") as file1:
@@ -196,8 +190,8 @@ def test_run_file_input(file_name_1):
 
 
 def test_clean():
-    with TemporaryDirectory() as temp_dir, TemporaryDirectory() as test_dir:
-        path = join(temp_dir, 'output.txt')
+    with TemporaryDirectory() as tempdir:
+        path = join(tempdir, 'output.txt')
         with open(path, "w") as file:
             file.write(message)
 

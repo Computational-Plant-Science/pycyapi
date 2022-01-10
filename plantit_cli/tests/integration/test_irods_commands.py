@@ -1,5 +1,6 @@
 import uuid
 from os import environ
+from tempfile import gettempdi
 from os.path import join, isdir
 
 import pytest
@@ -11,7 +12,6 @@ from plantit_cli.store import irods_commands
 from plantit_cli.tests.utils import clear_dir, TerrainToken, TerrainTicket
 
 message = "Message!"
-testdir = environ.get('TEST_DIRECTORY')
 
 
 # def test_pull_when_path_does_not_exist(remote_base_path):
