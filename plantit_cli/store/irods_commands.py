@@ -24,7 +24,7 @@ def create_session(ticket: str = None):
 
     # otherwise check for an iRODS environment file (if we don't have one, abort)
     try:
-        env_file = os.environ('IRODS_ENVIRONMENT_FILE')
+        env_file = os.environ.get('IRODS_ENVIRONMENT_FILE')
     except KeyError:
         default_env_file = '~/.irods/irods_environment.json'
         if isfile(default_env_file): env_file = expanduser(default_env_file)

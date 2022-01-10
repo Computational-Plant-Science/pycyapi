@@ -1,4 +1,5 @@
 import uuid
+
 from os import remove
 from os.path import join
 from tempfile import TemporaryDirectory
@@ -26,9 +27,13 @@ def test_pull(remote_base_path, file_name_1, file_name_2):
                 file1.write('Hello, 1!')
                 file2.write('Hello, 2!')
 
-            # TODO push files to remote directory
+            # push files to remote directory
             upload_file(local_path_1, remote_path, token)
             upload_file(local_path_2, remote_path, token)
+
+            # remove local files
+            remove(local_path_1)
+            remove(local_path_2)
 
             # pull directory
             terrain_commands.pull(token, remote_path, test_dir)
