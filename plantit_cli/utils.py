@@ -283,6 +283,8 @@ def prep_command(
 
         if parameters is None: parameters = []
         parameters.append({'key': 'WORKDIR', 'value': work_dir})
+        # sort parameters by length first (so we don't erroneously replace keys that are substrings of other keys)
+        parameters.sort(key = lambda p: len(p), reverse=True)
         for parameter in parameters:
             pattern = parameter['key'].replace(' ', '_').upper()
             print(f"Replacing '{pattern}' with '{parameter['value']}'")
@@ -293,7 +295,7 @@ def prep_command(
             pattern = var['key'].replace(' ', '_').upper()
             print(f"Replacing '{pattern}' with '{var['value']}'")
             command = command.replace(f"${pattern}", str(var['value']))
-            # cmd += f"--env {var['key'].upper().replace(' ', '_').replace('$', '')}={var['value']} "
+            cmd += f"--env '{var['key'].upper().replace(' ', '_').replace('$', '')}={var['value']}' "
 
         command = command.replace("$GPUS", str(gpus if gpus else 0))
 

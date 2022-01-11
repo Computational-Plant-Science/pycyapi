@@ -5,7 +5,7 @@ from tempfile import TemporaryDirectory
 from plantit_cli.runner import dask_commands
 from plantit_cli.tests.utils import clear_dir, TerrainToken
 
-message = "Message"
+message = "Message!"
 token = TerrainToken.get()
 
 
@@ -28,6 +28,31 @@ def test_run_parameters_docker():
             lines = output_file.readlines()
             assert len(lines) >= 1
             assert any(message in line for line in lines)
+
+
+def test_run_env_vars_docker():
+    with TemporaryDirectory() as testdir:
+        message2 = 'another message!'
+        options = {
+            'workdir': testdir,
+            'env': [{'key': 'MESSAGE2', 'value': message2}],
+            'image': 'docker://alpine',
+            'command': 'echo $MESSAGE2 > $WORKDIR/output.txt',
+            #'parameters': [{'key': 'MESSAGE', 'value': message}]
+        }
+        dask_commands.run_dask(
+            options=options,
+            docker=True,
+            docker_username=environ.get('DOCKER_USERNAME', None),
+            docker_password=environ.get('DOCKER_PASSWORD', None))
+
+        output_file_path = join(testdir, 'output.txt')
+        assert isfile(output_file_path)
+        with open(output_file_path) as output_file:
+            lines = output_file.readlines()
+            print(lines)
+            assert len(lines) >= 1
+            assert any(message2 in line for line in lines)
 
 
 def test_run_bind_mounts_docker(file_name_1, file_name_2):
