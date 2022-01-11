@@ -1,5 +1,5 @@
 <div align="center">
-<img src="https://github.com/Computational-Plant-Science/plantit/blob/master/plantit/front_end/src/assets/logo.png?raw=true" style="position:relative;top: 75px" />
+<img src="https://github.com/Computational-Plant-Science/plantit/blob/master/plantit/front_end/src/assets/logo.png?raw=true" style="position:relative;top: 75px;width:50px;" />
 <h1 class="text-dark">
     <span style="text-decoration: underline">plant<small
         class="mb-3 text-success"
@@ -18,8 +18,8 @@ Container workflows for image-based plant phenotyping on laptops, servers, or HP
 
 Features:
 
-- Parallel transfers to/from the [CyVerse](https://www.cyverse.org/) [Data Store](https://www.cyverse.org/data-store) via [Python iRODS client](https://github.com/irods/python-irodsclient) or [Terrain API](https://learning.cyverse.org/en/latest/power_users.html?highlight=tapis#cyverse-s-apis)
-- Deploy Docker images as Singularity containers on HPC clusters
+- Parallel file transfers to/from the [CyVerse](https://www.cyverse.org/) [Data Store](https://www.cyverse.org/data-store)
+- Deploy any image available from Docker Hub as a Docker or Singularity container
 
 This package must be installed and available in the $PATH on agents bound to PlantIT.
 
@@ -49,6 +49,7 @@ This package must be installed and available in the $PATH on agents bound to Pla
     - [Ping](#ping)
   - [Authenticating with Docker](#authenticating-with-docker)
   - [Authenticating with Terrain](#authenticating-with-terrain)
+  - [Authenticating with iRODS](#authenticating-with-irods)
   - [Logging](#logging)
 - [Development](#development)
   - [Tests](#tests)
@@ -281,16 +282,31 @@ This is only required for the `plantit run` command.
 
 ### Authenticating with Terrain
 
-The `pull`, `push`, and `run` commands use the Terrain API to access the CyVerse Data Store. Runs with inputs and outputs must provide a `--cyverse_token` argument. For instance, to run `hello_world.yaml`:
+The `plantit terrain pull` and `push` commands use the Terrain API to access the CyVerse Data Store. As such you must provide a `--terrain_token` argument. For instance:
 
 ```shell
-plantit run hello_world.yaml --cyverse_token 'eyJhbGciOiJSUzI1N...'
+plantit terrain pull /iplant/home/user/collection/ --terrain_token <token>
 ```
 
-A CyVerse access token can be obtained from the Terrain API with a `GET` request (providing username/password for basic auth):
+An access token can be obtained from the Terrain API with a `GET` request (providing username/password for basic auth):
 
 ```shell script
 GET https://de.cyverse.org/terrain/token/cas
+```
+
+### Authenticating with iRODS
+
+The `irods pull` and `push` commands use the [Python iRODS client](https://github.com/irods/python-irodsclient) to access the CyVerse Data Store. Tickets can be provided with the `--ticket` argument (note that the ticket is assumed to grant permissions adequate for the requested action, for instance a `write`-enabled ticket must be provided to upload files to a collection).
+
+Tickets can be obtained from the Terrain API, authenticating with either username/password or an authentication token (retrieved as described above):
+
+```shell script
+POST https://de.cyverse.org/terrain/secured/filesystem/tickets?mode=read&public=false&uses-limit=10
+{
+    "paths": [
+        "/iplant/home/user/collection"
+    ]
+}
 ```
 
 ### Logging
