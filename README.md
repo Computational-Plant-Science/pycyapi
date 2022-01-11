@@ -2,10 +2,14 @@
 <img src="https://github.com/Computational-Plant-Science/plantit/blob/master/plantit/front_end/src/assets/logo.png?raw=true" style="position:relative;top: 75px;width:50px;" />
 <h1 class="text-dark">
     <span style="text-decoration: underline">plant<small
-        class="mb-3 text-success"
-        style="text-decoration: underline;text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000; color: #d6df5D"
-        >it</small
-    ></span><small>CLI</small>
+                                    class="mb-3 text-success"
+                                    style="
+                                        text-decoration: underline;
+                                        text-shadow: 1px 1px 2px black;
+                                        z-index: 100;
+                                    "
+                                    ><small>IT</small></small
+                                ><small>CLI</small></span>
 </h1>
 
 Container workflows for image-based plant phenotyping on laptops, servers, or HPC
