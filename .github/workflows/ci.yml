@@ -66,7 +66,8 @@ jobs:
           COVERALLS_PARALLEL: true
         run: |
           mkdir -p /opt/plantit-cli/runs/
-          python -m pytest /home/runner/work/plantit-cli/plantit-cli/plantit_cli/tests/unit -s
+          coverage run --source=plantit_cli -m pytest /home/runner/work/plantit-cli/plantit-cli/plantit_cli/tests/unit -s
+          coveralls
   integration-tests:
     runs-on: ubuntu-latest
     strategy:
