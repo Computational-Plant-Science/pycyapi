@@ -20,6 +20,8 @@ Container workflows for image-based plant phenotyping on laptops, servers, or HP
 
 </div>
 
+**Warning:** This component of the `plantIT` project is soon-to-be deprecated in its current incarnation. This CLI will be refactored to interface directly with the `plantIT` web API, abdicating container orchestration functions. The `plantIT` web application will leverage [Snakemake](https://snakemake.readthedocs.io/en/stable/) to orchestrate cluster jobs and [iCommands](https://docs.irods.org/master/icommands/user/) or the [iRODS python client](https://github.com/irods/python-irodsclient) for data transfers.
+
 Features:
 
 - Parallel file transfers to/from the [CyVerse](https://www.cyverse.org/) [Data Store](https://www.cyverse.org/data-store)
