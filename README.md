@@ -1,4 +1,4 @@
-# PyDE
+# Python DE API
 
 A Python client for the CyVerse Discovery Environment (Terrain) API.
 
@@ -29,19 +29,19 @@ A Python client for the CyVerse Discovery Environment (Terrain) API.
 To install with  pip:
 
 ```
-pip install pyde
+pip install pydeapi
 ```
 
 ## Usage
 
-Once the CLI is installed it can be invoked with `pyde <command>`.
+Once the CLI is installed it can be invoked with `pydeapi <command>`.
 
 ### Authenticating
 
-The `pyde pull` and `push` commands use the Terrain API to access the CyVerse Data Store. As such you must provide a `--terrain_token` argument. For instance:
+To invoke protected Terrain endpoints you must provide a `--terrain_token` argument. For instance:
 
 ```shell
-pyde pull /iplant/home/user/collection/ --terrain_token <token>
+pydeapi pull /iplant/home/user/collection/ --terrain_token <token>
 ```
 
 An access token can be obtained from the Terrain API (providing username/password for basic auth):
@@ -64,7 +64,7 @@ The `pull` and `push` commands provide a high-level interface over Terrain's `te
 To pull files from the `/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/` directory in the CyVerse Data Store to the current working directory, use:
 
 ```shell
-pyde pull /iplant/home/shared/iplantcollaborative/testing_tools/cowsay/ --terrain_token <token>
+pydeapi pull /iplant/home/shared/iplantcollaborative/testing_tools/cowsay/ --terrain_token <token>
 ```
 
 Optional arguments are:
@@ -73,10 +73,9 @@ Optional arguments are:
 - `--pattern`: File patterns to include (one or more).
 - `--overwrite`: Whether to overwrite already-existing files.
 
-
 #### Push
 
-To push files in the current working directory to the `/iplant/home/<my>/<directory/` in the CyVerse Data Store, use `pyde push /iplant/home/<my>/<directory/ --terrain_token <token>`.
+To push files in the current working directory to the `/iplant/home/<my>/<directory/` in the CyVerse Data Store, use `pydeapi push /iplant/home/<my>/<directory/ --terrain_token <token>`.
 
 Options are:
 
@@ -90,7 +89,7 @@ If only `include_...`s are provided, only the file patterns and names specified 
 
 ## Development
 
-To set up a development environment, clone the repo with `git clone https://github.com/Computational-Plant-Science/pyde.git`.
+To set up a development environment, clone the repo with `git clone https://github.com/Computational-Plant-Science/pydeapi.git`.
 
 ### Tests
 
