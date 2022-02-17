@@ -29,7 +29,7 @@ A Python client for the CyVerse Discovery Environment (Terrain) API.
 To install with  pip:
 
 ```
-pip install plantit-cli
+pip install pyde
 ```
 
 ## Usage
@@ -38,7 +38,7 @@ Once the CLI is installed it can be invoked with `pyde <command>`.
 
 ### Authenticating
 
-The `plantit terrain pull` and `push` commands use the Terrain API to access the CyVerse Data Store. As such you must provide a `--terrain_token` argument. For instance:
+The `pyde pull` and `push` commands use the Terrain API to access the CyVerse Data Store. As such you must provide a `--terrain_token` argument. For instance:
 
 ```shell
 pyde pull /iplant/home/user/collection/ --terrain_token <token>
@@ -64,7 +64,7 @@ The `pull` and `push` commands provide a high-level interface over Terrain's `te
 To pull files from the `/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/` directory in the CyVerse Data Store to the current working directory, use:
 
 ```shell
-plantit terrain pull /iplant/home/shared/iplantcollaborative/testing_tools/cowsay/ --terrain_token <token>
+pyde pull /iplant/home/shared/iplantcollaborative/testing_tools/cowsay/ --terrain_token <token>
 ```
 
 Optional arguments are:
@@ -76,7 +76,7 @@ Optional arguments are:
 
 #### Push
 
-To push files in the current working directory to the `/iplant/home/<my>/<directory/` in the CyVerse Data Store, use `plantit terrain push /iplant/home/<my>/<directory/ --terrain_token <token>`.
+To push files in the current working directory to the `/iplant/home/<my>/<directory/` in the CyVerse Data Store, use `pyde push /iplant/home/<my>/<directory/ --terrain_token <token>`.
 
 Options are:
 
