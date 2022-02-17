@@ -2,7 +2,7 @@
 
 A Python client for the CyVerse Discovery Environment (Terrain) API.
 
-##This repository is under active development and is not yet stable. Coverage will not approach a 1-1 mapping for some time.**
+**This repository is under active development and is not yet stable. Coverage will not approach a 1-1 mapping for some time.**
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
