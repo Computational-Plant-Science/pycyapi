@@ -23,6 +23,6 @@ setuptools.setup(
         ]
     },
     python_requires='>=3.6.8',
-    install_requires=['requests', 'pyaml', 'click', 'tenacity', 'dask', 'dask_jobqueue', 'tqdm', 'pytest', 'python-irodsclient'],
+    install_requires=['requests', 'pyaml', 'click', 'tenacity', 'tqdm', 'pytest'],
     setup_requires=['wheel'],
     tests_require=['pytest', 'coveralls'])
