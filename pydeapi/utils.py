@@ -1,16 +1,11 @@
-import subprocess
-import traceback
 import re
 from os import listdir
-from os.path import join, isfile, isdir
-from time import sleep
-from typing import List
+from os.path import join, isfile
 
 import requests
-from distributed import Client
 
 
-def pattern_match(path, patterns):
+def pattern_matches(path, patterns):
     return any(pattern.lower() in path.lower() for pattern in patterns)
 
 
