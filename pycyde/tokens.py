@@ -1,9 +1,9 @@
-import os
+from os import environ
 import requests
 
 
 class TerrainToken:
-    __token = None
+    __access_token = None
 
     @staticmethod
     def get(username: str = None, password: str = None):
@@ -11,11 +11,11 @@ class TerrainToken:
             cyverse_username = username
             cyverse_password = password
         else:
-            cyverse_username = os.environ.get('CYVERSE_USERNAME', None)
-            cyverse_password = os.environ.get('CYVERSE_PASSWORD', None)
+            cyverse_username = environ.get('CYVERSE_USERNAME', None)
+            cyverse_password = environ.get('CYVERSE_PASSWORD', None)
 
-        if TerrainToken.__token is not None:
-            return TerrainToken.__token
+        if TerrainToken.__access_token is not None:
+            return TerrainToken.__access_token
 
         if cyverse_username is None: raise ValueError("Missing environment variable 'CYVERSE_USERNAME'")
         if cyverse_password is None: raise ValueError("Missing environment variable 'CYVERSE_PASSWORD'")
@@ -23,5 +23,6 @@ class TerrainToken:
         response = requests.get('https://de.cyverse.org/terrain/token/cas', auth=(cyverse_username, cyverse_password))
         response.raise_for_status()
 
-        TerrainToken.__token = response.json()['access_token']
-        return TerrainToken.__token
+        TerrainToken.__access_token = response.json()['access_token']
+
+        return TerrainToken.__access_token

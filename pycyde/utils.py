@@ -7,7 +7,7 @@ def pattern_matches(path, patterns):
     return any(pattern.lower() in path.lower() for pattern in patterns)
 
 
-def list_files(path,
+def list_local_files(path,
                include_patterns=None,
                include_names=None,
                exclude_patterns=None,

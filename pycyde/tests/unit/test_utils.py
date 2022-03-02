@@ -12,5 +12,5 @@ def test_pattern_patches():
     assert not pattern_matches(path, ['nomatch'])
 
 
-def test_list_files():
+def test_list_local_files():
     pass
