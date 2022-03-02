@@ -44,7 +44,7 @@ jobs:
           COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
           COVERALLS_PARALLEL: true
         run: |
-          coverage run --source=pycyde -m pytest /home/runner/work/pycyde/pycyde/tests/unit -s
+          coverage run --source=pycyde -m pytest /home/runner/work/pycyde/pycyde/pycyde/tests/unit -s
           coveralls
   integration-tests:
     runs-on: ubuntu-latest
@@ -81,7 +81,7 @@ jobs:
           COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
           COVERALLS_PARALLEL: true
         run: |
-          coverage run --source=pycyde -m pytest /home/runner/work/pycyde/pycyde/tests/integration -s
+          coverage run --source=pycyde -m pytest /home/runner/work/pycyde/pycyde/pycyde/tests/integration -s
           coveralls
       - name: Update Coveralls
         run: |
