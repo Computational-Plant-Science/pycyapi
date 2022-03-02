@@ -38,7 +38,7 @@ def get_profile(username: str, access_token: str) -> dict:
     response.raise_for_status()
     content = response.json()
     if username in content: return content[username]
-    else: return Non
+    else: return None
 
 
 @retry(
