@@ -1,6 +1,6 @@
 import click
 
-import pydeapi.commands as commands
+import pycyde.commands as commands
 
 
 @click.group()

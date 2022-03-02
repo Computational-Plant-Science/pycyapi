@@ -1,8 +1,8 @@
-# Python DE API
+# PyCyDE
 
-A Python client for the CyVerse Discovery Environment (Terrain) API.
+A Python client for the CyVerse Discovery Environment API (a.k.a. Terrain).
 
-**This repository is under active development and is not yet stable. Coverage will not approach a 1-1 mapping for some time.**
+**This repository is under construction and is not yet stable. Coverage will not approach a 1-1 mapping for some time.**
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -29,19 +29,19 @@ A Python client for the CyVerse Discovery Environment (Terrain) API.
 To install with  pip:
 
 ```
-pip install pydeapi
+pip install pycyde
 ```
 
 ## Usage
 
-Once the CLI is installed it can be invoked with `pydeapi <command>`.
+Once the CLI is installed it can be invoked with `pycyde <command>`.
 
 ### Authenticating
 
 To invoke protected Terrain endpoints you must provide a `--terrain_token` argument. For instance:
 
 ```shell
-pydeapi pull /iplant/home/user/collection/ --terrain_token <token>
+pycyde pull /iplant/home/user/collection/ --terrain_token <token>
 ```
 
 An access token can be obtained from the Terrain API (providing username/password for basic auth):
@@ -64,7 +64,7 @@ The `pull` and `push` commands provide a high-level interface over Terrain's `te
 To pull files from the `/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/` directory in the CyVerse Data Store to the current working directory, use:
 
 ```shell
-pydeapi pull /iplant/home/shared/iplantcollaborative/testing_tools/cowsay/ --terrain_token <token>
+pycyde pull /iplant/home/shared/iplantcollaborative/testing_tools/cowsay/ --terrain_token <token>
 ```
 
 Optional arguments are:
@@ -75,7 +75,7 @@ Optional arguments are:
 
 #### Push
 
-To push files in the current working directory to the `/iplant/home/<my>/<directory/` in the CyVerse Data Store, use `pydeapi push /iplant/home/<my>/<directory/ --terrain_token <token>`.
+To push files in the current working directory to the `/iplant/home/<my>/<directory/` in the CyVerse Data Store, use `pycyde push /iplant/home/<my>/<directory/ --terrain_token <token>`.
 
 Options are:
 
@@ -89,8 +89,14 @@ If only `include_...`s are provided, only the file patterns and names specified 
 
 ## Development
 
-To set up a development environment, clone the repo with `git clone https://github.com/Computational-Plant-Science/pydeapi.git`.
+To set up a development environment, clone the repo with `git clone https://github.com/Computational-Plant-Science/pycyde.git`. You can create a Python3 virtual environment with e.g., `python3 -m venv .`, then install dependencies with `pip3 install -r requirements.txt`.
 
 ### Tests
 
-TODO
+#### Unit
+
+To run unit tests, run `python3 -m pytest pycyde/tests/unit` from the project root.
+
+#### Integration
+
+Before running integration tests, you must set the `CYVERSE_USERNAME` and `CYVERSE_PASSWORD` environment variables to allow tests to authenticate with Terrain. Then run `python3 -m pytest pycyde/tests/integration` from the project root.

@@ -1,4 +1,3 @@
-import os
 from os import listdir, remove
 from os.path import isdir, isfile, islink, join
 import json
@@ -6,6 +5,8 @@ import shutil
 from typing import List
 
 import requests
+
+from pycyde.tokens import TerrainToken
 
 
 def clear_dir(dir):
@@ -26,6 +27,7 @@ def check_hello(file, name):
         assert f"Hello, {name}!" in line
 
 
+# TODO: use once write ticket granting issue is fixed (https://github.com/irods/irods/issues/5913)
 class TerrainTicket:
     @staticmethod
     def get(paths: List[str], mode: str = 'read', public: bool = False, uses: int = 10):
@@ -34,23 +36,3 @@ class TerrainTicket:
             data=json.dumps({'paths': paths}),
             headers={'Authorization': f"Bearer {TerrainToken.get()}", 'Content-Type': 'application/json'}).json()
         return response['tickets'][0]['ticket-id']
-
-
-class TerrainToken:
-    __token = None
-
-    @staticmethod
-    def get():
-        if TerrainToken.__token is not None:
-            return TerrainToken.__token
-
-        cyverse_username = os.environ.get('CYVERSE_USERNAME', None)
-        cyverse_password = os.environ.get('CYVERSE_PASSWORD', None)
-
-        if cyverse_username is None: raise ValueError("Missing environment variable 'CYVERSE_USERNAME'")
-        if cyverse_password is None: raise ValueError("Missing environment variable 'CYVERSE_PASSWORD'")
-
-        response = requests.get('https://de.cyverse.org/terrain/token/cas', auth=(cyverse_username, cyverse_password)).json()
-        print(response)
-        TerrainToken.__token = response['access_token']
-        return TerrainToken.__token

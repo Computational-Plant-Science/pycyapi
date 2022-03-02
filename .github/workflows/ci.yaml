@@ -1,0 +1,137 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Slack start notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: plantit-dev
+          SLACK_ICON: https://raw.githubusercontent.com/Computational-Plant-Science/pycyde/main/de.png
+          SLACK_MESSAGE: 'Build started'
+          SLACK_TITLE: PyCyDE
+          SLACK_USERNAME: pycyde
+  unit-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        env:
+          SINGULARITY_VERSION: ${{ secrets.SINGULARITY_VERSION }}
+        run: |
+          # install python deps
+          python -m pip install --upgrade pip
+          pip install flake8 pytest coveralls setuptools wheel twine
+          pip install -e .
+      - name: Lint
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Test
+        env:
+          TEST_DIRECTORY: ${{ secrets.TEST_DIRECTORY }}
+          CYVERSE_USERNAME: ${{ secrets.CYVERSE_USERNAME }}
+          CYVERSE_PASSWORD: ${{ secrets.CYVERSE_PASSWORD }}
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
+          COVERALLS_PARALLEL: true
+        run: |
+          coverage run --source=pycyde -m pytest /home/runner/work/pycyde/pycyde/pycyde/tests/unit -s
+          coveralls
+  integration-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 1
+      matrix:
+        python-version: [3.6]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        env:
+          SINGULARITY_VERSION: ${{ secrets.SINGULARITY_VERSION }}
+        run: |
+          # python
+          python -m pip install --upgrade pip
+          pip install flake8 pytest coveralls setuptools wheel twine
+          pip install -e .
+      - name: Lint
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Test
+        env:
+          TEST_DIRECTORY: ${{ secrets.TEST_DIRECTORY }}
+          CYVERSE_USERNAME: ${{ secrets.CYVERSE_USERNAME }}
+          CYVERSE_PASSWORD: ${{ secrets.CYVERSE_PASSWORD }}
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
+          COVERALLS_PARALLEL: true
+        run: |
+          coverage run --source=pycyde -m pytest /home/runner/work/pycyde/pycyde/pycyde/tests/integration -s
+          coveralls
+      - name: Update Coveralls
+        run: |
+          coveralls --finish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  publish:
+    needs: [unit-tests]
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 1
+      matrix:
+        python-version: [3.8]
+    steps:
+      - uses: actions/checkout@v2
+      - name: set up python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          # python
+          python -m pip install --upgrade pip
+          pip install flake8 pytest coveralls setuptools wheel twine
+          pip install -e .
+      - name: Publish package
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          old_version=$(pip install pycyde==random 2>&1 >/dev/null | sed 's|.*, \([^ ]*\)).*|\1|g' | head -n 1 | xargs)
+          new_version=$(pip show pycyde | sed 's|.*Version: \([^ ]*\).*|\1|g' | sed -n 2p)
+          echo "$old_version"
+          echo "$new_version"
+          if ! [[ "$new_version" = "$old_version" ]]; then
+            python setup.py sdist bdist_wheel
+            python -m twine upload dist/*
+          fi
+      - name: Slack success notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: plantit-dev
+          SLACK_ICON: https://raw.githubusercontent.com/Computational-Plant-Science/pycyde/main/de.png
+          SLACK_MESSAGE: 'Build succeeded'
+          SLACK_TITLE: PyCyDE
+          SLACK_USERNAME: pycyde

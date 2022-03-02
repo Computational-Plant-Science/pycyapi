@@ -6,7 +6,7 @@ class TerrainToken:
     __token = None
 
     @staticmethod
-    def get(username, password):
+    def get(username: str = None, password: str = None):
         if username is not None and password is not None:
             cyverse_username = username
             cyverse_password = password

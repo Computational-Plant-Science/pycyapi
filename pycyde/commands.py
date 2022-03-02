@@ -17,8 +17,8 @@ from requests import RequestException, ReadTimeout, Timeout, HTTPError
 from requests.auth import HTTPBasicAuth
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
 
-from pydeapi.exceptions import Unauthorized, BadResponse, BadRequest
-from pydeapi.utils import list_files, pattern_matches
+from pycyde.exceptions import Unauthorized, BadResponse, BadRequest
+from pycyde.utils import list_files, pattern_matches
 
 logger = logging.getLogger(__name__)
 
