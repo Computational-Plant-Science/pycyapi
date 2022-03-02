@@ -89,7 +89,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   publish:
-    needs: [unit-tests]
+    needs: [unit-tests, integration-tests]
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 1
@@ -112,14 +112,16 @@ jobs:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
-          old_version=$(pip install pycyde==random 2>&1 >/dev/null | sed 's|.*, \([^ ]*\)).*|\1|g' | head -n 1 | xargs)
-          new_version=$(pip show pycyde | sed 's|.*Version: \([^ ]*\).*|\1|g' | sed -n 2p)
-          echo "$old_version"
-          echo "$new_version"
-          if ! [[ "$new_version" = "$old_version" ]]; then
-            python setup.py sdist bdist_wheel
-            python -m twine upload dist/*
-          fi
+          # old_version=$(pip install pycyde==random 2>&1 >/dev/null | sed 's|.*, \([^ ]*\)).*|\1|g' | head -n 1 | xargs)
+          # new_version=$(pip show pycyde | sed 's|.*Version: \([^ ]*\).*|\1|g' | sed -n 2p)
+          # echo "$old_version"
+          # echo "$new_version"
+          # if ! [[ "$new_version" = "$old_version" ]]; then
+          #   python setup.py sdist bdist_wheel
+          #   python -m twine upload dist/*
+          # fi
+          python setup.py sdist bdist_wheel
+          python -m twine upload dist/*
       - name: Slack success notification
         uses: rtCamp/action-slack-notify@v2
         env:
