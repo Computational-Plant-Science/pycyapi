@@ -2,8 +2,6 @@ import re
 from os import listdir
 from os.path import join, isfile
 
-import requests
-
 
 def pattern_matches(path, patterns):
     return any(pattern.lower() in path.lower() for pattern in patterns)
@@ -39,43 +37,6 @@ def list_files(path,
         -1] not in exclude_names] if exclude_names is not None else excluded_by_pattern
 
     return excluded_by_name
-
-
-def cyverse_path_exists(path, token):
-    response = requests.get(f"https://de.cyverse.org/terrain/secured/filesystem/paged-directory?limit=1000&path={path}",
-                            headers={"Authorization": f"Bearer {token}"})
-    content = response.json()
-    input_type = 'directory'
-    if response.status_code != 200:
-        if 'error_code' not in content or ('error_code' in content and content['error_code'] == 'ERR_DOES_NOT_EXIST'):
-            path_split = path.rpartition('/')
-            base = path_split[0]
-            file = path_split[2]
-            up_response = requests.get(
-                f"https://de.cyverse.org/terrain/secured/filesystem/paged-directory?limit=1000&path={base}",
-                headers={"Authorization": f"Bearer {token}"})
-            up_content = up_response.json()
-            if up_response.status_code != 200:
-                if 'error_code' not in up_content:
-                    print(f"Unknown error: {up_content}")
-                    return False
-                elif 'error_code' in up_content:
-                    print(f"Error: {up_content['error_code']}")
-                    return False
-            elif 'files' not in up_content:
-                print(f"Directory '{base}' does not exist")
-                return False
-            elif len(up_content['files']) > 1:
-                print(f"Multiple files found in directory '{base}' matching name '{file}'")
-                return False
-            elif len(up_content['files']) == 0 or up_content['files'][0]['label'] != file:
-                print(f"File '{file}' does not exist in directory '{base}'")
-                return False
-            else:
-                input_type = 'file'
-        else:
-            return False
-    return True, input_type
 
 
 def del_none(d) -> dict:
