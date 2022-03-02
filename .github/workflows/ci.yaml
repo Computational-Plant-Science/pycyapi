@@ -26,8 +26,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
-        env:
-          SINGULARITY_VERSION: ${{ secrets.SINGULARITY_VERSION }}
         run: |
           # install python deps
           python -m pip install --upgrade pip
@@ -41,11 +39,8 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Test
         env:
-          TEST_DIRECTORY: ${{ secrets.TEST_DIRECTORY }}
-          CYVERSE_USERNAME: ${{ secrets.CYVERSE_USERNAME }}
-          CYVERSE_PASSWORD: ${{ secrets.CYVERSE_PASSWORD }}
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
           COVERALLS_PARALLEL: true
         run: |
@@ -79,11 +74,10 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Test
         env:
-          TEST_DIRECTORY: ${{ secrets.TEST_DIRECTORY }}
           CYVERSE_USERNAME: ${{ secrets.CYVERSE_USERNAME }}
           CYVERSE_PASSWORD: ${{ secrets.CYVERSE_PASSWORD }}
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
           COVERALLS_PARALLEL: true
         run: |
