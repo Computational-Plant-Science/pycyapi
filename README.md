@@ -180,20 +180,16 @@ To set up a development environment, clone the repo with `git clone https://gith
 
 ### Tests
 
-**Note:** before running integration tests, you must set the `CYVERSE_USERNAME` and `CYVERSE_PASSWORD` environment variables.
+The full test suite can be run from the project root with `pytest` (or `python3 -m pytest`).
 
-The full test suite can be run from the project root with:
-
-```shell script
-python3 -m pytest
-```
+**Note:** to run integration tests, you must set the `CYVERSE_USERNAME` and `CYVERSE_PASSWORD` environment variables.
 
 #### Unit tests
 
 To run unit tests, invoke `pytest` from the project root:
 
 ```shell script
-python3 -m pytest pycyapi/tests/unit
+pytest pycyapi/tests/unit
 ```
 
 #### Integration tests
@@ -201,7 +197,7 @@ python3 -m pytest pycyapi/tests/unit
 Integration tests can be run from the project root with:
 
 ```shell script
-python3 -m pytest pycyapi/tests/integration
+pytest pycyapi/tests/integration
 ```
 
 As mentioned above, you must set the `CYVERSE_USERNAME` and `CYVERSE_PASSWORD` environment variables before running integration tests. The test cases will use this CyVerse account and its associated data store as a test environment.

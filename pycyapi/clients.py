@@ -68,7 +68,7 @@ class TerrainClient:
                      "Content-Type": 'application/json;charset=utf-8'})
 
         if response.status_code == 500 and response.json()['error_code'] == 'ERR_DOES_NOT_EXIST':
-            raise ValueError(f"Path {path} does not exist")
+            raise NotFound(f"Path {path} does not exist")
         elif response.status_code == 400:
             raise ValueError(f"Bad request: {response}")
 
@@ -294,7 +294,7 @@ class TerrainClient:
             checksums: List[dict] = None,
             overwrite: bool = False):
         check = checksums is not None and len(checksums) > 0
-        paths = [file['path'] for file in self.paged_directory(from_path)]
+        paths = [file['path'] for file in self.paged_directory(from_path)['files']]
         paths = [path for path in paths if pattern_matches(path, patterns)] if (
                 patterns is not None and len(patterns) > 0) else paths
         num_paths = len(paths)

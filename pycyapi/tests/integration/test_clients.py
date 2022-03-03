@@ -98,7 +98,7 @@ def test_list_files(remote_base_path):
             testutils.upload_file(token, file2_path, remote_path)
 
             # list files
-            paths = [file['path'] for file in client.paged_directory(remote_path)]
+            paths = [file['path'] for file in client.paged_directory(remote_path)['files']]
 
             # check files
             assert join(remote_path, file1_name) in paths
