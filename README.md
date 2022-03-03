@@ -1,5 +1,5 @@
 <div align="center">
-<img src="https://github.com/Computational-Plant-Science/pycyapi/blob/main/de.png?raw=true" style="position:relative;top: 20px;width:50px;" />
+<img src="https://github.com/Computational-Plant-Science/pycyapi/blob/main/de.png?raw=true" style="position:relative;width:50px;" />
 <h1>
 PyCyAPI
 </h1>
