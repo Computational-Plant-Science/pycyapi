@@ -12,7 +12,7 @@ jobs:
           SLACK_CHANNEL: plantit-dev
           SLACK_ICON: https://raw.githubusercontent.com/Computational-Plant-Science/pycyapi/main/de.png
           SLACK_MESSAGE: 'Build started'
-          SLACK_TITLE: PyCyDE
+          SLACK_TITLE: PyCyAPI
           SLACK_USERNAME: pycyapi
   unit-tests:
     runs-on: ubuntu-latest
@@ -44,7 +44,7 @@ jobs:
           COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
           COVERALLS_PARALLEL: true
         run: |
-          coverage run --source=pycyde -m pytest /home/runner/work/pycyde/pycyde/pycyde/tests/unit -s
+          coverage run --source=pycyapi -m pytest /home/runner/work/pycyapi/pycyapi/pycyapi/tests/unit -s
           coveralls
   integration-tests:
     runs-on: ubuntu-latest
@@ -81,7 +81,7 @@ jobs:
           COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
           COVERALLS_PARALLEL: true
         run: |
-          coverage run --source=pycyde -m pytest /home/runner/work/pycyde/pycyde/pycyde/tests/integration -s
+          coverage run --source=pycyapi -m pytest /home/runner/work/pycyapi/pycyapi/pycyapi/tests/integration -s
           coveralls
       - name: Update Coveralls
         run: |
@@ -112,8 +112,8 @@ jobs:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
-          old_version=$(pip install pycyde==random 2>&1 >/dev/null | sed 's|.*, \([^ ]*\)).*|\1|g' | head -n 1 | xargs)
-          new_version=$(pip show pycyde | sed 's|.*Version: \([^ ]*\).*|\1|g' | sed -n 2p)
+          old_version=$(pip install pycyapi==random 2>&1 >/dev/null | sed 's|.*, \([^ ]*\)).*|\1|g' | head -n 1 | xargs)
+          new_version=$(pip show pycyapi | sed 's|.*Version: \([^ ]*\).*|\1|g' | sed -n 2p)
           echo "$old_version"
           echo "$new_version"
           if ! [[ "$new_version" = "$old_version" ]]; then
@@ -127,5 +127,5 @@ jobs:
           SLACK_CHANNEL: plantit-dev
           SLACK_ICON: https://raw.githubusercontent.com/Computational-Plant-Science/pycyapi/main/de.png
           SLACK_MESSAGE: 'Build succeeded'
-          SLACK_TITLE: PyCyDE
+          SLACK_TITLE: PyCyAPI
           SLACK_USERNAME: pycyapi
