@@ -1,23 +1,24 @@
 <div align="center">
-<img src="https://github.com/Computational-Plant-Science/pycyde/blob/main/de.png?raw=true" style="position:relative;top: 50px;width:50px;" />
+<img src="https://github.com/Computational-Plant-Science/pycyapi/blob/main/de.png?raw=true" style="position:relative;top: 50px;width:50px;" />
 <h1>
-PyCyDE
+PyCyAPI
 </h1>
 
-![CI](https://github.com/Computational-Plant-Science/pycyde/workflows/CI/badge.svg)
-[![PyPI version](https://badge.fury.io/py/pycyde.svg)](https://badge.fury.io/py/pycyde)
-[![Coverage Status](https://coveralls.io/repos/github/Computational-Plant-Science/pycyde/badge.svg?branch=main)](https://coveralls.io/github/Computational-Plant-Science/pycyde) 
+![CI](https://github.com/Computational-Plant-Science/pycyapi/workflows/CI/badge.svg)
+[![PyPI version](https://badge.fury.io/py/pycyapi.svg)](https://badge.fury.io/py/pycyapi)
+[![Coverage Status](https://coveralls.io/repos/github/Computational-Plant-Science/pycyapi/badge.svg?branch=main)](https://coveralls.io/github/Computational-Plant-Science/pycyapi) 
 
 </div>
 
-A Python client for the CyVerse Discovery Environment API (a.k.a. Terrain).
+A Python client for the CyVerse Discovery Environment (a.k.a. Terrain) APIs.
 
-**This repository is under construction and is not yet stable. API coverage focuses on [`data`](https://de.cyverse.org/terrain/docs/index.html#/data) and [`fileio`](https://de.cyverse.org/terrain/docs/index.html#/fileio) endpoints and does not attempt a 1-1 mapping.**
+**This repository is not an official CyVerse project.**
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Contents**
 
+- [Status](#status)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [CLI usage](#cli-usage)
@@ -26,8 +27,8 @@ A Python client for the CyVerse Discovery Environment API (a.k.a. Terrain).
     - [Token](#token)
     - [Profile](#profile)
     - [List](#list)
-    - [Pull](#pull)
-    - [Push](#push)
+    - [Download](#download)
+    - [Upload](#upload)
     - [Exists](#exists)
     - [Mkdir](#mkdir)
     - [Share](#share)
@@ -39,6 +40,10 @@ A Python client for the CyVerse Discovery Environment API (a.k.a. Terrain).
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+## Status
+
+This project is in development and is not yet stable. API coverage is still sparse, focusing mainly on [`data`](https://de.cyverse.org/terrain/docs/index.html#/data) and [`fileio`](https://de.cyverse.org/terrain/docs/index.html#/fileio) endpoints.
+
 ## Requirements
 
 - Python 3.6.9+
@@ -48,12 +53,12 @@ A Python client for the CyVerse Discovery Environment API (a.k.a. Terrain).
 To install with  pip:
 
 ```shell script
-pip install pycyde
+pip install pycyapi
 ```
 
 ## CLI usage
 
-Once the CLI is installed it can be invoked with `pycyde <command>`.
+Once the CLI is installed it can be invoked with `pycyapi <command>`.
 
 ### Authenticating
 
@@ -88,7 +93,7 @@ The `pull` and `push` commands provide a high-level interface over Terrain's `te
 To request an authentication token, use the `token` command:
 
 ```shell script
-pycyde token --username <your CyVerse username> --password <your CyVerse password>
+pycyapi token --username <your CyVerse username> --password <your CyVerse password>
 ```
 
 The token can then be passed in the `--token` parameter to authenticate further commands.
@@ -101,12 +106,12 @@ TODO
 
 TODO
 
-#### Pull
+#### Download
 
-To pull files from the `/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/` directory in the CyVerse Data Store to the current working directory, use:
+To download files from the `/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/` collection in the CyVerse Data Store to the current working directory, use:
 
 ```shell
-pycyde pull /iplant/home/shared/iplantcollaborative/testing_tools/cowsay/ --token <access token>
+pycyapi download /iplant/home/shared/iplantcollaborative/testing_tools/cowsay/ --token <access token>
 ```
 
 Optional arguments are:
@@ -115,12 +120,12 @@ Optional arguments are:
 - `--pattern`: File patterns to include (one or more).
 - `--overwrite`: Whether to overwrite already-existing files.
 
-#### Push
+#### Upload
 
-To push all files in the current working directory to the `/iplant/home/<my>/<directory/` in the CyVerse Data Store, use:
+To upload all files in the current working directory to the `/iplant/home/<my>/<directory/` in the CyVerse Data Store, use:
 
 ```shell script
-pycyde push /iplant/home/<my>/<directory/ --token <access token>
+pycyapi upload /iplant/home/<my>/<directory/ --token <access token>
 ```
 
 Options are:
@@ -151,7 +156,7 @@ TODO
 
 ## Development
 
-To set up a development environment, clone the repo with `git clone https://github.com/Computational-Plant-Science/pycyde.git`. You can create a Python3 virtual environment with e.g., `python3 -m venv .`, then install dependencies with `pip3 install -r requirements.txt`.
+To set up a development environment, clone the repo with `git clone https://github.com/Computational-Plant-Science/pycyapi.git`. You can create a Python3 virtual environment with e.g., `python3 -m venv .`, then install dependencies with `pip3 install -r requirements.txt`.
 
 ### Tests
 
@@ -168,7 +173,7 @@ python3 -m pytest
 To run unit tests, invoke `pytest` from the project root:
 
 ```shell script
-python3 -m pytest pycyde/tests/unit
+python3 -m pytest pycyapi/tests/unit
 ```
 
 #### Integration tests
@@ -176,9 +181,9 @@ python3 -m pytest pycyde/tests/unit
 Integration tests can be run from the project root with:
 
 ```shell script
-python3 -m pytest pycyde/tests/integration
+python3 -m pytest pycyapi/tests/integration
 ```
 
 As mentioned above, you must set the `CYVERSE_USERNAME` and `CYVERSE_PASSWORD` environment variables before running integration tests. The test cases will use this CyVerse account and its associated data store as a test environment.
 
-Note also that the CyVerse data store is not immediately consistent and write operations may take some time to become visible to reads, thus integration tests must impose an artificial delay. If tests begin to fail intermittently, the value of the `DEFAULT_SLEEP` constant in `pycyde/tests/integration/utils.py` may need to be increased.
+Note also that the CyVerse data store is not immediately consistent and write operations may take some time to become visible to reads, thus integration tests must impose an artificial delay. If tests begin to fail intermittently, the value of the `DEFAULT_SLEEP` constant in `pycyapi/tests/integration/utils.py` may need to be increased.
