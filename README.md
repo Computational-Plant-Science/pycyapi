@@ -6,7 +6,7 @@ PyCyAPI
 
 ![CI](https://github.com/Computational-Plant-Science/pycyapi/workflows/CI/badge.svg)
 [![PyPI version](https://badge.fury.io/py/pycyapi.svg)](https://badge.fury.io/py/pycyapi)
-[![Coverage Status](https://coveralls.io/repos/github/Computational-Plant-Science/pycyapi/badge.svg?branch=main)](https://coveralls.io/github/Computational-Plant-Science/pycyapi) 
+[![Coverage Status](https://coveralls.io/repos/github/Computational-Plant-Science/pycyapi/badge.svg?branch=main)](https://coveralls.io/github/Computational-Plant-Science/pycyapi?branch=main)
 
 </div>
 

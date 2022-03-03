@@ -12,28 +12,28 @@ def cli():
 @click.option('--username', required=True, type=str)
 @click.option('--password', required=True, type=str)
 def cas_token(username, password):
-    return commands.cas_token(username, password)
+    click.echo(commands.cas_token(username, password))
 
 
 @cli.command()
 @click.argument('username')
 @click.option('--token', '-t', required=False, type=str)
 def user_info(username, token):
-    return commands.user_info(username, token=token)
+    click.echo(commands.user_info(username, token=token))
 
 
 @cli.command()
 @click.argument('remote_path')
 @click.option('--token', '-t', required=False, type=str)
 def paged_directory(remote_path, token):
-    return commands.paged_directory(remote_path, token=token)
+    click.echo(commands.paged_directory(remote_path, token=token))
 
 
 @cli.command()
 @click.argument('remote_path')
 @click.option('--token', '-t', required=False, type=str)
 def stat(remote_path, token):
-    return commands.stat(remote_path, token=token)
+    click.echo(commands.stat(remote_path, token=token))
 
 
 @cli.command()
@@ -41,14 +41,14 @@ def stat(remote_path, token):
 @click.option('--type', required=False, type=str)
 @click.option('--token', '-t', required=False, type=str)
 def exists(remote_path, type, token):
-    return commands.exists(remote_path, type=type, token=token)
+    click.echo(commands.exists(remote_path, type=type, token=token))
 
 
 @cli.command()
 @click.argument('remote_path')
 @click.option('--token', '-t', required=False, type=str)
 def create(remote_path, token):
-    return commands.mkdir(remote_path, token=token)
+    click.echo(commands.create(remote_path, token=token))
 
 
 @cli.command()
@@ -69,6 +69,7 @@ def download(
         patterns=paged_directory(pattern),
         overwrite=overwrite,
         token=token)
+    click.echo(f"Downloaded {remote_path} to {local_path}")
 
 
 @cli.command()
@@ -94,6 +95,7 @@ def upload(remote_path,
         exclude_patterns=exclude_pattern,
         exclude_names=exclude_name,
         token=token)
+    click.echo(f"Uploaded {local_path} to {remote_path}")
 
 
 @cli.command()
@@ -102,6 +104,7 @@ def upload(remote_path,
 @click.option('--token', '-t', required=False, type=str)
 def share(remote_path, username, token):
     commands.share(remote_path, username, token=token)
+    click.echo(f"Shared {remote_path} with {username}")
 
 
 @cli.command()
@@ -110,3 +113,4 @@ def share(remote_path, username, token):
 @click.option('--token', '-t', required=False, type=str)
 def share(remote_path, username, token):
     commands.unshare(remote_path, username, token=token)
+    click.echo(f"Unshared {remote_path} with {username}")

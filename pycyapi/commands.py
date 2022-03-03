@@ -6,6 +6,7 @@ from typing import List
 
 from pycyapi.clients import TerrainClient
 from pycyapi.auth import AccessToken
+from pycyapi.exceptions import NotFound
 
 logger = logging.getLogger(__name__)
 
@@ -52,24 +53,81 @@ def paged_directory(path: str, token: str = None):
 
 
 def stat(path: str, token: str = None):
-    pass
+    if token is not None:
+        client = TerrainClient(token)
+    else:
+        raise ValueError(f"An authentication token must be explicitly provided for now")
+        # TODO: try to load token from cache
+        # client = TerrainClient(token)
+
+    try:
+        return client.stat(path)
+    except:
+        logger.error(f"Failed to stat path: {traceback.format_exc()}")
+        raise
 
 
 def exists(path: str, type: str = None, token: str = None):
-    # TODO: use type with client.file_exists and client.dir_exists to check if type matches expectation
-    pass
+    if token is not None:
+        client = TerrainClient(token)
+    else:
+        raise ValueError(f"An authentication token must be explicitly provided for now")
+        # TODO: try to load token from cache
+        # client = TerrainClient(token)
+
+    try:
+        if type is None: return client.exists(path)
+        if type == 'dir': return client.dir_exists(path)
+        elif type == 'file': return client.file_exists(path)
+        else: raise ValueError(f"Unsupported type (must be 'dir' or 'file')")
+    except:
+        logger.error(f"Failed to stat path: {traceback.format_exc()}")
+        raise
 
 
-def mkdir(path: str, token: str = None):
-    pass
+def create(path: str, token: str = None):
+    if token is not None:
+        client = TerrainClient(token)
+    else:
+        raise ValueError(f"An authentication token must be explicitly provided for now")
+        # TODO: try to load token from cache
+        # client = TerrainClient(token)
+
+    try:
+        return client.create_directory(path)
+    except:
+        logger.error(f"Failed to create directory: {traceback.format_exc()}")
+        raise
 
 
 def share(path: str, username: str, token: str = None):
-    pass
+    if token is not None:
+        client = TerrainClient(token)
+    else:
+        raise ValueError(f"An authentication token must be explicitly provided for now")
+        # TODO: try to load token from cache
+        # client = TerrainClient(token)
+
+    try:
+        return client.share(path, username)
+    except:
+        logger.error(f"Failed to share path {path} with user {username}: {traceback.format_exc()}")
+        raise
 
 
 def unshare(path: str, username: str, token: str = None):
-    pass
+    if token is not None:
+        client = TerrainClient(token)
+    else:
+        raise ValueError(f"An authentication token must be explicitly provided for now")
+        # TODO: try to load token from cache
+        # client = TerrainClient(token)
+
+    try:
+        return client.unshare(path, username)
+    except:
+        logger.error(f"Failed to unshare path {path} from user {username}: {traceback.format_exc()}")
+        raise
 
 
 def download(
