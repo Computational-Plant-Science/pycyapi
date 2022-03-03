@@ -14,7 +14,8 @@ from requests import RequestException, ReadTimeout, Timeout, HTTPError
 from requests.auth import HTTPBasicAuth
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
 
-from pycyde.utils import pattern_matches, list_local_files
+from pycyapi.exceptions import NotFound
+from pycyapi.utils import pattern_matches, list_local_files
 
 
 class TerrainClient:
@@ -38,7 +39,7 @@ class TerrainClient:
         retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
             RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
             Timeout)))
-    def get_user_profile(self, username: str) -> dict:
+    def user_info(self, username: str) -> dict:
         self.__logger.debug(f"Getting CyVerse profile for user {username}")
         response = requests.get(
             f"https://de.cyverse.org/terrain/secured/user-info?username={username}",
@@ -47,9 +48,9 @@ class TerrainClient:
 
         response.raise_for_status()
         content = response.json()
-
-        if username not in content: raise ValueError(f"Could not find user with username {username}")
-        return content[username]
+        info = content.get(username, None)
+        if info is None: raise ValueError(f"Could not find user with username {username} in response: {content}")
+        return info
 
     @retry(
         reraise=True,
@@ -58,7 +59,7 @@ class TerrainClient:
         retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
             RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
             Timeout)))
-    def get_path_info(self, path: str) -> dict:
+    def stat(self, path: str) -> dict:
         self.__logger.debug(f"Getting data store file {path}")
         response = requests.post(
             "https://de.cyverse.org/terrain/secured/filesystem/stat",
@@ -73,7 +74,11 @@ class TerrainClient:
 
         response.raise_for_status()
         content = response.json()
-        return content['paths'][path]
+        paths = content.get('paths', None)
+        if paths is None: raise ValueError(f"No paths on response: {content}")
+        info = paths.get(path, None)
+        if info is None: raise NotFound(f"No path info on response: {content}")
+        return info
 
     @retry(
         reraise=True,
@@ -82,7 +87,7 @@ class TerrainClient:
         retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
             RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
             Timeout)))
-    def path_exists(self, path: str) -> bool:
+    def exists(self, path: str) -> bool:
         """
         Checks whether a collection (directory) or object (file) exists at the given path.
 
@@ -116,94 +121,17 @@ class TerrainClient:
         if path not in content['paths'].keys(): return False
         return content['paths'][path]
 
-    @retry(
-        reraise=True,
-        wait=wait_exponential(multiplier=1, min=4, max=10),
-        stop=stop_after_attempt(3),
-        retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
-            RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
-            Timeout)))
-    def path_exists_and_type(self, path: str) -> Tuple[bool, Optional[str]]:
-        """
-        Checks whether a collection (directory) or object (file) exists at the given path, and returns its type.
-
-        Args:
-            path: The path
-
-        Returns: (True, type of object) if the path exists, otherwise (False, None)
-        """
-
-        self.__logger.debug(f"Checking if data store path exists (and type): {path}")
-
-        data = {'paths': [path]}
-        headers = {"Authorization": f"Bearer {self.__token}", "Content-Type": "application/json"}
-        response = requests.post("https://de.cyverse.org/terrain/secured/filesystem/stat",
-                                 data=json.dumps(data),
-                                 headers=headers,
-                                 timeout=self.__timeout)
-
-        # before invoking `raise_for_status` and bubbling an exception up,
-        # try to decode the response and check the reason for failure
-        if response.status_code == 400:
-            return False, None
-        elif response.status_code != 200:
-            try:
-                content = response.json()
-                self.__logger.warning(f"Bad response when checking if path '{path}' exists: {content}")
-            finally:
-                pass
-
-        response.raise_for_status()
-        content = response.json()
-        if 'paths' not in content: raise ValueError(f"No paths on response: {content}")
-        if path not in content['paths'].keys(): return False, None
-        return True, content['paths'][path]['type']
-
-    @retry(
-        wait=wait_exponential(multiplier=1, min=4, max=10),
-        stop=stop_after_attempt(3),
-        retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
-            RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
-            Timeout) | retry_if_exception_type(HTTPError)))
     def dir_exists(self, path: str) -> bool:
-        response = requests.post('https://de.cyverse.org/terrain/secured/filesystem/stat',
-                                 headers={'Authorization': f"Bearer {self.__token}",
-                                          "Content-Type": 'application/json;charset=utf-8'},
-                                 data=json.dumps({'paths': [path]}),
-                                 timeout=self.__timeout)
-
-        if response.status_code == 500 and response.json()['error_code'] == 'ERR_DOES_NOT_EXIST':
+        try:
+            return self.stat(path)['type'] == 'dir'
+        except NotFound:
             return False
 
-        response.raise_for_status()
-        content = response.json()
-
-        if 'paths' not in content: raise ValueError(f"No paths in response: {content}")
-        result = content['paths'][path]
-        return result['type'] == 'dir'
-
-    @retry(
-        wait=wait_exponential(multiplier=1, min=4, max=10),
-        stop=stop_after_attempt(3),
-        retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
-            RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
-            Timeout) | retry_if_exception_type(HTTPError)))
     def file_exists(self, path: str) -> bool:
-        response = requests.post('https://de.cyverse.org/terrain/secured/filesystem/stat',
-                                 headers={'Authorization': f"Bearer {self.__token}",
-                                          "Content-Type": 'application/json;charset=utf-8'},
-                                 data=json.dumps({'paths': [path]}),
-                                 timeout=self.__timeout)
-
-        if response.status_code == 500 and response.json()['error_code'] == 'ERR_DOES_NOT_EXIST':
+        try:
+            return self.stat(path)['type'] == 'file'
+        except NotFound:
             return False
-
-        response.raise_for_status()
-        content = response.json()
-
-        if 'paths' not in content: raise ValueError(f"No paths in response: {content}")
-        result = content['paths'][path]
-        return result['type'] == 'file'
 
     @retry(
         reraise=True,
@@ -212,7 +140,7 @@ class TerrainClient:
         retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
             RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
             Timeout)))
-    def list_files(self, path: str) -> List[dict]:
+    def paged_directory(self, path: str) -> dict:
         self.__logger.debug(f"Listing data store directory {path}")
         response = requests.get(
             f"https://de.cyverse.org/terrain/secured/filesystem/paged-directory?limit=1000&path={path}",
@@ -223,10 +151,18 @@ class TerrainClient:
             raise ValueError(f"Path {path} does not exist")
 
         response.raise_for_status()
-        content = response.json()
+        directory = response.json()
+        return directory
 
-        if 'files' not in content: raise ValueError(f"No files on response: {content}")
-        return content['files']
+    def list_files(self, path: str):
+        directory = self.paged_directory(path)
+        if 'files' not in directory: raise ValueError(f"No files on response: {directory}")
+        return directory['files']
+
+    def list_folders(self, path: str):
+        directory = self.paged_directory(path)
+        if 'folders' not in directory: raise ValueError(f"No folders on response: {directory}")
+        return directory['folders']
 
     @retry(
         reraise=True,
@@ -235,7 +171,7 @@ class TerrainClient:
         retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
             RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
             Timeout)))
-    def create_dir(self, path: str):
+    def create_directory(self, path: str):
         self.__logger.debug(f"Creating data store directory {path}")
         headers = {
             "Authorization": f"Bearer {self.__token}",
@@ -253,7 +189,7 @@ class TerrainClient:
         retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
             RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
             Timeout)))
-    def share_dir(self, data: dict):
+    def share(self, data: dict):
         self.__logger.debug(f"Sharing data store path(s): {json.dumps(data)}")
         headers = {
             "Authorization": f"Bearer {self.__token}",
@@ -272,7 +208,7 @@ class TerrainClient:
         retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
             RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
             Timeout)))
-    def unshare_dir(self, data: dict):
+    def unshare(self, data: dict):
         self.__logger.debug(f"Unsharing data store path(s): {json.dumps(data)}")
         headers = {
             "Authorization": f"Bearer {self.__token}",
@@ -284,26 +220,14 @@ class TerrainClient:
                                  timeout=self.__timeout)
         response.raise_for_status()
 
-    @retry(
-        wait=wait_exponential(multiplier=1, min=4, max=10),
-        stop=stop_after_attempt(3),
-        retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
-            RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
-            Timeout) | retry_if_exception_type(HTTPError)))
     def verify_checksums(self, from_path: str, expected_pairs: List[dict]):
-        response = requests.post('https://de.cyverse.org/terrain/secured/filesystem/stat',
-                                 headers={'Authorization': f"Bearer {self.__token}"},
-                                 data={'paths': expected_pairs},
-                                 timeout=self.__timeout)
+        info = self.stat(from_path)
+        pairs = [(path[join(from_path, path)]['label'], path[join(from_path, path)]['md5']) for path in info['paths']]
 
-        response.raise_for_status()
-        actual_pairs = [(path[join(from_path, path)]['label'], path[join(from_path, path)]['md5']) for path in
-                        response.json()['paths']]
+        if len(pairs) != len(expected_pairs):
+            raise ValueError(f"{len(expected_pairs)} file-checksum pairs provided but {len(pairs)} files exist")
 
-        if len(actual_pairs) != len(expected_pairs):
-            raise ValueError(f"{len(expected_pairs)} file-checksum pairs provided but {len(actual_pairs)} files exist")
-
-        for actual in actual_pairs:
+        for actual in pairs:
             expected = [pair for pair in expected_pairs if pair['name'] == actual[0]][0]
             assert expected['file'] == actual[0]
             assert expected['checksum'] == actual[1]
@@ -314,7 +238,7 @@ class TerrainClient:
         retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
             RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
             Timeout) | retry_if_exception_type(HTTPError)))
-    def pull_file(
+    def download(
             self,
             from_path: str,
             to_path: str,
@@ -349,7 +273,7 @@ class TerrainClient:
         retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
             RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
             Timeout)))
-    def push_file(self, from_path: str, to_prefix: str):
+    def upload(self, from_path: str, to_prefix: str):
         self.__logger.debug(f"Uploading {from_path} to data store path {to_prefix}")
         with open(from_path, 'rb') as file:
             response = requests.post(f"https://de.cyverse.org/terrain/secured/fileio/upload?dest={to_prefix}",
@@ -362,19 +286,15 @@ class TerrainClient:
             else:
                 response.raise_for_status()
 
-    def pull_dir(
+    def download_directory(
             self,
             from_path: str,
             to_path: str,
             patterns: List[str] = None,
             checksums: List[dict] = None,
             overwrite: bool = False):
-        """
-
-        """
-
         check = checksums is not None and len(checksums) > 0
-        paths = [file['path'] for file in self.list_files(from_path)]
+        paths = [file['path'] for file in self.paged_directory(from_path)]
         paths = [path for path in paths if pattern_matches(path, patterns)] if (
                 patterns is not None and len(patterns) > 0) else paths
         num_paths = len(paths)
@@ -385,32 +305,19 @@ class TerrainClient:
         print(f"Downloading directory '{from_path}' with {len(paths)} file(s)")
         with closing(Pool(processes=multiprocessing.cpu_count())) as pool:
             args = [(path, to_path, i) for i, path in enumerate(paths)]
-            pool.starmap(self.pull_file, args)
+            pool.starmap(self.download, args)
 
         # TODO: verify that input checksums haven't changed since download time?
         # (maybe a bit excessive, and will add network latency, but probably prudent)
         # if check: verify_checksums(from_path, checksums)
 
-    def push_dir(self,
-                 from_path: str,
-                 to_prefix: str,
-                 include_patterns: List[str] = None,
-                 include_names: List[str] = None,
-                 exclude_patterns: List[str] = None,
-                 exclude_names: List[str] = None):
-        """
-        Pushes the contents of the local directory to the given data store collection.
-        Invokes `push_file()` internally, so no need for an outer retry policy.
-
-        Args:
-            from_path: The local directory path
-            to_prefix: The data store collection path
-            include_patterns: Filename patterns to include
-            include_names: Filenames to include
-            exclude_patterns: Filename patterns to exclude
-            exclude_names: Filenames to exclude
-        """
-
+    def upload_directory(self,
+                         from_path: str,
+                         to_prefix: str,
+                         include_patterns: List[str] = None,
+                         include_names: List[str] = None,
+                         exclude_patterns: List[str] = None,
+                         exclude_names: List[str] = None):
         # check path type
         is_file = isfile(from_path)
         is_dir = isdir(from_path)
@@ -421,9 +328,9 @@ class TerrainClient:
             from_paths = list_local_files(from_path, include_patterns, include_names, exclude_patterns, exclude_names)
             self.__logger.debug(f"Uploading directory '{from_path}' with {len(from_paths)} file(s) to '{to_prefix}'")
             with closing(Pool(processes=multiprocessing.cpu_count())) as pool:
-                pool.starmap(self.push_file, [(path, to_prefix) for path in [str(p) for p in from_paths]])
+                pool.starmap(self.upload, [(path, to_prefix) for path in [str(p) for p in from_paths]])
         elif is_file:
-            self.push_file(from_path, to_prefix)
+            self.upload(from_path, to_prefix)
         else:
             raise ValueError(f"Remote path '{to_prefix}' is a file; specify a directory path instead")
 

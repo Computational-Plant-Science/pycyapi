@@ -3,20 +3,20 @@ from os import remove, environ
 from os.path import join
 from tempfile import TemporaryDirectory
 
-from pycyde import commands as commands
-from pycyde.tests.utils import check_hello
-from pycyde.tokens import TerrainToken
-import pycyde.tests.integration.utils as testutils
+from pycyapi import commands as commands
+from pycyapi.tests.utils import check_hello
+from pycyapi.auth import AccessToken
+import pycyapi.tests.integration.utils as testutils
 
 message = "Message"
-token = TerrainToken.get()
+token = AccessToken.get()
 
 
 def test_token(remote_base_path):
     username = environ.get('CYVERSE_USERNAME', None)
     password = environ.get('CYVERSE_PASSWORD', None)
 
-    tkn = commands.token(username, password)
+    tkn = commands.cas_token(username, password)
 
     # make sure we can use the token successfully
     remote_path = join(remote_base_path, str(uuid.uuid4()))
@@ -50,7 +50,7 @@ def test_pull(remote_base_path, file_name_1, file_name_2):
             remove(local_path_2)
 
             # pull directory
-            commands.pull(remote_path, test_dir, token=token)
+            commands.download(remote_path, test_dir, token=token)
 
             # check files were pulled
             downloaded_path_1 = join(test_dir, file_name_1)
@@ -79,7 +79,7 @@ def test_push(remote_base_path, file_name_1, file_name_2):
                 file2.write('Hello, 2!')
 
             # push directory
-            commands.push(test_dir, remote_path, token=token)
+            commands.upload(test_dir, remote_path, token=token)
 
             # check files were pushed to store
             paths = testutils.list_files(token, remote_path)

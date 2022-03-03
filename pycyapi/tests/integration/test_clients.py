@@ -6,34 +6,34 @@ from tempfile import TemporaryDirectory
 import pytest
 from requests import HTTPError
 
-from pycyde.clients import TerrainClient
-import pycyde.tests.integration.utils as testutils
-from pycyde.tokens import TerrainToken
+from pycyapi.clients import TerrainClient
+import pycyapi.tests.integration.utils as testutils
+from pycyapi.auth import AccessToken
 
 message = "Message"
-token = TerrainToken.get()
+token = AccessToken.get()
 client = TerrainClient(token)
 
 
 def test_path_exists_when_doesnt_exist_is_false():
-    exists = client.path_exists('/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/cowsaid.txt')
+    exists = client.exists('/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/cowsaid.txt')
     assert not exists
 
 
 def test_path_exists_when_is_a_file_is_true():
-    exists = client.path_exists('/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/cowsay.txt')
+    exists = client.exists('/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/cowsay.txt')
     assert exists
 
 
 def test_path_exists_when_is_a_directory_is_true():
-    exists = client.path_exists('/iplant/home/shared/iplantcollaborative/testing_tools/cowsay')
+    exists = client.exists('/iplant/home/shared/iplantcollaborative/testing_tools/cowsay')
     assert exists
 
 
 def test_path_exists_throws_error_when_terrain_token_is_invalid():
     with pytest.raises(HTTPError) as e:
         client = TerrainClient('not a valid token')
-        client.path_exists('/iplant/home/shared/iplantcollaborative/testing_tools/cowsay')
+        client.exists('/iplant/home/shared/iplantcollaborative/testing_tools/cowsay')
         assert '401' in str(e)
 
 
@@ -98,7 +98,7 @@ def test_list_files(remote_base_path):
             testutils.upload_file(token, file2_path, remote_path)
 
             # list files
-            paths = [file['path'] for file in client.list_files(remote_path)]
+            paths = [file['path'] for file in client.paged_directory(remote_path)]
 
             # check files
             assert join(remote_path, file1_name) in paths
@@ -110,13 +110,13 @@ def test_list_files(remote_base_path):
 def test_list_dir_no_retries_when_path_does_not_exist(remote_base_path):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
     with pytest.raises(ValueError):
-        client.list_files(remote_path)
+        client.paged_directory(remote_path)
 
 
 def test_list_dir_retries_when_token_invalid(remote_base_path):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
     with pytest.raises(ValueError):
-        client.list_files(remote_path)
+        client.paged_directory(remote_path)
 
 
 def test_pull_file(remote_base_path):
@@ -137,7 +137,7 @@ def test_pull_file(remote_base_path):
             testutils.upload_file(token, file_path, remote_path)
 
             # download file
-            client.pull_file(join(remote_path, file_name), testdir)
+            client.download(join(remote_path, file_name), testdir)
 
             # check download
             assert isfile(file_path)
@@ -171,7 +171,7 @@ def test_pull_directory(remote_base_path):
             remove(file2_path)
 
             # download files
-            client.pull_dir(remote_path, testdir, ['.txt'])
+            client.download_directory(remote_path, testdir, ['.txt'])
 
             # check downloads
             assert isfile(file1_path)
@@ -195,7 +195,7 @@ def test_push_file(remote_base_path):
                 file.write('Hello, 1!')
 
             # upload file
-            client.push_file(file_path, remote_path)
+            client.upload(file_path, remote_path)
 
             # check upload
             paths = testutils.list_files(token, remote_path)
@@ -222,7 +222,7 @@ def test_push_directory(remote_base_path):
                 file2.write('Hello, 2!')
 
             # upload directory
-            client.push_dir(testdir, remote_path)
+            client.upload_directory(testdir, remote_path)
 
             # check upload
             paths = testutils.list_files(token, remote_path)

@@ -1,4 +1,4 @@
-from pycyde.utils import pattern_matches
+from pycyapi.utils import pattern_matches
 
 
 def test_pattern_patches():

@@ -4,24 +4,24 @@ from os import listdir, getcwd
 from pathlib import Path
 from typing import List
 
-from pycyde.clients import TerrainClient
-from pycyde.tokens import TerrainToken
+from pycyapi.clients import TerrainClient
+from pycyapi.auth import AccessToken
 
 logger = logging.getLogger(__name__)
 
 
-def token(username: str, password: str) -> str:
+def cas_token(username: str, password: str) -> str:
     if username is None or password is None or username == '' or password == '':
         raise ValueError(f"Username and password must be provided!")
 
     try:
-        return TerrainToken.get(username, password)
+        return AccessToken.get(username, password)
     except:
         logger.error(f"Token request failed: {traceback.format_exc()}")
         raise
 
 
-def profile(username: str, token: str = None):
+def user_info(username: str, token: str = None):
     if token is not None:
         client = TerrainClient(token)
     else:
@@ -30,13 +30,13 @@ def profile(username: str, token: str = None):
         # client = TerrainClient(token)
 
     try:
-        return client.get_user_profile(username)
+        return client.user_info(username)
     except:
         logger.error(f"User profile request failed: {traceback.format_exc()}")
         raise
 
 
-def list(path: str, token: str = None):
+def paged_directory(path: str, token: str = None):
     if token is not None:
         client = TerrainClient(token)
     else:
@@ -45,13 +45,18 @@ def list(path: str, token: str = None):
         # client = TerrainClient(token)
 
     try:
-        return client.list_files(path)
+        return client.paged_directory(path)
     except:
         logger.error(f"Failed to list files: {traceback.format_exc()}")
         raise
 
 
-def exists(path: str, token: str = None):
+def stat(path: str, token: str = None):
+    pass
+
+
+def exists(path: str, type: str = None, token: str = None):
+    # TODO: use type with client.file_exists and client.dir_exists to check if type matches expectation
     pass
 
 
@@ -67,7 +72,7 @@ def unshare(path: str, username: str, token: str = None):
     pass
 
 
-def pull(
+def download(
         remote_path: str,
         local_path: str = None,
         patterns: List[str] = None,
@@ -86,14 +91,14 @@ def pull(
         Path(local_path).mkdir(exist_ok=True)
 
         if client.dir_exists(remote_path):
-            client.pull_dir(
+            client.download_directory(
                 from_path=remote_path,
                 to_path=local_path,
                 patterns=patterns,
                 checksums=checksums,
                 overwrite=overwrite)
         elif client.file_exists(remote_path):
-            client.pull_file(
+            client.download(
                 from_path=remote_path,
                 to_path=local_path,
                 overwrite=overwrite)
@@ -114,7 +119,7 @@ def pull(
         raise
 
 
-def push(
+def upload(
         local_path: str,
         remote_path: str,
         include_patterns: List[str] = None,
@@ -131,7 +136,7 @@ def push(
 
     try:
         client = TerrainClient(token)
-        client.push_dir(local_path, remote_path, include_patterns, include_names, exclude_patterns, exclude_names)
+        client.upload_directory(local_path, remote_path, include_patterns, include_names, exclude_patterns, exclude_names)
         logger.info(f"Pushed output(s)")
     except:
         logger.error(f"Failed to push outputs: {traceback.format_exc()}")

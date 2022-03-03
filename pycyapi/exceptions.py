@@ -8,3 +8,7 @@ class BadRequest(Exception):
 
 class BadResponse(Exception):
     pass
+
+
+class NotFound(Exception):
+    pass

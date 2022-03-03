@@ -6,7 +6,7 @@ from typing import List
 
 import requests
 
-from pycyde.tokens import TerrainToken
+from pycyapi.auth import AccessToken
 
 
 def clear_dir(dir):
@@ -34,5 +34,5 @@ class TerrainTicket:
         response = requests.post(
             f"https://de.cyverse.org/terrain/secured/filesystem/tickets?mode={mode}&public={str(public).lower()}&uses-limit={uses}",
             data=json.dumps({'paths': paths}),
-            headers={'Authorization': f"Bearer {TerrainToken.get()}", 'Content-Type': 'application/json'}).json()
+            headers={'Authorization': f"Bearer {AccessToken.get()}", 'Content-Type': 'application/json'}).json()
         return response['tickets'][0]['ticket-id']

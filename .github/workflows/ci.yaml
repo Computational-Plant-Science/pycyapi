@@ -10,10 +10,10 @@ jobs:
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: plantit-dev
-          SLACK_ICON: https://raw.githubusercontent.com/Computational-Plant-Science/pycyde/main/de.png
+          SLACK_ICON: https://raw.githubusercontent.com/Computational-Plant-Science/pycyapi/main/de.png
           SLACK_MESSAGE: 'Build started'
           SLACK_TITLE: PyCyDE
-          SLACK_USERNAME: pycyde
+          SLACK_USERNAME: pycyapi
   unit-tests:
     runs-on: ubuntu-latest
     strategy:
@@ -125,7 +125,7 @@ jobs:
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: plantit-dev
-          SLACK_ICON: https://raw.githubusercontent.com/Computational-Plant-Science/pycyde/main/de.png
+          SLACK_ICON: https://raw.githubusercontent.com/Computational-Plant-Science/pycyapi/main/de.png
           SLACK_MESSAGE: 'Build succeeded'
           SLACK_TITLE: PyCyDE
-          SLACK_USERNAME: pycyde
+          SLACK_USERNAME: pycyapi

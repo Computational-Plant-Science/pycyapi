@@ -1,5 +1,5 @@
 <div align="center">
-<img src="https://github.com/Computational-Plant-Science/pycyapi/blob/main/de.png?raw=true" style="position:relative;top: 50px;width:50px;" />
+<img src="https://github.com/Computational-Plant-Science/pycyapi/blob/main/de.png?raw=true" style="position:relative;top: 20px;width:50px;" />
 <h1>
 PyCyAPI
 </h1>
@@ -76,65 +76,85 @@ A `token` command (described below) is provided for convenience, so that there i
 
 The following commands are currently supported:
 
-- `token`: Retrieve an authentication token.
-- `profile`: Retrieve the user's profile information.
-- `list`: List files in a collection.
-- `pull`: Download files from a collection.
-- `push`: Upload files to a collection.
+- `cas_token`: Retrieve an authentication token.
+- `user_info`: Retrieve the user's profile information.
+- `paged_directory`: List files in a collection.
+- `download`: Download files from a collection.
+- `upload`: Upload files to a collection.
 - `exists`: Check if a path exists in the data store.
-- `mkdir`: Create a collection.
+- `create`: Create a collection.
 - `share`: Share a file or collection with another user.
 - `unshare`: Revoke another user's access to your file or collection.
 
 The `pull` and `push` commands provide a high-level interface over Terrain's `terrain/secured/fileio` endpoints, supporting directory or file paths as well as concurrent requests for large uploads and downloads.
 
-#### Token
+#### CAS Token
 
-To request an authentication token, use the `token` command:
+To request a CAS authentication token, use the `cas_token` command:
 
 ```shell script
 pycyapi token --username <your CyVerse username> --password <your CyVerse password>
 ```
 
-The token can then be passed in the `--token` parameter to authenticate further commands.
+The token can then be passed in the `--token (-t)` parameter to authenticate further commands.
 
-#### Profile
+#### User info
 
-TODO
+The `user_info` command can be used to retrieve public profile information for CyVerse users. For instance, to get my profile info:
 
-#### List
+```shell
+pycyapi user_info -t <token> wbonelli
+```
 
-TODO
+#### Paged directory
+
+To list the contents of a collection in the data store, use the `paged_directory` command. For instance:
+
+```shell
+pycyapi paged_directory -t <token> /iplant/home/shared/iplantcollaborative/testing_tools/
+```
 
 #### Download
 
-To download files from the `/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/` collection in the CyVerse Data Store to the current working directory, use:
+To download a single file from the data store to the current working directory, simply provide its full path:
 
 ```shell
-pycyapi download /iplant/home/shared/iplantcollaborative/testing_tools/cowsay/ --token <access token>
+pycyapi download -t <token> /iplant/home/shared/iplantcollaborative/testing_tools/cowsay/cowsay.txt
+```
+
+To download all files from the `/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/` collection to the current working directory, just provide the collection path instead:
+
+```shell
+pycyapi download -t <token> /iplant/home/shared/iplantcollaborative/testing_tools/cowsay/
 ```
 
 Optional arguments are:
 
-- `--local_path (-p)`: Local path to download files to.
-- `--pattern`: File patterns to include (one or more).
-- `--overwrite`: Whether to overwrite already-existing files.
+- `--local_path (-p)`: Local path to download files to
+- `--include_pattern (-ip)`: File patterns to include (0+)
+- `--force (-f)`: Whether to overwrite already-existing files
 
 #### Upload
 
 To upload all files in the current working directory to the `/iplant/home/<my>/<directory/` in the CyVerse Data Store, use:
 
 ```shell script
-pycyapi upload /iplant/home/<my>/<directory/ --token <access token>
+pycyapi upload -t <token> /iplant/home/<username>/<collection>/
 ```
 
-Options are:
+Optional arguments include:
 
-- `--local_path (-p)`: Local path to download files to.
-- `--include_pattern (-ip)`: File patterns to include (one or more).
-- `--include_name (-in)`: File names to include (one or more).
-- `--exclude_pattern (-ep)`: File patterns to exclude (one or more).
-- `--exclude_name (-en)`: File names to exclude (one or more).
+- `--local_path (-p)`: Local path to download files to
+- `--include_pattern (-ip)`: File patterns to include (0+)
+- `--include_name (-in)`: File names to include (0+)
+- `--exclude_pattern (-ep)`: File patterns to exclude (0+)
+- `--exclude_name (-en)`: File names to exclude (0+)
+
+To upload a single file to the data store, provide the `--local_path (-p)` argument. For instance:
+
+```shell script
+pycyapi upload -t <token> /iplant/home/<username>/<collection/ -p /my/local/file.txt
+```
 
 If only `include_...`s are provided, only the file patterns and names specified will be included. If only `exclude_...`s section are present, all files except the patterns and names specified will be included. If you provide both `include_...` and `exclude_...` sections, the `include_...` rules will first be applied to generate a subset of files, which will then be filtered by the `exclude_...` rules.
 
@@ -142,7 +162,7 @@ If only `include_...`s are provided, only the file patterns and names specified 
 
 TODO
 
-#### Mkdir
+#### Create
 
 TODO
 
