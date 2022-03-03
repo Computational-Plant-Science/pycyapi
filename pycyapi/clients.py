@@ -1,17 +1,13 @@
 import asyncio
 import json
 import logging
-import multiprocessing
-from contextlib import closing
-from multiprocessing import Pool
 from os.path import join, isfile, basename, isdir
-from typing import List, Tuple, Optional
+from typing import List
 
 import httpx
 import requests
-from httpx import RequestError, ReadTimeout, TimeoutException
+from httpx import RequestError, TimeoutException
 from requests import RequestException, ReadTimeout, Timeout, HTTPError
-from requests.auth import HTTPBasicAuth
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
 
 from pycyapi.exceptions import NotFound
@@ -303,9 +299,7 @@ class TerrainClient:
         if check: self.verify_checksums(from_path, checksums)
 
         print(f"Downloading directory '{from_path}' with {len(paths)} file(s)")
-        with closing(Pool(processes=multiprocessing.cpu_count())) as pool:
-            args = [(path, to_path, i) for i, path in enumerate(paths)]
-            pool.starmap(self.download, args)
+        for i, from_path in enumerate(paths): self.download(from_path, to_path, i)
 
         # TODO: verify that input checksums haven't changed since download time?
         # (maybe a bit excessive, and will add network latency, but probably prudent)
@@ -325,10 +319,9 @@ class TerrainClient:
         if not (is_dir or is_file):
             raise FileNotFoundError(f"Local path '{from_path}' does not exist")
         elif is_dir:
-            from_paths = list_local_files(from_path, include_patterns, include_names, exclude_patterns, exclude_names)
-            self.__logger.debug(f"Uploading directory '{from_path}' with {len(from_paths)} file(s) to '{to_prefix}'")
-            with closing(Pool(processes=multiprocessing.cpu_count())) as pool:
-                pool.starmap(self.upload, [(path, to_prefix) for path in [str(p) for p in from_paths]])
+            paths = list_local_files(from_path, include_patterns, include_names, exclude_patterns, exclude_names)
+            self.__logger.debug(f"Uploading directory '{from_path}' with {len(paths)} file(s) to '{to_prefix}'")
+            for from_path in paths: self.upload(from_path, to_prefix)
         elif is_file:
             self.upload(from_path, to_prefix)
         else:
