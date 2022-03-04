@@ -67,7 +67,7 @@ def test_dir_exists_when_is_a_file(remote_base_path):
                 file1.write('Hello, 1!')
 
             # upload files
-            testutils.upload_file(token, file1_path, remote_file_path)
+            testutils.upload_file(token, file1_path, remote_dir_path)
 
             # check if path exists
             assert client.dir_exists(remote_base_path)
