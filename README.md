@@ -1,6 +1,7 @@
 <div align="center">
-<img src="https://github.com/Computational-Plant-Science/pycyapi/blob/main/de.png?raw=true" style="position:relative;width:50px;" />
 <h1>
+<img src="https://github.com/Computational-Plant-Science/pycyapi/blob/main/de.png?raw=true" style="position:relative;width:80px;" />
+<br/>
 PyCyAPI
 </h1>
 
@@ -58,7 +59,7 @@ pip install pycyapi
 
 ## CLI usage
 
-Once the CLI is installed it can be invoked with `pycyapi <command>`.
+Once the CLI is installed it can be invoked with `pycy <command>`.
 
 ### Authenticating
 
@@ -79,21 +80,19 @@ The following commands are currently supported:
 - `cas_token`: Retrieve an authentication token.
 - `user_info`: Retrieve the user's profile information.
 - `paged_directory`: List files in a collection.
-- `download`: Download files from a collection.
-- `upload`: Upload files to a collection.
+- `download`: Download one or more files from a collection.
+- `upload`: Upload one or more files to a collection.
 - `exists`: Check if a path exists in the data store.
 - `create`: Create a collection.
 - `share`: Share a file or collection with another user.
 - `unshare`: Revoke another user's access to your file or collection.
-
-The `pull` and `push` commands provide a high-level interface over Terrain's `terrain/secured/fileio` endpoints, supporting directory or file paths as well as concurrent requests for large uploads and downloads.
 
 #### CAS Token
 
 To request a CAS authentication token, use the `cas_token` command:
 
 ```shell script
-pycyapi token --username <your CyVerse username> --password <your CyVerse password>
+pycy token --username <your CyVerse username> --password <your CyVerse password>
 ```
 
 The token can then be passed in the `--token (-t)` parameter to authenticate further commands.
@@ -103,7 +102,7 @@ The token can then be passed in the `--token (-t)` parameter to authenticate fur
 The `user_info` command can be used to retrieve public profile information for CyVerse users. For instance, to get my profile info:
 
 ```shell
-pycyapi user_info -t <token> wbonelli
+pycy user_info -t <token> wbonelli
 ```
 
 #### Paged directory
@@ -111,7 +110,7 @@ pycyapi user_info -t <token> wbonelli
 To list the contents of a collection in the data store, use the `paged_directory` command. For instance:
 
 ```shell
-pycyapi paged_directory -t <token> /iplant/home/shared/iplantcollaborative/testing_tools/
+pycy paged_directory -t <token> /iplant/home/shared/iplantcollaborative/testing_tools/
 ```
 
 #### Download
@@ -119,13 +118,13 @@ pycyapi paged_directory -t <token> /iplant/home/shared/iplantcollaborative/testi
 To download a single file from the data store to the current working directory, simply provide its full path:
 
 ```shell
-pycyapi download -t <token> /iplant/home/shared/iplantcollaborative/testing_tools/cowsay/cowsay.txt
+pycy download -t <token> /iplant/home/shared/iplantcollaborative/testing_tools/cowsay/cowsay.txt
 ```
 
 To download all files from the `/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/` collection to the current working directory, just provide the collection path instead:
 
 ```shell
-pycyapi download -t <token> /iplant/home/shared/iplantcollaborative/testing_tools/cowsay/
+pycy download -t <token> /iplant/home/shared/iplantcollaborative/testing_tools/cowsay/
 ```
 
 Optional arguments are:
@@ -139,7 +138,7 @@ Optional arguments are:
 To upload all files in the current working directory to the `/iplant/home/<my>/<directory/` in the CyVerse Data Store, use:
 
 ```shell script
-pycyapi upload -t <token> /iplant/home/<username>/<collection>/
+pycy upload -t <token> /iplant/home/<username>/<collection>/
 ```
 
 Optional arguments include:
@@ -153,7 +152,7 @@ Optional arguments include:
 To upload a single file to the data store, provide the `--local_path (-p)` argument. For instance:
 
 ```shell script
-pycyapi upload -t <token> /iplant/home/<username>/<collection/ -p /my/local/file.txt
+pycy upload -t <token> /iplant/home/<username>/<collection/ -p /my/local/file.txt
 ```
 
 If only `include_...`s are provided, only the file patterns and names specified will be included. If only `exclude_...`s section are present, all files except the patterns and names specified will be included. If you provide both `include_...` and `exclude_...` sections, the `include_...` rules will first be applied to generate a subset of files, which will then be filtered by the `exclude_...` rules.

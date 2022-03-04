@@ -55,24 +55,26 @@ def test_dir_exists_when_is_a_file(remote_base_path):
     with TemporaryDirectory() as testdir:
         file1_name = 'f1.txt'
         file1_path = join(testdir, file1_name)
-        remote_path = join(remote_base_path, file1_name)
+        remote_dir_path = join(remote_base_path, str(uuid.uuid4()))
+        remote_file_path = join(remote_dir_path, file1_name)
 
         try:
             # prep collection
-            testutils.create_collection(token, remote_path)
+            testutils.create_collection(token, remote_dir_path)
 
             # create files
             with open(file1_path, "w") as file1:
                 file1.write('Hello, 1!')
 
             # upload files
-            testutils.upload_file(token, file1_path, remote_path)
+            testutils.upload_file(token, file1_path, remote_file_path)
 
             # check if path exists
             assert client.dir_exists(remote_base_path)
-            assert not client.dir_exists(remote_path)
+            assert client.dir_exists(remote_dir_path)
+            assert not client.dir_exists(remote_file_path)
         finally:
-            testutils.delete_collection(token, remote_path)
+            testutils.delete_collection(token, remote_dir_path)
 
 
 def test_file_exists_when_is_a_file(remote_base_path):

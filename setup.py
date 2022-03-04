@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='pycyapi',
-    version='0.0.2',
+    version='0.0.3',
     description='A Python client for the CyVerse Discovery Environment API (a.k.a. Terrain).',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -19,7 +19,7 @@ setuptools.setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'pycyapi = pycyapi.cli:cli'
+            'pycy = pycyapi.cli:cli'
         ]
     },
     python_requires='>=3.6.8',
