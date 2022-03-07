@@ -229,7 +229,7 @@ def test_upload_directory(remote_base_path):
 
             # upload directory
             runner = CliRunner()
-            result = runner.invoke(cli.upload, ['--token', token, '--local_path', testdir, remote_path])
+            result = runner.invoke(cli.upload, ['--token', token, '--local_path', testdir, remote_path, '-ip', '.txt'])
 
             # check upload
             paths = testutils.list_files(token, remote_path)
