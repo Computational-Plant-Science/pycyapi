@@ -100,7 +100,7 @@ def create(path: str, token: str = None):
         raise
 
 
-def share(path: str, username: str, token: str = None):
+def share(path: str, username: str, permission: str, token: str = None):
     if token is not None:
         client = TerrainClient(token)
     else:
@@ -109,7 +109,7 @@ def share(path: str, username: str, token: str = None):
         # client = TerrainClient(token)
 
     try:
-        return client.share(path, username)
+        return client.share(path, username, permission)
     except:
         logger.error(f"Failed to share path {path} with user {username}: {traceback.format_exc()}")
         raise
@@ -135,7 +135,7 @@ def download(
         local_path: str = None,
         patterns: List[str] = None,
         checksums: List[dict] = None,
-        overwrite: bool = False,
+        force: bool = False,
         token: str = None):
     if token is not None:
         client = TerrainClient(token)
@@ -154,12 +154,12 @@ def download(
                 to_path=local_path,
                 patterns=patterns,
                 checksums=checksums,
-                overwrite=overwrite)
+                overwrite=force)
         elif client.file_exists(remote_path):
             client.download(
                 from_path=remote_path,
                 to_path=local_path,
-                overwrite=overwrite)
+                overwrite=force)
         else:
             msg = f"Path does not exist: {remote_path}"
             logger.error(msg)

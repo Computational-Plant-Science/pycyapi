@@ -33,6 +33,11 @@ def test_path_exists_when_is_a_file():
 
 
 def test_path_exists_when_is_a_directory():
+    # with trailing slash
+    exists = client.exists('/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/')
+    assert exists
+
+    # without trailing slash
     exists = client.exists('/iplant/home/shared/iplantcollaborative/testing_tools/cowsay')
     assert exists
 

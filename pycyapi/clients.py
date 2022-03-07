@@ -185,7 +185,23 @@ class TerrainClient:
         retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
             RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
             Timeout)))
-    def share(self, data: dict):
+    def share(self, path: str, username: str, permission: str):
+        if permission != 'read' and permission != 'write':
+            raise ValueError(f"Invalid permission (must be 'read' or 'write')")
+
+        data = {
+            'sharing': [
+                {
+                    'user': username,
+                    'paths': [
+                        {
+                            'path': path,
+                            'permission': permission
+                        }
+                    ]
+                }
+            ]
+        }
         self.__logger.debug(f"Sharing data store path(s): {json.dumps(data)}")
         headers = {
             "Authorization": f"Bearer {self.__token}",
@@ -204,7 +220,15 @@ class TerrainClient:
         retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
             RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
             Timeout)))
-    def unshare(self, data: dict):
+    def unshare(self, path: str, username: str):
+        data = {
+            'unshare': [
+                {
+                    'user': username,
+                    'paths': [path]
+                }
+            ]
+        }
         self.__logger.debug(f"Unsharing data store path(s): {json.dumps(data)}")
         headers = {
             "Authorization": f"Bearer {self.__token}",
@@ -298,7 +322,7 @@ class TerrainClient:
         # verify  that input checksums haven't changed since submission time
         if check: self.verify_checksums(from_path, checksums)
 
-        print(f"Downloading directory '{from_path}' with {len(paths)} file(s)")
+        self.__logger.info(f"Downloading directory '{from_path}' with {len(paths)} file(s)")
         for i, from_path in enumerate(paths): self.download(from_path, to_path, i)
 
         # TODO: verify that input checksums haven't changed since download time?

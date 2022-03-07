@@ -60,14 +60,14 @@ def create(remote_path, token):
 def download(
         remote_path,
         local_path,
-        pattern,
-        overwrite,
+        include_pattern,
+        force,
         token):
     commands.download(
         remote_path=remote_path,
         local_path=local_path,
-        patterns=paged_directory(pattern),
-        overwrite=overwrite,
+        patterns=include_pattern,
+        force=force,
         token=token)
     click.echo(f"Downloaded {remote_path} to {local_path}")
 
@@ -101,9 +101,10 @@ def upload(remote_path,
 @cli.command()
 @click.argument('remote_path')
 @click.option('--username', '-u', required=True, type=str)
+@click.option('--permission', '-p', required=True, type=str)
 @click.option('--token', '-t', required=False, type=str)
-def share(remote_path, username, token):
-    commands.share(remote_path, username, token=token)
+def share(remote_path, username, permission, token):
+    commands.share(remote_path, username, permission=permission, token=token)
     click.echo(f"Shared {remote_path} with {username}")
 
 
@@ -111,6 +112,6 @@ def share(remote_path, username, token):
 @click.argument('remote_path')
 @click.option('--username', '-u', required=True, type=str, multiple=True)
 @click.option('--token', '-t', required=False, type=str)
-def share(remote_path, username, token):
+def unshare(remote_path, username, token):
     commands.unshare(remote_path, username, token=token)
     click.echo(f"Unshared {remote_path} with {username}")

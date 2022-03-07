@@ -159,19 +159,41 @@ If only `include_...`s are provided, only the file patterns and names specified 
 
 #### Exists
 
-TODO
+To determine whether a particular path exists in the data store, use the `exists` command. For instance, to check if a collection exists:
+
+```shell script
+pycy exists -t <token> /iplant/home/<username>/<collection
+```
+
+The `--type` option can be provided with value `dir` or `file` to verify that the given path is of the specified type.
 
 #### Create
 
-TODO
+To create a new collection, use the `create` command:
+
+```shell script
+pycy create -t <token> /iplant/home/<username>/<new collection name>
+```
 
 #### Share
 
-TODO
+To share a file or collection with another user, use the `share` command:
+
+```shell script
+pycy share -t <token> /iplant/home/<username>/<collection> --username <user to share with> --permission <'read' or 'write'>
+```
+
+Note that you must provide both the `--username` and `--permission` flags.
 
 #### Unshare
 
-TODO
+To revoke another user's access to your file or collection, use the `unshare` command:
+
+```shell script
+pycy unshare -t <token> /iplant/home/<username>/<collection> --username <username>
+```
+
+This applies to both `read` and `write` permissions for the specified user.
 
 ## Development
 
