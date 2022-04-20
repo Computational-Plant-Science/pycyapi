@@ -4,9 +4,8 @@ from os import listdir, getcwd
 from pathlib import Path
 from typing import List
 
-from pycyapi.clients import TerrainClient
 from pycyapi.auth import AccessToken
-from pycyapi.exceptions import NotFound
+from pycyapi.clients import TerrainClient
 
 logger = logging.getLogger(__name__)
 
@@ -193,9 +192,43 @@ def upload(
         # client = TerrainClient(token)
 
     try:
-        client = TerrainClient(token)
         client.upload_directory(local_path, remote_path, include_patterns, include_names, exclude_patterns, exclude_names)
         logger.info(f"Pushed output(s)")
     except:
         logger.error(f"Failed to push outputs: {traceback.format_exc()}")
+        raise
+
+
+def tag(
+        id: str,
+        attributes: List[str],
+        token: str = None):
+    if token is not None:
+        client = TerrainClient(token)
+    else:
+        raise ValueError(f"An authentication token must be explicitly provided for now")
+        # TODO: try to load token from cache
+        # client = TerrainClient(token)
+
+    try:
+        client.set_metadata(id, attributes)
+        logger.info(f"Configured metadata for data object with ID {id}")
+    except:
+        logger.error(f"Failed to configure metadata for data object with ID {id}: {traceback.format_exc()}")
+        raise
+
+
+def tags(id: str, token: str = None):
+    if token is not None:
+        client = TerrainClient(token)
+    else:
+        raise ValueError(f"An authentication token must be explicitly provided for now")
+        # TODO: try to load token from cache
+        # client = TerrainClient(token)
+
+    try:
+        client.get_metadata(id)
+        logger.info(f"Retrieved metadata for data object with ID {id}")
+    except:
+        logger.error(f"Failed to retrieve metadata for data object with ID {id}: {traceback.format_exc()}")
         raise

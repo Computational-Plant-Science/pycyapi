@@ -351,6 +351,55 @@ class TerrainClient:
         else:
             raise ValueError(f"Remote path '{to_prefix}' is a file; specify a directory path instead")
 
+    @retry(
+        reraise=True,
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        stop=stop_after_attempt(3),
+        retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
+            RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
+            Timeout)))
+    def get_metadata(self, id: str):
+        self.__logger.debug(f"Getting metadata for data object with ID {id}")
+        headers = {
+            "Authorization": f"Bearer {self.__token}",
+            "Content-Type": "application/json;charset=utf-8"
+        }
+        response = requests.get(f"https://de.cyverse.org/terrain/secured/filesystem/{id}/metadata",
+                                headers=headers,
+                                timeout=self.__timeout)
+        response.raise_for_status()
+        content = response.json()
+        avus = content['avus']
+        return avus
+
+    @retry(
+        reraise=True,
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        stop=stop_after_attempt(3),
+        retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
+            RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
+            Timeout)))
+    def set_metadata(self, id: str, attributes: List[str]):
+        def to_avu(attr: str):
+            split = attr.strip().split('=')
+            return {
+                'attr': split[0],
+                'value': split[1],
+                'unit': ''
+            }
+
+        data = {'avus': [to_avu(attr) for attr in attributes]}
+        self.__logger.debug(f"Setting metadata for data object with ID {id}: {json.dumps(data)}")
+        headers = {
+            "Authorization": f"Bearer {self.__token}",
+            "Content-Type": "application/json;charset=utf-8"
+        }
+        response = requests.post(f"https://de.cyverse.org/terrain/secured/filesystem/{id}/metadata",
+                                 data=json.dumps(data),
+                                 headers=headers,
+                                 timeout=self.__timeout)
+        response.raise_for_status()
+
 
 class AsyncTerrainClient:
     def __init__(self, access_token: str, timeout_seconds: int = 15):

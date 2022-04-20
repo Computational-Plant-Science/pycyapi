@@ -308,3 +308,11 @@ def test_upload_directory(remote_base_path):
             assert file_name2 in paths
         finally:
             testutils.delete_collection(token, remote_path)
+
+
+def test_tag():
+    pass
+
+
+def test_tags():
+    pass
