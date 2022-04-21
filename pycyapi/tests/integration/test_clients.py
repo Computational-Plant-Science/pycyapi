@@ -308,3 +308,69 @@ def test_upload_directory(remote_base_path):
             assert file_name2 in paths
         finally:
             testutils.delete_collection(token, remote_path)
+
+
+def test_tag(remote_base_path):
+    with TemporaryDirectory() as testdir:
+        file_name = 'f1.txt'
+        file_path = join(testdir, file_name)
+        remote_path = join(remote_base_path, str(uuid.uuid4()))
+
+        try:
+            # prep collection
+            testutils.create_collection(token, remote_path)
+
+            # create files
+            with open(file_path, "w") as file:
+                file.write('Hello, 1!')
+
+            # upload file
+            testutils.upload_file(token, file_path, remote_path)
+
+            # get file info and checksum
+            info = testutils.stat_file(token, remote_path)
+            id = info['id']
+
+            # set file metadata
+            client.set_metadata(id, ['k1=v1', 'k2=v2'])
+
+            # check metadata was set
+            metadata = testutils.get_metadata(token, id)
+            assert len(metadata) == 2
+            assert any(d for d in metadata if d['attr'] == 'k1' and d['value'] == 'v1')
+            assert any(d for d in metadata if d['attr'] == 'k2' and d['value'] == 'v2')
+        finally:
+            testutils.delete_collection(token, remote_path)
+
+
+def test_tags(remote_base_path):
+    with TemporaryDirectory() as testdir:
+        file_name = 'f1.txt'
+        file_path = join(testdir, file_name)
+        remote_path = join(remote_base_path, str(uuid.uuid4()))
+
+        try:
+            # prep collection
+            testutils.create_collection(token, remote_path)
+
+            # create files
+            with open(file_path, "w") as file:
+                file.write('Hello, 1!')
+
+            # upload file
+            testutils.upload_file(token, file_path, remote_path)
+
+            # get file info and checksum
+            info = testutils.stat_file(token, remote_path)
+            id = info['id']
+
+            # set metadata
+            testutils.set_metadata(token, id, ['k1=v1', 'k2=v2'])
+
+            # get metadata and check it
+            metadata = client.get_metadata(id)
+            assert len(metadata) == 2
+            assert any(d for d in metadata if d['attr'] == 'k1' and d['value'] == 'v1')
+            assert any(d for d in metadata if d['attr'] == 'k2' and d['value'] == 'v2')
+        finally:
+            testutils.delete_collection(token, remote_path)

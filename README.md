@@ -77,19 +77,22 @@ A `token` command (described below) is provided for convenience, so that there i
 
 The following commands are currently supported:
 
-- `cas_token`: Retrieve an authentication token.
-- `user_info`: Retrieve the user's profile information.
-- `paged_directory`: List files in a collection.
+- `token`: Retrieve an authentication token.
+- `user`: Retrieve the user's profile information.
+- `list`: List files in a collection.
+- `stat`: Get information about a file or collection.
 - `download`: Download one or more files from a collection.
 - `upload`: Upload one or more files to a collection.
 - `exists`: Check if a path exists in the data store.
 - `create`: Create a collection.
 - `share`: Share a file or collection with another user.
 - `unshare`: Revoke another user's access to your file or collection.
+- `tag`: Set metadata for a given file or collection.
+- `tags`: Get metadata for a given file or collection.
 
 #### CAS Token
 
-To request a CAS authentication token, use the `cas_token` command:
+To request a CAS authentication token, use the `token` command:
 
 ```shell script
 pycy token --username <your CyVerse username> --password <your CyVerse password>
@@ -99,18 +102,18 @@ The token can then be passed in the `--token (-t)` parameter to authenticate fur
 
 #### User info
 
-The `user_info` command can be used to retrieve public profile information for CyVerse users. For instance, to get my profile info:
+The `user` command can be used to retrieve public profile information for CyVerse users. For instance, to get my profile info:
 
 ```shell
-pycy user_info -t <token> wbonelli
+pycy user -t <token> wbonelli
 ```
 
 #### Paged directory
 
-To list the contents of a collection in the data store, use the `paged_directory` command. For instance:
+To list the contents of a collection in the data store, use the `list` command. For instance:
 
 ```shell
-pycy paged_directory -t <token> /iplant/home/shared/iplantcollaborative/testing_tools/
+pycy list -t <token> /iplant/home/shared/iplantcollaborative/testing_tools/
 ```
 
 #### Download
@@ -194,6 +197,24 @@ pycy unshare -t <token> /iplant/home/<username>/<collection> --username <usernam
 ```
 
 This applies to both `read` and `write` permissions for the specified user.
+
+#### Tag
+
+To set metadata for a given file object or collection in your data store, use the `tag` command:
+
+```shell script
+pycy tag <data object ID> -t <token> -a key1=value1 -a k2=v2
+```
+
+This applies the two given attributes to the data object (generally the attribute format must be `key=value`).
+
+#### Tags
+
+To retrieve the metadata describing a particular fiile object or collection, use the `tags` command:
+
+```shell script
+pycy tags <data object ID> -t <token>
+```
 
 ## Development
 

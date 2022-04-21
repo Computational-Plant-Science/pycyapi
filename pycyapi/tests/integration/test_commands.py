@@ -12,7 +12,7 @@ message = "Message"
 token = AccessToken.get()
 
 
-def test_token(remote_base_path):
+def test_cas_token(remote_base_path):
     username = environ.get('CYVERSE_USERNAME', None)
     password = environ.get('CYVERSE_PASSWORD', None)
 
@@ -24,6 +24,13 @@ def test_token(remote_base_path):
         testutils.create_collection(tkn, remote_path)
     finally:
         testutils.delete_collection(tkn, remote_path)
+
+
+def test_refresh_tokens(remote_base_path):
+    username = environ.get('CYVERSE_USERNAME', None)
+    password = environ.get('CYVERSE_PASSWORD', None)
+
+    tkn = commands.cas_token(username, password)
 
 
 def test_pull(remote_base_path, file_name_1, file_name_2):

@@ -11,21 +11,21 @@ def cli():
 @cli.command()
 @click.option('--username', required=True, type=str)
 @click.option('--password', required=True, type=str)
-def cas_token(username, password):
+def token(username, password):
     click.echo(commands.cas_token(username, password))
 
 
 @cli.command()
 @click.argument('username')
 @click.option('--token', '-t', required=False, type=str)
-def user_info(username, token):
+def user(username, token):
     click.echo(commands.user_info(username, token=token))
 
 
 @cli.command()
 @click.argument('remote_path')
 @click.option('--token', '-t', required=False, type=str)
-def paged_directory(remote_path, token):
+def list(remote_path, token):
     click.echo(commands.paged_directory(remote_path, token=token))
 
 
@@ -115,3 +115,22 @@ def share(remote_path, username, permission, token):
 def unshare(remote_path, username, token):
     commands.unshare(remote_path, username, token=token)
     click.echo(f"Unshared {remote_path} with {username}")
+
+
+@cli.command()
+@click.argument('id')
+@click.option('--attribute', '-a', required=True, type=str, multiple=True)
+@click.option('--token', '-t', required=False, type=str)
+def tag(id, attribute, token):
+    commands.tag(id, attribute, token=token)
+    newline = '\n'
+    click.echo(f"Tagged data object with ID {id}: {newline.join(attribute)}")
+
+
+@cli.command()
+@click.argument('id')
+@click.option('--token', '-t', required=False, type=str)
+def tags(id, token):
+    attributes = commands.tags(id, token=token)
+    newline = '\n'
+    click.echo(newline.join(attributes))

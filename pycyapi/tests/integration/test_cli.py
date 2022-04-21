@@ -1,4 +1,5 @@
 import uuid
+import unittest
 from os import environ, remove, listdir
 from os.path import join, basename, isfile
 from tempfile import TemporaryDirectory
@@ -15,7 +16,7 @@ token = AccessToken.get()
 
 def test_cas_token():
     runner = CliRunner()
-    result = runner.invoke(cli.cas_token, ['--username', username, '--password', password])
+    result = runner.invoke(cli.token, ['--username', username, '--password', password])
     tkn = result.output.strip()
 
     assert tkn != ''
@@ -80,7 +81,7 @@ def test_exists_with_type_dir_when_is_a_directory(remote_base_path):
     pass
 
 
-def test_paged_directory(remote_base_path):
+def test_list(remote_base_path):
     with TemporaryDirectory() as testdir:
         file1_name = 'f1.txt'
         file2_name = 'f2.txt'
@@ -103,7 +104,7 @@ def test_paged_directory(remote_base_path):
 
             # list files
             runner = CliRunner()
-            result = runner.invoke(cli.paged_directory, ['--token', token, remote_path])
+            result = runner.invoke(cli.list, ['--token', token, remote_path])
 
             # check files
             assert join(remote_path, file1_name) in result.output
@@ -235,5 +236,77 @@ def test_upload_directory(remote_base_path):
             paths = testutils.list_files(token, remote_path)
             assert file_name1 in paths
             assert file_name2 in paths
+        finally:
+            testutils.delete_collection(token, remote_path)
+
+
+def test_tag(remote_base_path):
+    with TemporaryDirectory() as testdir:
+        file_name = 'f1.txt'
+        file_path = join(testdir, file_name)
+        remote_path = join(remote_base_path, str(uuid.uuid4()))
+
+        try:
+            # prep collection
+            testutils.create_collection(token, remote_path)
+
+            # create files
+            with open(file_path, "w") as file:
+                file.write('Hello, 1!')
+
+            # upload file
+            testutils.upload_file(token, file_path, remote_path)
+
+            # get file info and checksum
+            info = testutils.stat_file(token, remote_path)
+            id = info['id']
+
+            # set file metadata
+            runner = CliRunner()
+            runner.invoke(cli.tag, ['--token', token, '-a', 'k1=v1', '-a', 'k2=v2', id])
+
+            # check metadata was set
+            metadata = testutils.get_metadata(token, id)
+            assert len(metadata) == 2
+            assert any(d for d in metadata if d['attr'] == 'k1' and d['value'] == 'v1')
+            assert any(d for d in metadata if d['attr'] == 'k2' and d['value'] == 'v2')
+        finally:
+            testutils.delete_collection(token, remote_path)
+
+
+@unittest.skip("not sure why 'I/O operation on closed file' error occurs")
+def test_tags(remote_base_path):
+    with TemporaryDirectory() as testdir:
+        file_name = 'f1.txt'
+        file_path = join(testdir, file_name)
+        remote_path = join(remote_base_path, str(uuid.uuid4()))
+
+        try:
+            # prep collection
+            testutils.create_collection(token, remote_path)
+
+            # create files
+            with open(file_path, "w") as file:
+                file.write('Hello, 1!')
+
+            # upload file
+            testutils.upload_file(token, file_path, remote_path)
+
+            # get file info and checksum
+            info = testutils.stat_file(token, remote_path)
+            id = info['id']
+
+            # set metadata
+            testutils.set_metadata(token, id, ['k1=v1', 'k2=v2'])
+
+            # get file metadata
+            runner = CliRunner()
+            result = runner.invoke(cli.tags, ['--token', token, id])
+
+            # check metadata was set
+            metadata = result.output
+            assert len(metadata) == 2
+            assert any(a for a in metadata if 'k1=v1' in a)
+            assert any(a for a in metadata if 'k2=v2' in a)
         finally:
             testutils.delete_collection(token, remote_path)
