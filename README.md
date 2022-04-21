@@ -34,6 +34,8 @@ A Python client for the CyVerse Discovery Environment (a.k.a. Terrain) APIs.
     - [Create](#create)
     - [Share](#share)
     - [Unshare](#unshare)
+    - [Tag](#tag)
+    - [Tags](#tags)
 - [Development](#development)
   - [Tests](#tests)
     - [Unit tests](#unit-tests)
