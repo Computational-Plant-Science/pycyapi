@@ -114,7 +114,7 @@ jobs:
         with:
           user: ${{ secrets.PYPI_USERNAME }}
           password: ${{ secrets.PYPI_PASSWORD }}
-          verify_metadata: false
+          skip_existing: true
       - name: Slack success notification
         uses: rtCamp/action-slack-notify@v2
         env:
