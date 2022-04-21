@@ -388,7 +388,7 @@ class TerrainClient:
                 'unit': ''
             }
 
-        data = {'avus': [to_avu(attr) for attr in attributes]}
+        data = {'avus': [to_avu(a) for a in attributes], 'irods-avus': [],}
         self.__logger.debug(f"Setting metadata for data object with ID {id}: {json.dumps(data)}")
         headers = {
             "Authorization": f"Bearer {self.__token}",

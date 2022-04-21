@@ -227,8 +227,9 @@ def tags(id: str, token: str = None):
         # client = TerrainClient(token)
 
     try:
-        client.get_metadata(id)
+        metadata = client.get_metadata(id)
         logger.info(f"Retrieved metadata for data object with ID {id}")
+        return [str(a['attr'] + '=' + a['value']) for a in metadata]
     except:
         logger.error(f"Failed to retrieve metadata for data object with ID {id}: {traceback.format_exc()}")
         raise

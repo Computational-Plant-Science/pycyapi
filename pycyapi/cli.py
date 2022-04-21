@@ -123,12 +123,14 @@ def unshare(remote_path, username, token):
 @click.option('--token', '-t', required=False, type=str)
 def tag(id, attribute, token):
     commands.tag(id, attribute, token=token)
-    click.echo(f"Tagged data object with ID {id}: {','.join(attribute)}")
+    newline = '\n'
+    click.echo(f"Tagged data object with ID {id}: {newline.join(attribute)}")
 
 
 @cli.command()
 @click.argument('id')
 @click.option('--token', '-t', required=False, type=str)
-def tags(remote_path, token):
-    attributes = commands.tags(remote_path, token=token)
-    click.echo(f"Tags for data object with ID {id}: {','.join(attributes)}")
+def tags(id, token):
+    attributes = commands.tags(id, token=token)
+    newline = '\n'
+    click.echo(newline.join(attributes))
