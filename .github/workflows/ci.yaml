@@ -107,19 +107,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8 pytest coveralls setuptools wheel twine
           pip install -e .
+      - name: Build package
+        run: python setup.py sdist bdist_wheel
       - name: Publish package
-        env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-        run: |
-          old_version=$(pip install pycyapi==random 2>&1 >/dev/null | sed 's|.*, \([^ ]*\)).*|\1|g' | head -n 1 | xargs)
-          new_version=$(pip show pycyapi | sed 's|.*Version: \([^ ]*\).*|\1|g' | sed -n 2p)
-          echo "$old_version"
-          echo "$new_version"
-          if ! [[ "$new_version" = "$old_version" ]]; then
-            python setup.py sdist bdist_wheel
-            python -m twine upload dist/*
-          fi
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: ${{ secrets.PYPI_USERNAME }}
+          password: ${{ secrets.PYPI_PASSWORD }}
+          verify_metadata: false
       - name: Slack success notification
         uses: rtCamp/action-slack-notify@v2
         env:
