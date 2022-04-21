@@ -16,7 +16,7 @@ token = AccessToken.get()
 
 def test_cas_token():
     runner = CliRunner()
-    result = runner.invoke(cli.cas_token, ['--username', username, '--password', password])
+    result = runner.invoke(cli.token, ['--username', username, '--password', password])
     tkn = result.output.strip()
 
     assert tkn != ''
@@ -81,7 +81,7 @@ def test_exists_with_type_dir_when_is_a_directory(remote_base_path):
     pass
 
 
-def test_paged_directory(remote_base_path):
+def test_list(remote_base_path):
     with TemporaryDirectory() as testdir:
         file1_name = 'f1.txt'
         file2_name = 'f2.txt'
@@ -104,7 +104,7 @@ def test_paged_directory(remote_base_path):
 
             # list files
             runner = CliRunner()
-            result = runner.invoke(cli.paged_directory, ['--token', token, remote_path])
+            result = runner.invoke(cli.list, ['--token', token, remote_path])
 
             # check files
             assert join(remote_path, file1_name) in result.output
