@@ -208,6 +208,8 @@ To set metadata for a given file object or collection in your data store, use th
 pycy tag <data object ID> -t <token> -a key1=value1 -a k2=v2
 ```
 
+**Note:** this command is not an append but an overwrite. We cannot support this as there is no Terrain endpoint to add/remove individual attributes.
+
 This applies the two given attributes to the data object (generally the attribute format must be `key=value`).
 
 #### Tags
