@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-message = "Message!"
+# message = "Message!"
 
 
 @pytest.fixture(scope="module")

@@ -332,13 +332,15 @@ def test_tag(remote_base_path):
             id = info['id']
 
             # set file metadata
-            client.set_metadata(id, ['k1=v1', 'k2=v2'])
+            client.set_metadata(id, ['k1=v1', 'k2=v2'], ['k3=v3'])
 
             # check metadata was set
             metadata = testutils.get_metadata(token, id)
-            assert len(metadata) == 2
-            assert any(d for d in metadata if d['attr'] == 'k1' and d['value'] == 'v1')
-            assert any(d for d in metadata if d['attr'] == 'k2' and d['value'] == 'v2')
+            assert len(metadata['avus']) == 2
+            assert len(metadata['irods-avus']) == 1
+            assert any(d for d in metadata['avus'] if d['attr'] == 'k1' and d['value'] == 'v1')
+            assert any(d for d in metadata['avus'] if d['attr'] == 'k2' and d['value'] == 'v2')
+            assert any(d for d in metadata['irods-avus'] if d['attr'] == 'k3' and d['value'] == 'v3')
         finally:
             testutils.delete_collection(token, remote_path)
 

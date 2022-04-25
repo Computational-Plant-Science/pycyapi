@@ -358,7 +358,7 @@ class TerrainClient:
         retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
             RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
             Timeout)))
-    def get_metadata(self, id: str):
+    def get_metadata(self, id: str, irods: bool = False):
         self.__logger.debug(f"Getting metadata for data object with ID {id}")
         headers = {
             "Authorization": f"Bearer {self.__token}",
@@ -369,8 +369,7 @@ class TerrainClient:
                                 timeout=self.__timeout)
         response.raise_for_status()
         content = response.json()
-        avus = content['avus']
-        return avus
+        return content['irods-avus'] if irods else content['avus']
 
     @retry(
         reraise=True,
@@ -379,7 +378,7 @@ class TerrainClient:
         retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
             RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
             Timeout)))
-    def set_metadata(self, id: str, attributes: List[str]):
+    def set_metadata(self, id: str, attributes: List[str], irods_attributes: List[str]):
         def to_avu(attr: str):
             split = attr.strip().split('=')
             return {
@@ -388,7 +387,7 @@ class TerrainClient:
                 'unit': ''
             }
 
-        data = {'avus': [to_avu(a) for a in attributes], 'irods-avus': [],}
+        data = {'avus': [to_avu(a) for a in attributes], 'irods-avus': [to_avu(a) for a in irods_attributes]}
         self.__logger.debug(f"Setting metadata for data object with ID {id}: {json.dumps(data)}")
         headers = {
             "Authorization": f"Bearer {self.__token}",

@@ -202,6 +202,7 @@ def upload(
 def tag(
         id: str,
         attributes: List[str],
+        irods_attributes: List[str],
         token: str = None):
     if token is not None:
         client = TerrainClient(token)
@@ -211,14 +212,14 @@ def tag(
         # client = TerrainClient(token)
 
     try:
-        client.set_metadata(id, attributes)
+        client.set_metadata(id, attributes, irods_attributes)
         logger.info(f"Configured metadata for data object with ID {id}")
     except:
         logger.error(f"Failed to configure metadata for data object with ID {id}: {traceback.format_exc()}")
         raise
 
 
-def tags(id: str, token: str = None):
+def tags(id: str, irods: bool, token: str = None):
     if token is not None:
         client = TerrainClient(token)
     else:
@@ -227,9 +228,9 @@ def tags(id: str, token: str = None):
         # client = TerrainClient(token)
 
     try:
-        metadata = client.get_metadata(id)
-        logger.info(f"Retrieved metadata for data object with ID {id}")
+        metadata = client.get_metadata(id, irods)
+        logger.info(f"Retrieved {'iRODS' if irods else 'standard'} metadata for data object with ID {id}")
         return [str(a['attr'] + '=' + a['value']) for a in metadata]
     except:
-        logger.error(f"Failed to retrieve metadata for data object with ID {id}: {traceback.format_exc()}")
+        logger.error(f"Failed to retrieve {'iRODS' if irods else 'standard'} metadata for data object with ID {id}: {traceback.format_exc()}")
         raise

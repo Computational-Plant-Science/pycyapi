@@ -40,9 +40,7 @@ def get_metadata(token, id, print_response=False):
     content = response.json()
 
     if print_response: pprint.pprint(content)
-
-    avus = content['avus']
-    return avus
+    return content
 
 
 def set_metadata(token, id, attributes, print_response=False):

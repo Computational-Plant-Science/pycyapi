@@ -205,12 +205,28 @@ This applies to both `read` and `write` permissions for the specified user.
 To set metadata for a given file object or collection in your data store, use the `tag` command:
 
 ```shell script
-pycy tag <data object ID> -t <token> -a key1=value1 -a k2=v2
+pycy tag <data object ID> -t <token> -a k1=v1 -a k2=v2
 ```
 
-**Note:** this command is not an append but an overwrite. We cannot support this as there is no Terrain endpoint to add/remove individual attributes.
+This applies the two given attributes to the data object (attributes must be formatted `key=value`).
 
-This applies the two given attributes to the data object (generally the attribute format must be `key=value`).
+**Warning:** this command is an overwrite, not an append. We do not support appending tags as there is no Terrain endpoint to add/remove individual metadata attributes. Note also that by default, key/value pairs are passed on the `avus` attribute of the request body rather than `irods-avus`, e.g.:
+
+```shell
+POST https://de.cyverse.org/terrain/secured/filesystem/<ID>/metadata
+{
+    "irods-avus": [],
+    "avus": [
+        {
+            "attr": "some key"
+            "value": "some value",
+            "unit": ""
+        }
+    ]
+}
+```
+
+To configure `irods-avus` attributes as well as or in place of standard attributes, use the `--irods_attribute (-ia)` option. Both standard and iRODS attributes can be used in the same invocation.
 
 #### Tags
 

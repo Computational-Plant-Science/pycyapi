@@ -1,3 +1,5 @@
+import unittest
+
 from pycyapi.utils import pattern_matches
 
 
@@ -12,5 +14,6 @@ def test_pattern_patches():
     assert not pattern_matches(path, ['nomatch'])
 
 
+@unittest.skip("TODO")
 def test_list_local_files():
     pass

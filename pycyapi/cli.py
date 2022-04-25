@@ -12,28 +12,28 @@ def cli():
 @click.option('--username', required=True, type=str)
 @click.option('--password', required=True, type=str)
 def token(username, password):
-    click.echo(commands.cas_token(username, password))
+    click.echo(commands.cas_token(username=username, password=password))
 
 
 @cli.command()
 @click.argument('username')
 @click.option('--token', '-t', required=False, type=str)
 def user(username, token):
-    click.echo(commands.user_info(username, token=token))
+    click.echo(commands.user_info(username=username, token=token))
 
 
 @cli.command()
 @click.argument('remote_path')
 @click.option('--token', '-t', required=False, type=str)
 def list(remote_path, token):
-    click.echo(commands.paged_directory(remote_path, token=token))
+    click.echo(commands.paged_directory(path=remote_path, token=token))
 
 
 @cli.command()
 @click.argument('remote_path')
 @click.option('--token', '-t', required=False, type=str)
 def stat(remote_path, token):
-    click.echo(commands.stat(remote_path, token=token))
+    click.echo(commands.stat(path=remote_path, token=token))
 
 
 @cli.command()
@@ -41,14 +41,14 @@ def stat(remote_path, token):
 @click.option('--type', required=False, type=str)
 @click.option('--token', '-t', required=False, type=str)
 def exists(remote_path, type, token):
-    click.echo(commands.exists(remote_path, type=type, token=token))
+    click.echo(commands.exists(path=remote_path, type=type, token=token))
 
 
 @cli.command()
 @click.argument('remote_path')
 @click.option('--token', '-t', required=False, type=str)
 def create(remote_path, token):
-    click.echo(commands.create(remote_path, token=token))
+    click.echo(commands.create(path=remote_path, token=token))
 
 
 @cli.command()
@@ -104,7 +104,7 @@ def upload(remote_path,
 @click.option('--permission', '-p', required=True, type=str)
 @click.option('--token', '-t', required=False, type=str)
 def share(remote_path, username, permission, token):
-    commands.share(remote_path, username, permission=permission, token=token)
+    commands.share(path=remote_path, username=username, permission=permission, token=token)
     click.echo(f"Shared {remote_path} with {username}")
 
 
@@ -113,24 +113,26 @@ def share(remote_path, username, permission, token):
 @click.option('--username', '-u', required=True, type=str, multiple=True)
 @click.option('--token', '-t', required=False, type=str)
 def unshare(remote_path, username, token):
-    commands.unshare(remote_path, username, token=token)
+    commands.unshare(path=remote_path, username=username, token=token)
     click.echo(f"Unshared {remote_path} with {username}")
 
 
 @cli.command()
 @click.argument('id')
-@click.option('--attribute', '-a', required=True, type=str, multiple=True)
+@click.option('--attribute', '-a', required=False, type=str, multiple=True)
+@click.option('--irods_attribute', '-ia', required=False, type=str, multiple=True)
 @click.option('--token', '-t', required=False, type=str)
-def tag(id, attribute, token):
-    commands.tag(id, attribute, token=token)
+def tag(id, attribute, irods_attribute, token):
+    commands.tag(id=id, attributes=attribute, irods_attributes=irods_attribute, token=token)
     newline = '\n'
-    click.echo(f"Tagged data object with ID {id}: {newline.join(attribute)}")
+    click.echo(f"Tagged data object with ID {id}:\nRegular:\n{newline.join(attribute)}\niRODS:\n{newline.join(irods_attribute)}")
 
 
 @cli.command()
 @click.argument('id')
 @click.option('--token', '-t', required=False, type=str)
-def tags(id, token):
-    attributes = commands.tags(id, token=token)
+@click.option('--irods', '-i', required=False, default=False, type=bool)
+def tags(id, irods, token):
+    attributes = commands.tags(id=id, irods=irods, token=token)
     newline = '\n'
     click.echo(newline.join(attributes))

@@ -263,13 +263,15 @@ def test_tag(remote_base_path):
 
             # set file metadata
             runner = CliRunner()
-            runner.invoke(cli.tag, ['--token', token, '-a', 'k1=v1', '-a', 'k2=v2', id])
+            runner.invoke(cli.tag, ['--token', token, '-a', 'k1=v1', '-a', 'k2=v2', '-ia', 'k3=v3', id])
 
             # check metadata was set
             metadata = testutils.get_metadata(token, id)
-            assert len(metadata) == 2
-            assert any(d for d in metadata if d['attr'] == 'k1' and d['value'] == 'v1')
-            assert any(d for d in metadata if d['attr'] == 'k2' and d['value'] == 'v2')
+            assert len(metadata['avus']) == 2
+            assert len(metadata['irods-avus']) == 1
+            assert any(d for d in metadata['avus'] if d['attr'] == 'k1' and d['value'] == 'v1')
+            assert any(d for d in metadata['avus'] if d['attr'] == 'k2' and d['value'] == 'v2')
+            assert any(d for d in metadata['irods-avus'] if d['attr'] == 'k3' and d['value'] == 'v3')
         finally:
             testutils.delete_collection(token, remote_path)
 
