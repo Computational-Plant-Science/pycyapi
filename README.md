@@ -230,11 +230,13 @@ To configure `irods-avus` attributes as well as or in place of standard attribut
 
 #### Tags
 
-To retrieve the metadata describing a particular fiile object or collection, use the `tags` command:
+To retrieve the metadata describing a particular file object or collection, use the `tags` command:
 
 ```shell script
 pycy tags <data object ID> -t <token>
 ```
+
+This will retrieve standard attributes by default. To retrieve iRODS attributes instead, use the `--irods (-i)` option.
 
 ## Development
 
