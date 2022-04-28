@@ -45,7 +45,7 @@ def paged_directory(path: str, token: str = None):
         # client = TerrainClient(token)
 
     try:
-        return client.paged_directory(path)
+        return client.list(path)
     except:
         logger.error(f"Failed to list files: {traceback.format_exc()}")
         raise
@@ -93,13 +93,13 @@ def create(path: str, token: str = None):
         # client = TerrainClient(token)
 
     try:
-        return client.create_directory(path)
+        return client.mkdir(path)
     except:
         logger.error(f"Failed to create directory: {traceback.format_exc()}")
         raise
 
 
-def share(path: str, username: str, permission: str, token: str = None):
+def share(username: str, path: str, permission: str, token: str = None):
     if token is not None:
         client = TerrainClient(token)
     else:
@@ -108,13 +108,13 @@ def share(path: str, username: str, permission: str, token: str = None):
         # client = TerrainClient(token)
 
     try:
-        return client.share(path, username, permission)
+        return client.share(username, path, permission)
     except:
         logger.error(f"Failed to share path {path} with user {username}: {traceback.format_exc()}")
         raise
 
 
-def unshare(path: str, username: str, token: str = None):
+def unshare(username: str, path: str, token: str = None):
     if token is not None:
         client = TerrainClient(token)
     else:
@@ -123,7 +123,7 @@ def unshare(path: str, username: str, token: str = None):
         # client = TerrainClient(token)
 
     try:
-        return client.unshare(path, username)
+        return client.unshare(username, path)
     except:
         logger.error(f"Failed to unshare path {path} from user {username}: {traceback.format_exc()}")
         raise

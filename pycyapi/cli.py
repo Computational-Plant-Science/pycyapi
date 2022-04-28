@@ -104,7 +104,7 @@ def upload(remote_path,
 @click.option('--permission', '-p', required=True, type=str)
 @click.option('--token', '-t', required=False, type=str)
 def share(remote_path, username, permission, token):
-    commands.share(path=remote_path, username=username, permission=permission, token=token)
+    commands.share(username=username, path=remote_path, permission=permission, token=token)
     click.echo(f"Shared {remote_path} with {username}")
 
 
@@ -113,7 +113,7 @@ def share(remote_path, username, permission, token):
 @click.option('--username', '-u', required=True, type=str, multiple=True)
 @click.option('--token', '-t', required=False, type=str)
 def unshare(remote_path, username, token):
-    commands.unshare(path=remote_path, username=username, token=token)
+    commands.unshare(username=username, path=remote_path, token=token)
     click.echo(f"Unshared {remote_path} with {username}")
 
 
