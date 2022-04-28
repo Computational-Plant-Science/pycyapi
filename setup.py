@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='pycyapi',
-    version='0.0.7',
+    version='0.0.8',
     description='A Python client for the CyVerse Discovery Environment API (a.k.a. Terrain).',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -23,6 +23,6 @@ setuptools.setup(
         ]
     },
     python_requires='>=3.6.8',
-    install_requires=['requests', 'httpx', 'click', 'tenacity', 'tqdm', 'pytest', 'pytest-dotenv'],
+    install_requires=['requests', 'httpx', 'click', 'tenacity', 'tqdm', 'pytest', 'pytest-dotenv', 'pytest-asyncio'],
     setup_requires=['wheel'],
-    tests_require=['pytest', 'coveralls', 'dotenv'])
+    tests_require=['pytest', 'coveralls', 'dotenv', 'pytest-asyncio'])
