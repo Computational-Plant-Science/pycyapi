@@ -5,6 +5,7 @@ from tempfile import TemporaryDirectory
 
 import pytest
 from requests import HTTPError
+from httpx import HTTPStatusError
 
 from pycyapi.clients import AsyncTerrainClient
 import pycyapi.tests.integration.utils as testutils
@@ -17,7 +18,7 @@ client = AsyncTerrainClient(token)
 
 @pytest.mark.asyncio
 async def test_throws_error_when_token_is_invalid():
-    with pytest.raises(HTTPError) as e:
+    with pytest.raises(HTTPStatusError) as e:
         await AsyncTerrainClient('not a token').exists_async('/iplant/home/shared/iplantcollaborative/testing_tools/cowsay')
         assert '401' in str(e)
 
@@ -175,15 +176,17 @@ async def test_list(remote_base_path):
 @pytest.mark.asyncio
 async def test_list_no_retries_when_path_does_not_exist(remote_base_path):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
-    with pytest.raises(ValueError):
+    with pytest.raises(HTTPStatusError) as e:
         await client.list_async(remote_path)
+        assert '500' in str(e)
 
 
 @pytest.mark.asyncio
 async def test_list_retries_when_token_invalid(remote_base_path):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
-    with pytest.raises(ValueError):
+    with pytest.raises(HTTPStatusError) as e:
         await client.list_async(remote_path)
+        assert '500' in str(e)
 
 
 @pytest.mark.asyncio
@@ -194,7 +197,8 @@ async def test_mkdir(remote_base_path):
         await client.mkdir_async(remote_path)
 
         # check dir exists
-        assert await client.dir_exists_async(remote_path)
+        exists = await client.dir_exists_async(remote_path)
+        assert exists
     finally:
         testutils.delete_collection(token, remote_path)
 

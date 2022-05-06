@@ -511,7 +511,7 @@ class AsyncTerrainClient:
     async def user_info_async(self, username: str) -> dict:
         self.__logger.debug(f"Getting CyVerse profile for user {username}")
         async with httpx.AsyncClient(headers={'Authorization': f"Bearer {self.__token}"}, timeout=self.__timeout) as client:
-            response = client.get(f"https://de.cyverse.org/terrain/secured/user-info?username={username}")
+            response = await client.get(f"https://de.cyverse.org/terrain/secured/user-info?username={username}")
             response.raise_for_status()
             content = response.json()
             info = content.get(username, None)
@@ -534,7 +534,7 @@ class AsyncTerrainClient:
         # send the request
         self.__logger.debug(f"Getting data store file {path}")
         async with httpx.AsyncClient(headers=headers, timeout=self.__timeout) as client:
-            response = client.post("https://de.cyverse.org/terrain/secured/filesystem/stat", data=json.dumps(data))
+            response = await client.post("https://de.cyverse.org/terrain/secured/filesystem/stat", data=json.dumps(data))
 
             if response.status_code == 500 and response.json()['error_code'] == 'ERR_DOES_NOT_EXIST':
                 raise NotFound(f"Path {path} does not exist")
@@ -592,13 +592,15 @@ class AsyncTerrainClient:
 
     async def dir_exists_async(self, path: str) -> bool:
         try:
-            return await self.stat_async(path)['type'] == 'dir'
+            info = await self.stat_async(path)
+            return info['type'] == 'dir'
         except NotFound:
             return False
 
     async def file_exists_async(self, path: str) -> bool:
         try:
-            return await self.stat_async(path)['type'] == 'file'
+            info = await self.stat_async(path)
+            return info['type'] == 'file'
         except NotFound:
             return False
 
@@ -814,15 +816,14 @@ class AsyncTerrainClient:
         # send the request
         self.__logger.info(f"Downloading file '{from_path}' to '{to_path_full}'" + ('' if index is None else f" ({index})"))
         async with httpx.AsyncClient(headers={'Authorization': f"Bearer {self.__token}"}, timeout=self.__timeout) as client:
-            response = await client.get(f"https://de.cyverse.org/terrain/secured/fileio/download?path={from_path}")
+            async with client.stream('GET', f"https://de.cyverse.org/terrain/secured/fileio/download?path={from_path}") as response:
+                if response.status_code == 500 and response.json()['error_code'] == 'ERR_REQUEST_FAILED':
+                    raise ValueError(f"Path {from_path} does not exist")
 
-            if response.status_code == 500 and response.json()['error_code'] == 'ERR_REQUEST_FAILED':
-                raise ValueError(f"Path {from_path} does not exist")
-
-            response.raise_for_status()
-            with open(to_path_full, 'wb') as file:
-                for chunk in response.iter_content(chunk_size=8192):
-                    file.write(chunk)
+                response.raise_for_status()
+                with open(to_path_full, 'wb') as file:
+                    async for chunk in response.aiter_bytes():
+                        file.write(chunk)
 
     @retry(
         reraise=True,
@@ -834,7 +835,7 @@ class AsyncTerrainClient:
     async def upload_async(self, from_path: str, to_prefix: str):
         with open(from_path, 'rb') as file:
             # compose request files and headers
-            files = {'upload-file': (basename(from_path), file, 'application/octet-stream')}
+            files = {'file': (basename(from_path), file, 'application/octet-stream')}
             headers = {'Authorization': f"Bearer {self.__token}"}
 
             # send the request
