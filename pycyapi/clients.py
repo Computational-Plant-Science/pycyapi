@@ -564,7 +564,7 @@ class AsyncTerrainClient:
         retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
             RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
             Timeout)))
-    def refresh_tokens_async(self,
+    async def refresh_tokens_async(self,
                              username: str,
                              client_id: str,
                              client_secret: str,
