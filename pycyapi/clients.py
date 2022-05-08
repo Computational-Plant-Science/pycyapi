@@ -564,6 +564,39 @@ class AsyncTerrainClient:
         retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
             RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
             Timeout)))
+    def refresh_tokens_async(self,
+                             username: str,
+                             client_id: str,
+                             client_secret: str,
+                             refresh_token: str,
+                             redirect_uri: str) -> (str, str):
+        self.__logger.debug(f"Refreshing CyVerse tokens for user {username}")
+        async with httpx.AsyncClient(timeout=self.__timeout) as client:
+            response = await client.post("https://kc.cyverse.org/auth/realms/CyVerse/protocol/openid-connect/token", data={
+                'grant_type': 'refresh_token',
+                'client_id': client_id,
+                'client_secret': client_secret,
+                'refresh_token': refresh_token,
+                'redirect_uri': redirect_uri}, auth=(username, client_secret))
+
+            if response.status_code == 400:
+                raise Unauthorized('Unauthorized for KeyCloak token endpoint')
+            elif response.status_code != 200:
+                raise BadResponse(f"Bad response from KeyCloak token endpoint:\n{response.json()}")
+
+            content = response.json()
+            if 'access_token' not in content or 'refresh_token' not in content:
+                raise BadRequest(f"Missing params on token response, expected 'access_token' and 'refresh_token' but got:\n{content}")
+
+            return content['access_token'], content['refresh_token']
+
+    @retry(
+        reraise=True,
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        stop=stop_after_attempt(3),
+        retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
+            RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
+            Timeout)))
     async def stat_async(self, path: str) -> dict:
         # compose request body and headers
         data = {'paths': [path]}

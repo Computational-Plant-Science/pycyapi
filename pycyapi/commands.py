@@ -21,9 +21,9 @@ def cas_token(username: str, password: str) -> str:
         raise
 
 
-def user_info(username: str, token: str = None):
+def user_info(username: str, token: str = None, timeout: int = 15):
     if token is not None:
-        client = TerrainClient(token)
+        client = TerrainClient(token, timeout_seconds=timeout)
     else:
         raise ValueError(f"An authentication token must be explicitly provided for now")
         # TODO: try to load token from cache
@@ -36,9 +36,9 @@ def user_info(username: str, token: str = None):
         raise
 
 
-def paged_directory(path: str, token: str = None):
+def paged_directory(path: str, token: str = None, timeout: int = 15):
     if token is not None:
-        client = TerrainClient(token)
+        client = TerrainClient(token, timeout_seconds=timeout)
     else:
         raise ValueError(f"An authentication token must be explicitly provided for now")
         # TODO: try to load token from cache
@@ -51,9 +51,9 @@ def paged_directory(path: str, token: str = None):
         raise
 
 
-def stat(path: str, token: str = None):
+def stat(path: str, token: str = None, timeout: int = 15):
     if token is not None:
-        client = TerrainClient(token)
+        client = TerrainClient(token, timeout_seconds=timeout)
     else:
         raise ValueError(f"An authentication token must be explicitly provided for now")
         # TODO: try to load token from cache
@@ -66,9 +66,9 @@ def stat(path: str, token: str = None):
         raise
 
 
-def exists(path: str, type: str = None, token: str = None):
+def exists(path: str, type: str = None, token: str = None, timeout: int = 15):
     if token is not None:
-        client = TerrainClient(token)
+        client = TerrainClient(token, timeout_seconds=timeout)
     else:
         raise ValueError(f"An authentication token must be explicitly provided for now")
         # TODO: try to load token from cache
@@ -84,9 +84,9 @@ def exists(path: str, type: str = None, token: str = None):
         raise
 
 
-def create(path: str, token: str = None):
+def create(path: str, token: str = None, timeout: int = 15):
     if token is not None:
-        client = TerrainClient(token)
+        client = TerrainClient(token, timeout_seconds=timeout)
     else:
         raise ValueError(f"An authentication token must be explicitly provided for now")
         # TODO: try to load token from cache
@@ -99,9 +99,9 @@ def create(path: str, token: str = None):
         raise
 
 
-def share(username: str, path: str, permission: str, token: str = None):
+def share(username: str, path: str, permission: str, token: str = None, timeout: int = 15):
     if token is not None:
-        client = TerrainClient(token)
+        client = TerrainClient(token, timeout_seconds=timeout)
     else:
         raise ValueError(f"An authentication token must be explicitly provided for now")
         # TODO: try to load token from cache
@@ -114,9 +114,12 @@ def share(username: str, path: str, permission: str, token: str = None):
         raise
 
 
-def unshare(username: str, path: str, token: str = None):
+def unshare(username: str,
+            path: str,
+            token: str = None,
+            timeout: int = 15):
     if token is not None:
-        client = TerrainClient(token)
+        client = TerrainClient(token, timeout_seconds=timeout)
     else:
         raise ValueError(f"An authentication token must be explicitly provided for now")
         # TODO: try to load token from cache
@@ -135,9 +138,10 @@ def download(
         patterns: List[str] = None,
         checksums: List[dict] = None,
         force: bool = False,
-        token: str = None):
+        token: str = None,
+        timeout: int = 15):
     if token is not None:
-        client = TerrainClient(token)
+        client = TerrainClient(token, timeout_seconds=timeout)
     else:
         raise ValueError(f"An authentication token must be explicitly provided for now")
         # TODO: try to load token from cache
@@ -183,9 +187,10 @@ def upload(
         include_names: List[str] = None,
         exclude_patterns: List[str] = None,
         exclude_names: List[str] = None,
-        token: str = None):
+        token: str = None,
+        timeout: int = 15):
     if token is not None:
-        client = TerrainClient(token)
+        client = TerrainClient(token, timeout_seconds=timeout)
     else:
         raise ValueError(f"An authentication token must be explicitly provided for now")
         # TODO: try to load token from cache
@@ -199,13 +204,13 @@ def upload(
         raise
 
 
-def tag(
-        id: str,
+def tag(id: str,
         attributes: List[str],
         irods_attributes: List[str],
-        token: str = None):
+        token: str = None,
+        timeout: int = 15):
     if token is not None:
-        client = TerrainClient(token)
+        client = TerrainClient(token, timeout_seconds=timeout)
     else:
         raise ValueError(f"An authentication token must be explicitly provided for now")
         # TODO: try to load token from cache
@@ -219,9 +224,12 @@ def tag(
         raise
 
 
-def tags(id: str, irods: bool, token: str = None):
+def tags(id: str,
+         irods: bool,
+         token: str = None,
+         timeout: int = 15):
     if token is not None:
-        client = TerrainClient(token)
+        client = TerrainClient(token, timeout_seconds=timeout)
     else:
         raise ValueError(f"An authentication token must be explicitly provided for now")
         # TODO: try to load token from cache
