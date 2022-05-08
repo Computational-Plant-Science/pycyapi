@@ -1,27 +1,34 @@
 import json
 import logging
+import asyncio
 from os.path import join, isfile, basename, isdir
 from typing import List, Dict
 
 import httpx
 import requests
+from requests.auth import HTTPBasicAuth
 from httpx import RequestError, TimeoutException
 from requests import RequestException, ReadTimeout, Timeout, HTTPError
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
 
-from pycyapi.exceptions import NotFound
+from pycyapi.exceptions import NotFound, Unauthorized, BadResponse, BadRequest
 from pycyapi.utils import pattern_matches, list_local_files
 
 
 class TerrainClient:
-    def __init__(self, access_token: str, timeout_seconds: int = 15):
+    def __init__(self, access_token: str, refresh_token: str = None, timeout_seconds: int = 15):
         self.__logger = logging.getLogger(__name__)
-        self.__token = access_token
+        self.__access_token = access_token
+        self.__refresh_token = refresh_token
         self.__timeout = timeout_seconds
 
     @property
     def access_token(self):
-        return self.__token
+        return self.__access_token
+
+    @property
+    def refresh_token(self):
+        return self.__refresh_token
 
     @property
     def timeout_seconds(self):
@@ -46,6 +53,38 @@ class TerrainClient:
         info = content.get(username, None)
         if info is None: raise ValueError(f"Could not find user with username {username} in response: {content}")
         return info
+
+    @retry(
+        reraise=True,
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        stop=stop_after_attempt(3),
+        retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
+            RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
+            Timeout)))
+    def refresh_tokens(self,
+                       username: str,
+                       client_id: str,
+                       client_secret: str,
+                       refresh_token: str,
+                       redirect_uri: str) -> (str, str):
+        self.__logger.debug(f"Refreshing CyVerse tokens for user {username}")
+        response = requests.post("https://kc.cyverse.org/auth/realms/CyVerse/protocol/openid-connect/token", data={
+            'grant_type': 'refresh_token',
+            'client_id': client_id,
+            'client_secret': client_secret,
+            'refresh_token': refresh_token,
+            'redirect_uri': redirect_uri}, auth=HTTPBasicAuth(username, client_secret))
+
+        if response.status_code == 400:
+            raise Unauthorized('Unauthorized for KeyCloak token endpoint')
+        elif response.status_code != 200:
+            raise BadResponse(f"Bad response from KeyCloak token endpoint:\n{response.json()}")
+
+        content = response.json()
+        if 'access_token' not in content or 'refresh_token' not in content:
+            raise BadRequest(f"Missing params on token response, expected 'access_token' and 'refresh_token' but got:\n{content}")
+
+        return content['access_token'], content['refresh_token']
 
     @retry(
         reraise=True,
@@ -172,7 +211,7 @@ class TerrainClient:
             "Authorization": f"Bearer {self.__token}",
         }
         response = requests.post("https://de.cyverse.org/terrain/secured/filesystem/directory/create",
-                                     data=json.dumps({'path': path}),
+                                 data=json.dumps({'path': path}),
                                  headers=headers,
                                  timeout=self.__timeout)
         response.raise_for_status()
@@ -872,12 +911,12 @@ class AsyncTerrainClient:
         # if check: verify_checksums(from_path, checksums)
 
     async def upload_directory_async(self,
-                         from_path: str,
-                         to_prefix: str,
-                         include_patterns: List[str] = None,
-                         include_names: List[str] = None,
-                         exclude_patterns: List[str] = None,
-                         exclude_names: List[str] = None):
+                                     from_path: str,
+                                     to_prefix: str,
+                                     include_patterns: List[str] = None,
+                                     include_names: List[str] = None,
+                                     exclude_patterns: List[str] = None,
+                                     exclude_names: List[str] = None):
         # check path type
         is_file = isfile(from_path)
         is_dir = isdir(from_path)
@@ -944,3 +983,19 @@ class AsyncTerrainClient:
         async with httpx.AsyncClient(headers=headers, timeout=self.__timeout) as client:
             response = await client.post(f"https://de.cyverse.org/terrain/secured/filesystem/{id}/metadata", data=json.dumps(data))
             response.raise_for_status()
+
+    @retry(
+        reraise=True,
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        stop=stop_after_attempt(3),
+        retry=(retry_if_exception_type(ConnectionError) | retry_if_exception_type(
+            RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
+            Timeout)))
+    async def get_dirs_async(self, paths: List[str], token: str, timeout: int = 15):
+        self.__logger.debug(f"Listing data store directories: {', '.join(paths)}")
+        urls = [f"https://de.cyverse.org/terrain/secured/filesystem/paged-directory?limit=1000&path={path}" for path in paths]
+        headers = {"Authorization": f"Bearer {token}"}
+        async with httpx.AsyncClient(headers=headers, timeout=timeout) as client:
+            tasks = [client.get(url).json() for url in urls]
+            results = await asyncio.gather(*tasks)
+            return results
