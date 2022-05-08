@@ -18,7 +18,7 @@ def token(username, password):
 @cli.command()
 @click.argument('username')
 @click.option('--token', '-t', required=False, type=str)
-@click.option('--timeout', '-to', required=False, type=str, default=15)
+@click.option('--timeout', '-to', required=False, type=int, default=15)
 def user(username, token, timeout):
     click.echo(commands.user_info(username=username, token=token, timeout=timeout))
 
@@ -26,7 +26,7 @@ def user(username, token, timeout):
 @cli.command()
 @click.argument('remote_path')
 @click.option('--token', '-t', required=False, type=str)
-@click.option('--timeout', '-to', required=False, type=str, default=15)
+@click.option('--timeout', '-to', required=False, type=int, default=15)
 def list(remote_path, token, timeout):
     click.echo(commands.paged_directory(path=remote_path, token=token, timeout=timeout))
 
@@ -34,7 +34,7 @@ def list(remote_path, token, timeout):
 @cli.command()
 @click.argument('remote_path')
 @click.option('--token', '-t', required=False, type=str)
-@click.option('--timeout', '-to', required=False, type=str, default=15)
+@click.option('--timeout', '-to', required=False, type=int, default=15)
 def stat(remote_path, token, timeout):
     click.echo(commands.stat(path=remote_path, token=token, timeout=timeout))
 
@@ -43,7 +43,7 @@ def stat(remote_path, token, timeout):
 @click.argument('remote_path')
 @click.option('--type', required=False, type=str)
 @click.option('--token', '-t', required=False, type=str)
-@click.option('--timeout', '-to', required=False, type=str, default=15)
+@click.option('--timeout', '-to', required=False, type=int, default=15)
 def exists(remote_path, type, token, timeout):
     click.echo(commands.exists(path=remote_path, type=type, token=token, timeout=timeout))
 
@@ -51,7 +51,7 @@ def exists(remote_path, type, token, timeout):
 @cli.command()
 @click.argument('remote_path')
 @click.option('--token', '-t', required=False, type=str)
-@click.option('--timeout', '-to', required=False, type=str, default=15)
+@click.option('--timeout', '-to', required=False, type=int, default=15)
 def create(remote_path, token, timeout):
     click.echo(commands.create(path=remote_path, token=token, timeout=timeout))
 
@@ -62,7 +62,7 @@ def create(remote_path, token, timeout):
 @click.option('--include_pattern', '-ip', required=False, type=str, multiple=True)
 @click.option('--force', '-f', required=False, type=str, multiple=True)
 @click.option('--token', '-t', required=False, type=str)
-@click.option('--timeout', '-to', required=False, type=str, default=15)
+@click.option('--timeout', '-to', required=False, type=int, default=15)
 def download(
         remote_path,
         local_path,
@@ -88,7 +88,7 @@ def download(
 @click.option('--exclude_pattern', '-ep', required=False, type=str, multiple=True)
 @click.option('--exclude_name', '-en', required=False, type=str, multiple=True)
 @click.option('--token', '-t', required=False, type=str)
-@click.option('--timeout', '-to', required=False, type=str, default=15)
+@click.option('--timeout', '-to', required=False, type=int, default=15)
 def upload(remote_path,
            local_path,
            include_pattern,
@@ -114,7 +114,7 @@ def upload(remote_path,
 @click.option('--username', '-u', required=True, type=str)
 @click.option('--permission', '-p', required=True, type=str)
 @click.option('--token', '-t', required=False, type=str)
-@click.option('--timeout', '-to', required=False, type=str, default=15)
+@click.option('--timeout', '-to', required=False, type=int, default=15)
 def share(remote_path, username, permission, token, timeout):
     commands.share(username=username,
                    path=remote_path,
@@ -128,7 +128,7 @@ def share(remote_path, username, permission, token, timeout):
 @click.argument('remote_path')
 @click.option('--username', '-u', required=True, type=str, multiple=True)
 @click.option('--token', '-t', required=False, type=str)
-@click.option('--timeout', '-to', required=False, type=str, default=15)
+@click.option('--timeout', '-to', required=False, type=int, default=15)
 def unshare(remote_path, username, token, timeout):
     commands.unshare(username=username, path=remote_path, token=token, timeout=timeout)
     click.echo(f"Unshared {remote_path} with {username}")
@@ -139,7 +139,7 @@ def unshare(remote_path, username, token, timeout):
 @click.option('--attribute', '-a', required=False, type=str, multiple=True)
 @click.option('--irods_attribute', '-ia', required=False, type=str, multiple=True)
 @click.option('--token', '-t', required=False, type=str)
-@click.option('--timeout', '-to', required=False, type=str, default=15)
+@click.option('--timeout', '-to', required=False, type=int, default=15)
 def tag(id, attribute, irods_attribute, token, timeout):
     commands.tag(id=id,
                  attributes=attribute,
@@ -154,7 +154,7 @@ def tag(id, attribute, irods_attribute, token, timeout):
 @click.argument('id')
 @click.option('--token', '-t', required=False, type=str)
 @click.option('--irods', '-i', required=False, default=False, type=bool)
-@click.option('--timeout', '-to', required=False, type=str, default=15)
+@click.option('--timeout', '-to', required=False, type=int, default=15)
 def tags(id, irods, token, timeout):
     attributes = commands.tags(id=id, irods=irods, token=token, timeout=timeout)
     newline = '\n'
