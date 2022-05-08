@@ -16,19 +16,14 @@ from pycyapi.utils import pattern_matches, list_local_files
 
 
 class TerrainClient:
-    def __init__(self, access_token: str, refresh_token: str = None, timeout_seconds: int = 15):
+    def __init__(self, access_token: str, timeout_seconds: int = 15):
         self.__logger = logging.getLogger(__name__)
         self.__access_token = access_token
-        self.__refresh_token = refresh_token
         self.__timeout = timeout_seconds
 
     @property
     def access_token(self):
         return self.__access_token
-
-    @property
-    def refresh_token(self):
-        return self.__refresh_token
 
     @property
     def timeout_seconds(self):
@@ -45,7 +40,7 @@ class TerrainClient:
         self.__logger.debug(f"Getting CyVerse profile for user {username}")
         response = requests.get(
             f"https://de.cyverse.org/terrain/secured/user-info?username={username}",
-            headers={'Authorization': f"Bearer {self.__token}"},
+            headers={'Authorization': f"Bearer {self.__access_token}"},
             timeout=self.__timeout)
 
         response.raise_for_status()
@@ -98,7 +93,7 @@ class TerrainClient:
         response = requests.post(
             "https://de.cyverse.org/terrain/secured/filesystem/stat",
             data=json.dumps({'paths': [path]}),
-            headers={'Authorization': f"Bearer {self.__token}",
+            headers={'Authorization': f"Bearer {self.__access_token}",
                      "Content-Type": 'application/json;charset=utf-8'})
 
         if response.status_code == 500 and response.json()['error_code'] == 'ERR_DOES_NOT_EXIST':
@@ -134,7 +129,7 @@ class TerrainClient:
         self.__logger.debug(f"Checking if data store path exists: {path}")
 
         data = {'paths': [path]}
-        headers = {"Authorization": f"Bearer {self.__token}", "Content-Type": "application/json;charset=utf-8"}
+        headers = {"Authorization": f"Bearer {self.__access_token}", "Content-Type": "application/json;charset=utf-8"}
         response = requests.post("https://de.cyverse.org/terrain/secured/filesystem/exists",
                                  data=json.dumps(data),
                                  headers=headers,
@@ -178,7 +173,7 @@ class TerrainClient:
         self.__logger.debug(f"Listing data store directory {path}")
         response = requests.get(
             f"https://de.cyverse.org/terrain/secured/filesystem/paged-directory?limit=1000&path={path}",
-            headers={'Authorization': f"Bearer {self.__token}"},
+            headers={'Authorization': f"Bearer {self.__access_token}"},
             timeout=self.__timeout)
 
         if response.status_code == 500 and response.json()['error_code'] == 'ERR_DOES_NOT_EXIST':
@@ -208,7 +203,7 @@ class TerrainClient:
     def mkdir(self, path: str):
         self.__logger.debug(f"Creating data store directory {path}")
         headers = {
-            "Authorization": f"Bearer {self.__token}",
+            "Authorization": f"Bearer {self.__access_token}",
         }
         response = requests.post("https://de.cyverse.org/terrain/secured/filesystem/directory/create",
                                  data=json.dumps({'path': path}),
@@ -243,7 +238,7 @@ class TerrainClient:
             ]
         }
         headers = {
-            "Authorization": f"Bearer {self.__token}",
+            "Authorization": f"Bearer {self.__access_token}",
             "Content-Type": "application/json;charset=utf-8"
         }
 
@@ -273,7 +268,7 @@ class TerrainClient:
             ]
         }
         headers = {
-            "Authorization": f"Bearer {self.__token}",
+            "Authorization": f"Bearer {self.__access_token}",
             "Content-Type": 'application/json;charset=utf-8'
         }
 
@@ -310,7 +305,7 @@ class TerrainClient:
             ]
         }
         headers = {
-            "Authorization": f"Bearer {self.__token}",
+            "Authorization": f"Bearer {self.__access_token}",
             "Content-Type": "application/json;charset=utf-8"
         }
 
@@ -344,7 +339,7 @@ class TerrainClient:
             ]
         }
         headers = {
-            "Authorization": f"Bearer {self.__token}",
+            "Authorization": f"Bearer {self.__access_token}",
             "Content-Type": 'application/json;charset=utf-8'
         }
 
@@ -389,7 +384,7 @@ class TerrainClient:
         # send the request
         self.__logger.info(f"Downloading file '{from_path}' to '{to_path_full}'" + ('' if index is None else f" ({index})"))
         response = requests.get(f"https://de.cyverse.org/terrain/secured/fileio/download?path={from_path}",
-                                headers={'Authorization': f"Bearer {self.__token}"},
+                                headers={'Authorization': f"Bearer {self.__access_token}"},
                                 timeout=self.__timeout)
 
         if response.status_code == 500 and response.json()['error_code'] == 'ERR_REQUEST_FAILED':
@@ -412,7 +407,7 @@ class TerrainClient:
         with open(from_path, 'rb') as file:
             # compose request files and headers
             files = {'file': (basename(from_path), file, 'application/octet-stream')}
-            headers = {'Authorization': f"Bearer {self.__token}"}
+            headers = {'Authorization': f"Bearer {self.__access_token}"}
 
             # send the request
             response = requests.post(f"https://de.cyverse.org/terrain/secured/fileio/upload?dest={to_prefix}",
@@ -480,7 +475,7 @@ class TerrainClient:
     def get_metadata(self, id: str, irods: bool = False):
         # compose request headers
         headers = {
-            "Authorization": f"Bearer {self.__token}",
+            "Authorization": f"Bearer {self.__access_token}",
             "Content-Type": "application/json;charset=utf-8"
         }
 
@@ -513,7 +508,7 @@ class TerrainClient:
         data = {'avus': [to_avu(a) for a in attributes],
                 'irods-avus': [to_avu(a) for a in irods_attributes]}
         headers = {
-            "Authorization": f"Bearer {self.__token}",
+            "Authorization": f"Bearer {self.__access_token}",
             "Content-Type": "application/json;charset=utf-8"
         }
 
@@ -529,12 +524,12 @@ class TerrainClient:
 class AsyncTerrainClient:
     def __init__(self, access_token: str, timeout_seconds: int = 15):
         self.__logger = logging.getLogger(__name__)
-        self.__token = access_token
+        self.__access_token = access_token
         self.__timeout = timeout_seconds
 
     @property
     def access_token(self):
-        return self.__token
+        return self.__access_token
 
     @property
     def timeout_seconds(self):
@@ -549,7 +544,7 @@ class AsyncTerrainClient:
             Timeout)))
     async def user_info_async(self, username: str) -> dict:
         self.__logger.debug(f"Getting CyVerse profile for user {username}")
-        async with httpx.AsyncClient(headers={'Authorization': f"Bearer {self.__token}"}, timeout=self.__timeout) as client:
+        async with httpx.AsyncClient(headers={'Authorization': f"Bearer {self.__access_token}"}, timeout=self.__timeout) as client:
             response = await client.get(f"https://de.cyverse.org/terrain/secured/user-info?username={username}")
             response.raise_for_status()
             content = response.json()
@@ -565,11 +560,11 @@ class AsyncTerrainClient:
             RequestException) | retry_if_exception_type(ReadTimeout) | retry_if_exception_type(
             Timeout)))
     async def refresh_tokens_async(self,
-                             username: str,
-                             client_id: str,
-                             client_secret: str,
-                             refresh_token: str,
-                             redirect_uri: str) -> (str, str):
+                                   username: str,
+                                   client_id: str,
+                                   client_secret: str,
+                                   refresh_token: str,
+                                   redirect_uri: str) -> (str, str):
         self.__logger.debug(f"Refreshing CyVerse tokens for user {username}")
         async with httpx.AsyncClient(timeout=self.__timeout) as client:
             response = await client.post("https://kc.cyverse.org/auth/realms/CyVerse/protocol/openid-connect/token", data={
@@ -600,7 +595,7 @@ class AsyncTerrainClient:
     async def stat_async(self, path: str) -> dict:
         # compose request body and headers
         data = {'paths': [path]}
-        headers = {'Authorization': f"Bearer {self.__token}",
+        headers = {'Authorization': f"Bearer {self.__access_token}",
                    "Content-Type": 'application/json;charset=utf-8'}
 
         # send the request
@@ -640,7 +635,7 @@ class AsyncTerrainClient:
 
         # compose request body and headers
         data = {'paths': [path]}
-        headers = {"Authorization": f"Bearer {self.__token}", "Content-Type": "application/json;charset=utf-8"}
+        headers = {"Authorization": f"Bearer {self.__access_token}", "Content-Type": "application/json;charset=utf-8"}
 
         # send the request
         self.__logger.debug(f"Checking if data store path exists: {path}")
@@ -685,7 +680,7 @@ class AsyncTerrainClient:
             Timeout)))
     async def list_async(self, path: str) -> dict:
         self.__logger.debug(f"Listing data store directory {path}")
-        async with httpx.AsyncClient(headers={'Authorization': f"Bearer {self.__token}"}, timeout=self.__timeout) as client:
+        async with httpx.AsyncClient(headers={'Authorization': f"Bearer {self.__access_token}"}, timeout=self.__timeout) as client:
             response = await client.get(f"https://de.cyverse.org/terrain/secured/filesystem/paged-directory?limit=1000&path={path}")
             response.raise_for_status()
 
@@ -715,7 +710,7 @@ class AsyncTerrainClient:
     async def mkdir_async(self, path: str):
         self.__logger.debug(f"Creating data store directory {path}")
         headers = {
-            "Authorization": f"Bearer {self.__token}",
+            "Authorization": f"Bearer {self.__access_token}",
         }
         async with httpx.AsyncClient(headers=headers, timeout=self.__timeout) as client:
             response = await client.post("https://de.cyverse.org/terrain/secured/filesystem/directory/create",
@@ -749,7 +744,7 @@ class AsyncTerrainClient:
             ]
         }
         headers = {
-            "Authorization": f"Bearer {self.__token}",
+            "Authorization": f"Bearer {self.__access_token}",
             "Content-Type": "application/json;charset=utf-8"
         }
 
@@ -780,7 +775,7 @@ class AsyncTerrainClient:
             ]
         }
         headers = {
-            "Authorization": f"Bearer {self.__token}",
+            "Authorization": f"Bearer {self.__access_token}",
             "Content-Type": 'application/json;charset=utf-8'
         }
 
@@ -814,7 +809,7 @@ class AsyncTerrainClient:
             ]
         }
         headers = {
-            "Authorization": f"Bearer {self.__token}",
+            "Authorization": f"Bearer {self.__access_token}",
             "Content-Type": "application/json;charset=utf-8"
         }
 
@@ -845,7 +840,7 @@ class AsyncTerrainClient:
             ]
         }
         headers = {
-            "Authorization": f"Bearer {self.__token}",
+            "Authorization": f"Bearer {self.__access_token}",
             "Content-Type": 'application/json;charset=utf-8'
         }
 
@@ -887,7 +882,7 @@ class AsyncTerrainClient:
 
         # send the request
         self.__logger.info(f"Downloading file '{from_path}' to '{to_path_full}'" + ('' if index is None else f" ({index})"))
-        async with httpx.AsyncClient(headers={'Authorization': f"Bearer {self.__token}"}, timeout=self.__timeout) as client:
+        async with httpx.AsyncClient(headers={'Authorization': f"Bearer {self.__access_token}"}, timeout=self.__timeout) as client:
             async with client.stream('GET', f"https://de.cyverse.org/terrain/secured/fileio/download?path={from_path}") as response:
                 if response.status_code == 500 and response.json()['error_code'] == 'ERR_REQUEST_FAILED':
                     raise ValueError(f"Path {from_path} does not exist")
@@ -908,7 +903,7 @@ class AsyncTerrainClient:
         with open(from_path, 'rb') as file:
             # compose request files and headers
             files = {'file': (basename(from_path), file, 'application/octet-stream')}
-            headers = {'Authorization': f"Bearer {self.__token}"}
+            headers = {'Authorization': f"Bearer {self.__access_token}"}
 
             # send the request
             self.__logger.debug(f"Uploading {from_path} to data store path {to_prefix}")
@@ -975,7 +970,7 @@ class AsyncTerrainClient:
     async def get_metadata_async(self, id: str, irods: bool = False):
         # compose request headers
         headers = {
-            "Authorization": f"Bearer {self.__token}",
+            "Authorization": f"Bearer {self.__access_token}",
             "Content-Type": "application/json;charset=utf-8"
         }
 
@@ -1007,7 +1002,7 @@ class AsyncTerrainClient:
         data = {'avus': [to_avu(a) for a in attributes],
                 'irods-avus': [to_avu(a) for a in irods_attributes]}
         headers = {
-            "Authorization": f"Bearer {self.__token}",
+            "Authorization": f"Bearer {self.__access_token}",
             "Content-Type": "application/json;charset=utf-8"
         }
 
