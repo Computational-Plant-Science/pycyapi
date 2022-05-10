@@ -92,7 +92,7 @@ The following commands are currently supported:
 - `tag`: Set metadata for a given file or collection.
 - `tags`: Get metadata for a given file or collection.
 
-#### CAS Token
+#### Token
 
 To request a CAS authentication token, use the `token` command:
 
@@ -102,7 +102,7 @@ pycy token --username <your CyVerse username> --password <your CyVerse password>
 
 The token can then be passed in the `--token (-t)` parameter to authenticate further commands.
 
-#### User info
+#### User
 
 The `user` command can be used to retrieve public profile information for CyVerse users. For instance, to get my profile info:
 
@@ -110,12 +110,20 @@ The `user` command can be used to retrieve public profile information for CyVers
 pycy user -t <token> wbonelli
 ```
 
-#### Paged directory
+#### List
 
 To list the contents of a collection in the data store, use the `list` command. For instance:
 
 ```shell
 pycy list -t <token> /iplant/home/shared/iplantcollaborative/testing_tools/
+```
+
+#### Stat
+
+To view metadata for a particular collection or object in the data store, use the `stat` command. For instance:
+
+```shell
+pycy stat -t <token> /iplant/home/shared/iplantcollaborative/testing_tools/
 ```
 
 #### Download
