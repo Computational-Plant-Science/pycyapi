@@ -12,7 +12,7 @@
                                 ><small>CLI</small></span>
 </h1>
 
-a CLI and Python client for the [plantit API](https://plantit.cyverse.org/apis/v1/swagger/)
+A CLI and Python client for [plantit](https://plantit.cyverse.org/apis/v1/swagger/).
 
 ![CI](https://github.com/Computational-Plant-Science/plantit-cli/workflows/CI/badge.svg)
 [![PyPI version](https://badge.fury.io/py/plantit-cli.svg)](https://badge.fury.io/py/plantit-cli)

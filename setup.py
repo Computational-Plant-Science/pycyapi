@@ -6,9 +6,9 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name='plantit-cli',
+    name='plantit',
     version='0.3.31',
-    description='Deploy PlantIT workflows on laptops, servers, or clusters.',
+    description='phenotyping container workflows on laptops, clusters, or the cloud',
     long_description=long_description,
     long_description_content_type="text/markdown",
     author='Computational Plant Science Lab',
@@ -23,6 +23,6 @@ setuptools.setup(
         ]
     },
     python_requires='>=3.6.8',
-    install_requires=['requests', 'pyaml', 'click', 'tenacity', 'tqdm', 'pytest'],
-    setup_requires=['wheel'],
+    install_requires=['requests', 'pyaml', 'click', 'tenacity', 'tqdm', 'python-irodsclient'],
+    setup_requires=['setuptools', 'wheel'],
     tests_require=['pytest', 'coveralls'])
