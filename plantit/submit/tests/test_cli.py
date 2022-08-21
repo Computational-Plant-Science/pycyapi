@@ -1,0 +1,12 @@
+import pytest
+from click.testing import CliRunner
+
+import plantit.submit.cli as cli
+
+
+@pytest.mark.skip('todo')
+@pytest.mark.slow
+def test_submit_slurm():
+    runner = CliRunner()
+    # result = runner.invoke(cli.submit, [""])
+    # todo

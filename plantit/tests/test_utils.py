@@ -1,6 +1,6 @@
 import pytest
 
-from plantit.terrain.utils import pattern_matches
+from plantit.utils import pattern_matches
 
 
 def test_pattern_patches():

@@ -17,7 +17,7 @@ from tenacity import (
 )
 
 from plantit.terrain.exceptions import BadRequest, BadResponse, NotFound, Unauthorized
-from plantit.terrain.utils import list_local_files, pattern_matches
+from plantit.utils import list_local_files, pattern_matches
 
 
 class TerrainClient:
