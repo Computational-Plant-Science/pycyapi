@@ -30,7 +30,22 @@ A CLI and Python client for [plantit](https://plantit.cyverse.org/apis/v1/swagge
 - [Installation](#installation)
 - [Usage](#usage)
   - [Commands](#commands)
+    - [Token](#token)
+    - [User](#user)
+    - [List](#list)
+    - [Stat](#stat)
+    - [Download](#download)
+    - [Upload](#upload)
+    - [Exists](#exists)
+    - [Create](#create)
+    - [Share](#share)
+    - [Unshare](#unshare)
+    - [Tag](#tag)
+    - [Tags](#tags)
 - [Development](#development)
+  - [Tests](#tests)
+    - [Unit tests](#unit-tests)
+    - [Integration tests](#integration-tests)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
