@@ -4,7 +4,7 @@ from click.testing import CliRunner
 import plantit.submit.cli as cli
 
 
-@pytest.mark.skip('todo')
+@pytest.mark.skip(reason='todo')
 @pytest.mark.slow
 def test_submit_slurm():
     runner = CliRunner()
