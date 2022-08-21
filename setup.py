@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='plantit',
-    version='0.3.31',
+    version='0.4.0',
     description='phenotyping container workflows on laptops, clusters, or the cloud',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -19,7 +19,7 @@ setuptools.setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'plantit = plantit_cli.cli:cli'
+            'plantit = plantit.cli:cli'
         ]
     },
     python_requires='>=3.6.8',
