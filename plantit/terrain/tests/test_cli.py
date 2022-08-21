@@ -8,7 +8,7 @@ from time import sleep
 import pytest
 from click.testing import CliRunner
 
-import plantit.terrain.cli as cli
+from plantit.terrain import cli
 from plantit.terrain.auth import FileLockedAccessToken
 from plantit.terrain.tests.conftest import list_files, list_directories, delete_collection, create_collection, \
     upload_file, stat_file, set_metadata, get_metadata

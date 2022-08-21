@@ -52,14 +52,7 @@ jobs:
           CYVERSE_USERNAME: ${{ secrets.CYVERSE_USERNAME }}
           CYVERSE_PASSWORD: ${{ secrets.CYVERSE_PASSWORD }}
         run: |
-          pytest -v -n auto -S --keep-failed=.failed
-      - name: Upload failed smoke test outputs
-        uses: actions/upload-artifact@v2
-        if: failure()
-        with:
-          name: failed-smoke-${{ runner.os }}
-          path: |
-            ./.failed/**
+          pytest -v -n auto -S
   test:
     name: Test
     needs: smoke
