@@ -19,11 +19,11 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-3.6-pip-${{ hashFiles('setup.cfg') }}
+          key: ${{ runner.os }}-3.7-pip-${{ hashFiles('setup.cfg') }}
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.6
+          python-version: 3.7
       - name: Install Python dependencies
         run: |
           pip install --upgrade pip
@@ -46,11 +46,11 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-3.6-pip-${{ hashFiles('setup.cfg') }}
+          key: ${{ runner.os }}-3.7-pip-${{ hashFiles('setup.cfg') }}
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.6
+          python-version: 3.7
       - name: Install Python dependencies
         run: |
           pip install --upgrade pip
@@ -111,26 +111,28 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - name: Update Coveralls
-        run: |
-          coveralls --finish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/checkout@v2
+      - name: Checkout repo
+        uses: actions/checkout@v2
       - name: Cache Python
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-3.6-pip-${{ hashFiles('setup.cfg') }}
+          key: ${{ runner.os }}-3.7-pip-${{ hashFiles('setup.cfg') }}
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.6
+          python-version: 3.7
       - name: Install Python dependencies
         run: |
           pip install --upgrade pip
           pip install flake8 pytest coveralls setuptools wheel twine
           pip install .
+          pip install ".[test]"
+      - name: Update Coveralls
+        run: |
+          coveralls --finish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish package
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
