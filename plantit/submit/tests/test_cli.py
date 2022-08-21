@@ -1,7 +1,7 @@
 import pytest
 from click.testing import CliRunner
 
-import plantit.submit.cli as cli
+from plantit.submit import cli
 
 
 @pytest.mark.skip(reason='todo')
