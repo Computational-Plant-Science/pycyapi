@@ -187,7 +187,7 @@ def test_download_file(remote_base_path):
             # download file
             runner = CliRunner()
             runner.invoke(
-                cli.download,
+                cli.pull,
                 [
                     "--token",
                     token,
@@ -235,7 +235,7 @@ def test_download_directory(remote_base_path):
             # download files
             runner = CliRunner()
             result = runner.invoke(
-                cli.download, ["--token", token, "--local_path", testdir, remote_path]
+                cli.pull, ["--token", token, "--local_path", testdir, remote_path]
             )
         except ValueError as e:
             if 'I/O operation on closed file' not in str(e):
@@ -266,7 +266,7 @@ def test_upload_file(remote_base_path):
             # upload file
             runner = CliRunner()
             runner.invoke(
-                cli.upload, ["--token", token, "--local_path", file_path, remote_path]
+                cli.push, ["--token", token, "--local_path", file_path, remote_path]
             )
         except ValueError as e:
             if 'I/O operation on closed file' not in str(e):
@@ -300,7 +300,7 @@ def test_upload_directory(remote_base_path):
             # upload directory
             runner = CliRunner()
             result = runner.invoke(
-                cli.upload,
+                cli.push,
                 ["--token", token, "--local_path", testdir, remote_path, "-ip", ".txt"],
             )
         except ValueError as e:
