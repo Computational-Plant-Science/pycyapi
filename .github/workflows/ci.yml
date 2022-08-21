@@ -1,171 +1,140 @@
 name: CI
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+    branches:
+      - master
+      - develop
 jobs:
-  notify:
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Slack start notification
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_CHANNEL: plantit-dev
-          SLACK_ICON: https://raw.githubusercontent.com/Computational-Plant-Science/plantit/master/plantit/front_end/src/assets/logo-favicon.png
-          SLACK_MESSAGE: 'Build started'
-          SLACK_TITLE: PlantIT CLI CI
-          SLACK_USERNAME: plantit-cli
-  unit-tests:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.6, 3.7, 3.8]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        env:
-          SINGULARITY_VERSION: ${{ secrets.SINGULARITY_VERSION }}
+          python-version: 3.6
+      - name: Install Python dependencies
         run: |
-          # install python deps
           python -m pip install --upgrade pip
-          pip install flake8 pytest coveralls setuptools wheel twine
-          pip install -e .
-          
-          # install go
-          # curl -OL https://golang.org/dl/go1.16.7.linux-amd64.tar.gz
-          # sha256sum go1.16.7.linux-amd64.tar.gz
-          # sudo tar -C /usr/local -xvf go1.16.7.linux-amd64.tar.gz
-          # echo "export PATH=$PATH:/usr/local/go/bin" >> ~/.profile
-          # source ~/.profile
-          
-          # install singularity
-          # wget https://github.com/sylabs/singularity/releases/download/v${SINGULARITY_VERSION}/singularity-ce-${SINGULARITY_VERSION}.tar.gz
-          # tar -xzf singularity-ce-${SINGULARITY_VERSION}.tar.gz
-          # cd singularity-ce-${SINGULARITY_VERSION}
-          # ./mconfig
-          # make -C builddir
-          # sudo make -C builddir install
-          # cd ..
+          pip install .
+          pip install ".[lint]"
       - name: Lint
         run: |
           # stop the build if there are Python syntax errors or undefined names
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+  smoke:
+    name: Smoke test
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+          pip install ".[test]"
+      - name: Run smoke tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CYVERSE_USERNAME: ${{ secrets.CYVERSE_USERNAME }}
+          CYVERSE_PASSWORD: ${{ secrets.CYVERSE_PASSWORD }}
+        run: |
+          pytest -v -n auto -S --keep-failed=.failed
+      - name: Upload failed smoke test outputs
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: failed-smoke-${{ runner.os }}
+          path: |
+            ./.failed/**
+  test:
+    name: Test
+    needs: smoke
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        python-version: [3.6, 3.7, 3.8, 3.9. "3.10"]
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+          pip install ".[test]"
       - name: Test
         env:
-          TEST_DIRECTORY: ${{ secrets.TEST_DIRECTORY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CYVERSE_USERNAME: ${{ secrets.CYVERSE_USERNAME }}
           CYVERSE_PASSWORD: ${{ secrets.CYVERSE_PASSWORD }}
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
           COVERALLS_PARALLEL: true
         run: |
-          mkdir -p /opt/plantit-cli/runs/
-          coverage run --source=plantit_cli -m pytest /home/runner/work/plantit-cli/plantit-cli/plantit_cli/tests/unit -s
+          coverage run --source=plantit -m pytest -s -v -n auto --keep-failed=.failed
           coveralls
-  integration-tests:
+      - name: Upload failed test outputs
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: failed-${{ matrix.os }}-${{ matrix.python-version }}
+          path: |
+            ./.failed/**
+  publish:
+    name: Publish to Python Package Index
+    needs: test
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 1
       matrix:
         python-version: [3.6]
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        env:
-          SINGULARITY_VERSION: ${{ secrets.SINGULARITY_VERSION }}
-        run: |
-          # python
-          python -m pip install --upgrade pip
-          pip install flake8 pytest coveralls setuptools wheel twine
-          pip install -e .
-
-          # singularity
-          # wget https://github.com/sylabs/singularity/releases/download/v3.8.0/singularity-ce-3.8.0.tar.gz
-          # tar -xzf singularity-ce-3.8.0.tar.gz
-          # cd singularity-ce-3.8.0
-          # ./mconfig
-          # make -C builddir
-          # sudo make -C builddir install
-      - name: Lint
-        run: |
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-      - name: Test
-        env:
-          TEST_DIRECTORY: ${{ secrets.TEST_DIRECTORY }}
-          CYVERSE_USERNAME: ${{ secrets.CYVERSE_USERNAME }}
-          CYVERSE_PASSWORD: ${{ secrets.CYVERSE_PASSWORD }}
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
-          COVERALLS_PARALLEL: true
-        run: |
-          mkdir -p /opt/plantit-cli/runs/
-          coverage run --source=plantit_cli -m pytest /home/runner/work/plantit-cli/plantit-cli/plantit_cli/tests/integration -s
-          coveralls
       - name: Update Coveralls
         run: |
           coveralls --finish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  publish:
-    needs: [unit-tests]
-    runs-on: ubuntu-latest
-    strategy:
-      max-parallel: 1
-      matrix:
-        python-version: [3.8]
-    steps:
       - uses: actions/checkout@v2
-      - name: set up python ${{ matrix.python-version }}
+      - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        env:
-          SINGULARITY_VERSION: ${{ secrets.SINGULARITY_VERSION }}
+          python-version: 3.6
+      - name: Install Python dependencies
         run: |
           # python
           python -m pip install --upgrade pip
           pip install flake8 pytest coveralls setuptools wheel twine
-          pip install -e .
+          pip install .
       - name: Publish package
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
-          old_version=$(pip install plantit-cli==random 2>&1 >/dev/null | sed 's|.*, \([^ ]*\)).*|\1|g' | head -n 1 | xargs)
-          new_version=$(pip show plantit-cli | sed 's|.*Version: \([^ ]*\).*|\1|g' | sed -n 2p)
+          old_version=$(pip install plantit==random 2>&1 >/dev/null | sed 's|.*, \([^ ]*\)).*|\1|g' | head -n 1 | xargs)
+          new_version=$(pip show plantit | sed 's|.*Version: \([^ ]*\).*|\1|g' | sed -n 2p)
           echo "$old_version"
           echo "$new_version"
           if ! [[ "$new_version" = "$old_version" ]]; then
             python setup.py sdist bdist_wheel
             python -m twine upload dist/*
           fi
-      # - name: Login to Docker Hub
-      #   uses: docker/login-action@v1
-      #   with:
-      #     username: ${{ secrets.DOCKER_USERNAME }}
-      #     password: ${{ secrets.DOCKER_PASSWORD }}
-      # - name: Build & push Docker image
-      #   env:
-      #     DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      #     DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      #   run: |
-      #     docker build -t computationalplantscience/sind --no-cache -f dockerfiles/sind/Dockerfile .
-      #     docker push computationalplantscience/sind
       - name: Slack success notification
         uses: rtCamp/action-slack-notify@v2
         env:
@@ -173,5 +142,5 @@ jobs:
           SLACK_CHANNEL: plantit-dev
           SLACK_ICON: https://raw.githubusercontent.com/Computational-Plant-Science/plantit/master/plantit/front_end/src/assets/logo-favicon.png
           SLACK_MESSAGE: 'Build succeeded'
-          SLACK_TITLE: PlantIT CLI CI
-          SLACK_USERNAME: plantit-cli
+          SLACK_TITLE: plantit CI
+          SLACK_USERNAME: plantit

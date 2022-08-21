@@ -1,40 +1,73 @@
 import re
 from os import listdir
-from os.path import join, isfile
+from os.path import isfile, join
 
 
 def pattern_matches(path, patterns):
     return any(pattern.lower() in path.lower() for pattern in patterns)
 
 
-def list_local_files(path,
-               include_patterns=None,
-               include_names=None,
-               exclude_patterns=None,
-               exclude_names=None):
+def list_local_files(
+    path,
+    include_patterns=None,
+    include_names=None,
+    exclude_patterns=None,
+    exclude_names=None,
+):
     # gather all files
     all_paths = [join(path, file) for file in listdir(path) if isfile(join(path, file))]
 
     # add files matching included patterns
-    included_by_pattern = [pth for pth in all_paths if any(
-        pattern.lower() in pth.lower() for pattern in include_patterns)] if include_patterns is not None else all_paths
+    included_by_pattern = (
+        [
+            pth
+            for pth in all_paths
+            if any(pattern.lower() in pth.lower() for pattern in include_patterns)
+        ]
+        if include_patterns is not None
+        else all_paths
+    )
 
     # add files included by name
-    included_by_name = ([pth for pth in all_paths if pth.rpartition('/')[2] in [name for name in include_names]] \
-                            if include_names is not None else included_by_pattern) + \
-                       [pth for pth in all_paths if pth in [name for name in include_names]] \
-        if include_names is not None else included_by_pattern
+    included_by_name = (
+        (
+            [
+                pth
+                for pth in all_paths
+                if pth.rpartition("/")[2] in [name for name in include_names]
+            ]
+            if include_names is not None
+            else included_by_pattern
+        )
+        + [pth for pth in all_paths if pth in [name for name in include_names]]
+        if include_names is not None
+        else included_by_pattern
+    )
 
     # gather only included files
     included = set(included_by_pattern + included_by_name)
 
     # remove files matched excluded patterns
-    excluded_by_pattern = [name for name in included if all(pattern.lower() not in name.lower() for pattern in
-                                                            exclude_patterns)] if exclude_patterns is not None else included
+    excluded_by_pattern = (
+        [
+            name
+            for name in included
+            if all(pattern.lower() not in name.lower() for pattern in exclude_patterns)
+        ]
+        if exclude_patterns is not None
+        else included
+    )
 
     # remove files excluded by name
-    excluded_by_name = [pattern for pattern in excluded_by_pattern if pattern.split('/')[
-        -1] not in exclude_names] if exclude_names is not None else excluded_by_pattern
+    excluded_by_name = (
+        [
+            pattern
+            for pattern in excluded_by_pattern
+            if pattern.split("/")[-1] not in exclude_names
+        ]
+        if exclude_names is not None
+        else excluded_by_pattern
+    )
 
     return excluded_by_name
 
@@ -58,16 +91,24 @@ def del_none(d) -> dict:
 
 
 BYTE_SYMBOLS = {
-    'customary': ('B', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'),
-    'customary_ext': ('byte', 'kilo', 'mega', 'giga', 'tera', 'peta', 'exa',
-                      'zetta', 'iotta'),
-    'iec': ('Bi', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi', 'Yi'),
-    'iec_ext': ('byte', 'kibi', 'mebi', 'gibi', 'tebi', 'pebi', 'exbi',
-                'zebi', 'yobi'),
+    "customary": ("B", "K", "M", "G", "T", "P", "E", "Z", "Y"),
+    "customary_ext": (
+        "byte",
+        "kilo",
+        "mega",
+        "giga",
+        "tera",
+        "peta",
+        "exa",
+        "zetta",
+        "iotta",
+    ),
+    "iec": ("Bi", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi", "Yi"),
+    "iec_ext": ("byte", "kibi", "mebi", "gibi", "tebi", "pebi", "exbi", "zebi", "yobi"),
 }
 
 
-def readable_bytes(n, format='%(value).1f %(symbol)s', symbols='customary'):
+def readable_bytes(n, format="%(value).1f %(symbol)s", symbols="customary"):
     """
     Convert n bytes into a human readable string based on format.
     symbols can be either "customary", "customary_ext", "iec", or "iec_ext".
@@ -138,25 +179,21 @@ import multiprocessing.pool as mpp
 
 
 def istarmap(self, func, iterable, chunksize=1):
-    """starmap-version of imap
-    """
+    """starmap-version of imap"""
     if self._state != mpp.RUN:
         raise ValueError("Pool not running")
 
     if chunksize < 1:
-        raise ValueError(
-            "Chunksize must be 1+, not {0:n}".format(
-                chunksize))
+        raise ValueError("Chunksize must be 1+, not {0:n}".format(chunksize))
 
     task_batches = mpp.Pool._get_tasks(func, iterable, chunksize)
     result = mpp.IMapIterator(self._cache)
     self._taskqueue.put(
         (
-            self._guarded_task_generation(result._job,
-                                          mpp.starmapstar,
-                                          task_batches),
-            result._set_length
-        ))
+            self._guarded_task_generation(result._job, mpp.starmapstar, task_batches),
+            result._set_length,
+        )
+    )
     return (item for chunk in result for item in chunk)
 
 
