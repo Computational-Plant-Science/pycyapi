@@ -8,7 +8,7 @@
                                         text-shadow: 1px 1px 2px black;
                                         z-index: 100;
                                     "
-                                    ><small>IT</small></small
+                                    ><small>it</small></small
                                 ><small>CLI</small></span>
 </h1>
 
