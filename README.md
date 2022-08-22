@@ -3,9 +3,11 @@
 
 # plantit
 
-A CLI & Python library for reproducible high-throughput phenotyping. `plantit` generates job scripts and launches container workflows on SLURM clusters.
+A CLI & Python library for reproducible high-throughput phenotyping.
 
-To integrate with the [web UI](https://plantit.cyverse.org/apis/v1/swagger/), use the [`plantit-action`](https://github.com/Computational-Plant-Science/plantit-action) in a GitHub Actions workflow.
+- Generate job scripts and launch container workflows on a remote cluster with a single command.
+- Add the [`plantit-action`](https://github.com/Computational-Plant-Science/plantit-action) to a GitHub Actions workflow for reproducible phenotyping.
+- Automatic data tranfers to & from the CyVerse Data Store.
 
 ![CI](https://github.com/Computational-Plant-Science/plantit-cli/workflows/CI/badge.svg)
 [![PyPI version](https://badge.fury.io/py/plantit-cli.svg)](https://badge.fury.io/py/plantit-cli)
