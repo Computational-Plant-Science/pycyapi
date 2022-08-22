@@ -6,8 +6,8 @@
 A CLI & Python library for reproducible high-throughput phenotyping.
 
 - Generate job scripts and launch container workflows on a remote cluster with a single command.
-- Add the [`plantit-action`](https://github.com/Computational-Plant-Science/plantit-action) to a GitHub Actions workflow for reproducible phenotyping.
-- Automatic data tranfers to & from the CyVerse Data Store.
+- Add the [`plantit-action`](https://github.com/Computational-Plant-Science/plantit-action) to a GitHub Actions workflow for continuous, reproducible phenotyping.
+- Automatically transfer input data and workflow results to and from the CyVerse Data Store.
 
 ![CI](https://github.com/Computational-Plant-Science/plantit-cli/workflows/CI/badge.svg)
 [![PyPI version](https://badge.fury.io/py/plantit-cli.svg)](https://badge.fury.io/py/plantit-cli)
