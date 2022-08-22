@@ -138,7 +138,7 @@ jobs:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
-          old_version=$(pip install plantit==random 2>&1 >/dev/null | sed 's|.*, \([^ ]*\)).*|\1|g' | head -n 1 | xargs)
+          old_version=$(pip install plantit 2>&1 >/dev/null | sed 's|.*, \([^ ]*\)).*|\1|g' | head -n 1 | xargs)
           new_version=$(pip show plantit | sed 's|.*Version: \([^ ]*\).*|\1|g' | sed -n 2p)
           echo "$old_version"
           echo "$new_version"
