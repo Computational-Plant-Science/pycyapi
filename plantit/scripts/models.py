@@ -26,6 +26,7 @@ class InputData(TypedDict, total=False):
 
 class ScriptConfig(TypedDict, total=False):
     guid: str
+    email: str
     workdir: str
     image: str
     command: str
@@ -49,3 +50,4 @@ class ScriptConfig(TypedDict, total=False):
     project: str
     launcher: bool
     job_array: bool
+    header_skip: str
