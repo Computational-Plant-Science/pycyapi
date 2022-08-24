@@ -46,7 +46,7 @@ A CLI & Python library for high-throughput phenotyping on HPC/HTC clusters and t
 
 ## Requirements
 
-- Python 3.6.9+
+- Python 3.7+
 
 ## Installation
 
