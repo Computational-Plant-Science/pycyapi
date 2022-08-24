@@ -106,3 +106,29 @@ jobs:
           name: failed-${{ matrix.os }}-${{ matrix.python-version }}
           path: |
             ./.failed/**
+  notify_coveralls:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Python
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ matrix.os }}-${{ matrix.python-version }}-pip-${{ hashFiles('setup.cfg') }}
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Python dependencies
+        run: |
+          pip install --upgrade pip
+          pip install .
+            pip install ".[test]"
+      - name: Notify coveralls completion
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+          COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
+          COVERALLS_PARALLEL: true
+        run: |
+          coveralls --finish
