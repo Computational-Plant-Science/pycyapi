@@ -1,6 +1,7 @@
-from os import getcwd
 from copy import deepcopy
 from dataclasses import dataclass
+from enum import Enum
+from os import getcwd
 from pprint import pformat
 from typing import List, Optional
 
@@ -11,21 +12,27 @@ class BindMount:
     container_path: str
 
     def __repr__(self):
-        return self.host_path + ':' + self.container_path \
-            if self.host_path != '' \
+        return (
+            self.host_path + ":" + self.container_path
+            if self.host_path != ""
             else self.container_path
+        )
 
     def format(self, workdir: str) -> str:
-        return self.host_path + ':' + self.container_path \
-            if self.host_path != '' \
-            else workdir + ':' + self.container_path
+        return (
+            self.host_path + ":" + self.container_path
+            if self.host_path != ""
+            else workdir + ":" + self.container_path
+        )
 
     @staticmethod
     def parse_bind_mount(s: str, workdir: str = getcwd()):
-        split = s.rpartition(':')
-        return BindMount(host_path=split[0], container_path=split[2]) \
-            if len(split) > 0 \
+        split = s.rpartition(":")
+        return (
+            BindMount(host_path=split[0], container_path=split[2])
+            if len(split) > 0
             else BindMount(host_path=workdir, container_path=s)
+        )
 
 
 @dataclass
@@ -47,22 +54,26 @@ class JobqueueConfig:
     header_skip: Optional[str] = None
 
 
+class ParallelStrategy(Enum):
+    JOB_ARRAY = 'job_array'
+    LAUNCHER = 'launcher'
+
+
+
 @dataclass
 class SubmissionConfig:
     image: str
-    command: str
+    entrypoint: str
     workdir: str
     email: str
     guid: str
     token: str
     jobqueue: JobqueueConfig
-    job_array: bool = True
-    launcher: bool = False
-    shell: str = 'bash'
+    shell: str = "bash"
     source: Optional[str] = None
     sink: Optional[str] = None
     output: Optional[str] = None
-    parallel: bool = False
+    parallel: ParallelStrategy = ParallelStrategy.JOB_ARRAY
     iterations: Optional[int] = None
     environment: Optional[List[EnvironmentVariable]] = None
     bind_mounts: Optional[List[BindMount]] = None
@@ -72,5 +83,5 @@ class SubmissionConfig:
 
     def __repr__(self):
         c = deepcopy(self)
-        del c['token']
+        del c["token"]
         return pformat(c)

@@ -3,8 +3,8 @@ import os
 import pprint
 import shutil
 import time
-from os import listdir, remove, environ
-from os.path import join, isfile, islink, isdir, basename
+from os import environ, listdir, remove
+from os.path import basename, isdir, isfile, islink, join
 from typing import List
 
 import pytest
@@ -65,7 +65,7 @@ class TerrainTicket:
         return response["tickets"][0]["ticket-id"]
 
 
-DEFAULT_SLEEP = int(environ.get('DATA_STORE_WRITE_OP_SLEEP', 10))
+DEFAULT_SLEEP = int(environ.get("DATA_STORE_WRITE_OP_SLEEP", 10))
 
 
 def stat_file(token, path, print_response=False):

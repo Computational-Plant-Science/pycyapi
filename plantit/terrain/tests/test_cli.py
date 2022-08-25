@@ -10,8 +10,16 @@ from click.testing import CliRunner
 
 from plantit.terrain import cli
 from plantit.terrain.auth import FileLockedAccessToken
-from plantit.terrain.tests.conftest import list_files, list_directories, delete_collection, create_collection, \
-    upload_file, stat_file, set_metadata, get_metadata
+from plantit.terrain.tests.conftest import (
+    create_collection,
+    delete_collection,
+    get_metadata,
+    list_directories,
+    list_files,
+    set_metadata,
+    stat_file,
+    upload_file,
+)
 
 username = environ.get("CYVERSE_USERNAME")
 password = environ.get("CYVERSE_PASSWORD")
@@ -41,9 +49,7 @@ def test_create_directory(remote_base_path):
         runner = CliRunner()
         runner.invoke(cli.create, ["--token", token, remote_path])
 
-        directories = list_directories(
-            token=token, path=f"iplant/home/{username}/"
-        )
+        directories = list_directories(token=token, path=f"iplant/home/{username}/")
         assert basename(remote_path) in directories
     finally:
         delete_collection(token, remote_path)
@@ -197,7 +203,7 @@ def test_download_file(remote_base_path):
                 ],
             )
         except ValueError as e:
-            if 'I/O operation on closed file' not in str(e):
+            if "I/O operation on closed file" not in str(e):
                 raise e
         finally:
             # check download
@@ -238,7 +244,7 @@ def test_download_directory(remote_base_path):
                 cli.pull, ["--token", token, "--local_path", testdir, remote_path]
             )
         except ValueError as e:
-            if 'I/O operation on closed file' not in str(e):
+            if "I/O operation on closed file" not in str(e):
                 raise e
         finally:
             # check downloads
@@ -269,7 +275,7 @@ def test_upload_file(remote_base_path):
                 cli.push, ["--token", token, "--local_path", file_path, remote_path]
             )
         except ValueError as e:
-            if 'I/O operation on closed file' not in str(e):
+            if "I/O operation on closed file" not in str(e):
                 raise e
         finally:
             # check upload
@@ -304,7 +310,7 @@ def test_upload_directory(remote_base_path):
                 ["--token", token, "--local_path", testdir, remote_path, "-ip", ".txt"],
             )
         except ValueError as e:
-            if 'I/O operation on closed file' not in str(e):
+            if "I/O operation on closed file" not in str(e):
                 raise e
         finally:
             # check upload
@@ -344,7 +350,7 @@ def test_tag(remote_base_path):
                 ["--token", token, "-a", "k1=v1", "-a", "k2=v2", "-ia", "k3=v3", id],
             )
         except ValueError as e:
-            if 'I/O operation on closed file' not in str(e):
+            if "I/O operation on closed file" not in str(e):
                 raise e
         finally:
             # check metadata was set
@@ -366,7 +372,9 @@ def test_tag(remote_base_path):
             delete_collection(token, remote_path)
 
 
-@pytest.mark.skip("todo debug UnboundLocalError: local variable 'result' referenced before assignment")
+@pytest.mark.skip(
+    "todo debug UnboundLocalError: local variable 'result' referenced before assignment"
+)
 @pytest.mark.slow
 def test_tags(remote_base_path):
     with TemporaryDirectory() as testdir:
@@ -397,7 +405,7 @@ def test_tags(remote_base_path):
             result = runner.invoke(cli.tags, ["--token", token, id])
             print(result)
         except ValueError as e:
-            if 'I/O operation on closed file' not in str(e):
+            if "I/O operation on closed file" not in str(e):
                 raise e
         finally:
             sleep(1)

@@ -11,6 +11,7 @@ class FileLockedAccessToken:
     Singleton for caching CyVerse access tokens in a thread-safe manner for the duration of a session.
     Attempts to read CyVerse username/password from environment variables if not explicitly provided.
     """
+
     __token = None
     __lock = FileLock(Path(gettempdir()) / f"plantit_token.lock")
 

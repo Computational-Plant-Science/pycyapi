@@ -1,5 +1,5 @@
 import uuid
-from os import remove, environ
+from os import environ, remove
 from os.path import isfile, join
 from tempfile import TemporaryDirectory
 
@@ -8,8 +8,15 @@ from requests import HTTPError
 
 from plantit.terrain.auth import FileLockedAccessToken
 from plantit.terrain.clients import TerrainClient
-from plantit.terrain.tests.conftest import create_collection, delete_collection, upload_file, set_metadata, stat_file, \
-    list_files, get_metadata
+from plantit.terrain.tests.conftest import (
+    create_collection,
+    delete_collection,
+    get_metadata,
+    list_files,
+    set_metadata,
+    stat_file,
+    upload_file,
+)
 
 message = "Message"
 token = FileLockedAccessToken.get()
@@ -19,7 +26,7 @@ client = TerrainClient(token)
 def test_get_user_info():
     username = environ.get("CYVERSE_USERNAME")
     user_info = client.user_info(username)
-    assert user_info['id'] == username
+    assert user_info["id"] == username
 
 
 def test_throws_error_when_token_is_invalid():

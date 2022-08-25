@@ -7,7 +7,13 @@ import pytest
 
 from plantit.terrain import commands as commands
 from plantit.terrain.auth import FileLockedAccessToken
-from plantit.terrain.tests.conftest import check_hello, list_files, delete_collection, create_collection, upload_file
+from plantit.terrain.tests.conftest import (
+    check_hello,
+    create_collection,
+    delete_collection,
+    list_files,
+    upload_file,
+)
 
 message = "Message"
 token = FileLockedAccessToken.get()

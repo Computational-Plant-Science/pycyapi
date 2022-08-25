@@ -4,35 +4,47 @@ import traceback
 
 from plantit.submit.ssh import SSH
 
-
 logger = logging.getLogger(__name__)
 
 
 def clean_html(raw_html: str) -> str:
-    expr = re.compile('<.*?>')
-    text = re.sub(expr, '', raw_html)
+    expr = re.compile("<.*?>")
+    text = re.sub(expr, "", raw_html)
     return text
 
 
 def parse_job_id(line: str) -> str:
     try:
-        return str(int(line.replace('Submitted batch job', '').strip()))
+        return str(int(line.replace("Submitted batch job", "").strip()))
     except:
-        raise Exception(f"Failed to parse job ID from '{line}'\n{traceback.format_exc()}")
+        raise Exception(
+            f"Failed to parse job ID from '{line}'\n{traceback.format_exc()}"
+        )
 
 
-def submit(script,
-           host,
-           port,
-           username,
-           password,
-           key,
-           timeout: int = 10,
-           allow_stderr: bool = False) -> str:
-    with SSH(host=host, port=port, username=username, password=password, pkey=key, timeout=timeout) as ssh:
+def submit(
+    script,
+    host,
+    port,
+    username,
+    password,
+    key,
+    timeout: int = 10,
+    allow_stderr: bool = False,
+) -> str:
+    with SSH(
+        host=host,
+        port=port,
+        username=username,
+        password=password,
+        pkey=key,
+        timeout=timeout,
+    ) as ssh:
         command = f"sbatch {script}"
         logger.info(f"Submitting {script} on '{host}'")
-        stdin, stdout, stderr = ssh.client.exec_command(f"bash --login -c '{command}'", get_pty=True)
+        stdin, stdout, stderr = ssh.client.exec_command(
+            f"bash --login -c '{command}'", get_pty=True
+        )
         stdin.close()
 
         def read_stdout():
