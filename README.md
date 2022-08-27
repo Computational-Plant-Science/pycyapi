@@ -3,11 +3,12 @@
 
 # plantit
 
-A CLI & Python library for high-throughput phenotyping on HPC/HTC clusters and the CyVerse Cloud.
+A CLI, Python library and science gateway for high-throughput phenotyping on HPC/HTC clusters and the CyVerse Cloud.
 
-- Generate job scripts and launch container workflows on a remote cluster with a single command.
-- Add the [`plantit-action`](https://github.com/Computational-Plant-Science/plantit-action) to a GitHub Actions workflow for continuous, reproducible analysis.
-- Automatically transfer input data and workflow results to and from the CyVerse Data Store.
+- Generate job scripts and launch container workflows on a remote cluster with a single command
+- Add the [`plantit-action`](https://github.com/Computational-Plant-Science/plantit-action) to a GitHub Actions workflow for continuous analysis
+- Automatically transfer data and results to and from the CyVerse Data Store
+- Discover or publish workflows and monitor your submissions in the [web UI](https://plantit.cyverse.org/)
 
 ![CI](https://github.com/Computational-Plant-Science/plantit-cli/workflows/CI/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/Computational-Plant-Science/plantit-cli/badge.svg?branch=master)](https://coveralls.io/github/Computational-Plant-Science/plantit-cli) 
@@ -22,6 +23,7 @@ A CLI & Python library for high-throughput phenotyping on HPC/HTC clusters and t
 
 - [Requirements](#requirements)
 - [Installation](#installation)
+- [Quickstart](#quickstart)
 - [Usage](#usage)
   - [Commands](#commands)
     - [Token](#token)
@@ -52,26 +54,56 @@ A CLI & Python library for high-throughput phenotyping on HPC/HTC clusters and t
 
 To install with pip:
 
-```
+```shell
 pip install plantit
 ```
 
+## Quickstart
+
+The `plantit` CLI parses YAML configuration files, generates job scripts, and submits [Singularity](https://docs.sylabs.io/guides/3.10/user-guide/) container workflows to a SLURM scheduler in the local environment or to a remote cluster via SSH.
+
+At minimum, a configuration file must contain:
+
+- `image`
+- `entrypoint`
+- `workdir`
+- `email`
+- `queue`
+
+For instance, in `hello.yaml`:
+
+```yaml
+image: alpine
+entrypoint: echo "hello world"
+workdir: /path/to/your/scratch/directory
+email: you@institution.edu
+queue: batch
+```
+
+To generate a job script and submit this job to a scheduler running on the host machine:
+
+```shell
+plantit hello.yaml
+```
+
+If the job was submitted successfully, the job ID will be printed.
+
 ## Usage
 
-Once installed it can be invoked with `plantit <command>`.
+To show CLI docs run `plantit -h`. Besides the main `plantit <config file>.yml` command, a number of subcommands can be invoked with `plantit <command>`.
 
 ### Commands
 
 The following commands are available:
 
-- `token`: Retrieve an authentication token.
+- `token`: Retrieve a CyVerse authentication token.
 - `user`: Retrieve the user's profile information.
 - `list`: List files in a collection.
 - `stat`: Get information about a file or collection.
 - `pull`: Download one or more files from a collection.
 - `push`: Upload one or more files to a collection.
 - `exists`: Check if a path exists in the data store.
-- `create`: Create a collection.
+- `create`: Create a collection in the data store.
 - `share`: Share a file or collection with another user.
 - `unshare`: Revoke another user's access to your file or collection.
 - `tag`: Set metadata for a given file or collection.
@@ -81,7 +113,7 @@ The following commands are available:
 
 #### Token
 
-To request a CAS authentication token, use the `token` command:
+To request a CyVerse CAS authentication token, use the `token` command:
 
 ```shell script
 plantit token --username <your CyVerse username> --password <your CyVerse password>
