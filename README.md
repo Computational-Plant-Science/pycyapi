@@ -3,7 +3,7 @@
 
 # plantit
 
-A CLI, Python library and science gateway for high-throughput phenotyping on HPC/HTC clusters and the CyVerse Cloud.
+A CLI, Python library and science gateway for high-throughput phenotyping on clusters and the CyVerse Cloud.
 
 - Generate job scripts and launch container workflows on a remote cluster with a single command
 - Add the [`plantit-action`](https://github.com/Computational-Plant-Science/plantit-action) to a GitHub Actions workflow for continuous analysis
