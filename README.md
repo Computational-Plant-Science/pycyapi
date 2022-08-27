@@ -5,7 +5,7 @@
 
 A CLI, Python library and science gateway for high-throughput phenotyping on clusters and the CyVerse Cloud.
 
-- Generate job scripts and launch container workflows on a remote cluster with a single command
+- Generate job scripts and launch containers to a SLURM cluster with a single command
 - Add the [`plantit-action`](https://github.com/Computational-Plant-Science/plantit-action) to a GitHub Actions workflow for continuous analysis
 - Automatically transfer data and results to and from the CyVerse Data Store
 - Discover or publish workflows and monitor your submissions in the [web UI](https://plantit.cyverse.org/)
