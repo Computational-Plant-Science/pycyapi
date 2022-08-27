@@ -41,6 +41,17 @@ class EnvironmentVariable:
     value: str
 
 
+class Shell(Enum):
+    BASH = 'bash'
+    ZSH = 'zsh'
+    SH = 'sh'
+
+
+class ParallelStrategy(Enum):
+    JOB_ARRAY = 'job_array'
+    LAUNCHER = 'launcher'
+
+
 @dataclass
 class JobqueueConfig:
     walltime: str
@@ -52,16 +63,11 @@ class JobqueueConfig:
     tasks: int
     processes: int
     header_skip: Optional[str] = None
-
-
-class ParallelStrategy(Enum):
-    JOB_ARRAY = 'job_array'
-    LAUNCHER = 'launcher'
-
+    parallel: ParallelStrategy = ParallelStrategy.JOB_ARRAY
 
 
 @dataclass
-class SubmissionConfig:
+class ScriptConfig:
     image: str
     entrypoint: str
     workdir: str
@@ -69,15 +75,13 @@ class SubmissionConfig:
     guid: str
     token: str
     jobqueue: JobqueueConfig
-    shell: str = "bash"
+    shell: Shell = Shell.BASH
     source: Optional[str] = None
     sink: Optional[str] = None
     output: Optional[str] = None
-    parallel: ParallelStrategy = ParallelStrategy.JOB_ARRAY
     iterations: Optional[int] = None
     environment: Optional[List[EnvironmentVariable]] = None
     bind_mounts: Optional[List[BindMount]] = None
-    log_file: Optional[str] = None
     no_cache: bool = False
     gpus: bool = False
 

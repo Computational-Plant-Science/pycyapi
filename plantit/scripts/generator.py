@@ -1,23 +1,25 @@
 import logging
+import dataclasses
 from datetime import timedelta
 from math import ceil
 from os import environ
 from os.path import join
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 from _warnings import warn
 
-from plantit.scripts.models import BindMount, EnvironmentVariable, SubmissionConfig
+from plantit import docker
+from plantit.scripts.models import BindMount, EnvironmentVariable, ScriptConfig
+from plantit.slurm import SLURM_TEMPLATE
 from plantit.terrain.clients import TerrainClient
 
-SLURM_TEMPLATE = """
-#!/bin/bash
-#SBATCH --job-name=plantit
-"""
+
+def get_log_file_name(config: ScriptConfig):
+    return f"plantit.{config.guid}"
 
 
 class ScriptGenerator:
-    def __init__(self, config: SubmissionConfig):
+    def __init__(self, config: ScriptConfig):
         valid, validation_errors = ScriptGenerator.validate_config(config)
         if not valid:
             raise ValueError(f"Invalid config: {validation_errors}")
@@ -31,15 +33,39 @@ class ScriptGenerator:
         self.inputs = inputs
 
     @staticmethod
-    def validate_config(config: SubmissionConfig) -> Tuple[bool, List[str]]:
-        return True
+    def validate_config(config: ScriptConfig) -> Tuple[bool, List[str]]:
+        errors = []
+
+        # check required attributes
+        fields = dataclasses.fields(ScriptConfig)
+        ftypes = {f.name: f.type for f in fields}
+        missing = [f for f, t in ftypes if not getattr(config, f) and not t == Optional[t]]
+        errors.append(f"Missing required fields: {', '.join(missing)}")
+
+        # check attribute types
+        for f, t in ftypes:
+            v = getattr(config, f)
+            tv = type(v)
+            if not isinstance(tv, t):
+                errors.append(f"Field {f} expected {t}, got {tv}")
+
+        # check image is on DockerHub
+        image_owner, image_name, image_tag = docker.parse_image_components(config.image)
+        if not docker.image_exists(image_owner, image_name, image_tag):
+            errors.append(f"Image {config.image} not found on Docker Hub")
+
+        if config.source or config.sink:
+            # TODO check source/sink exist in CyVerse data store
+            pass
+
+        return len(errors) == 0, errors
 
     @staticmethod
-    def list_input_files(config: SubmissionConfig) -> List[str]:
+    def list_input_files(config: ScriptConfig) -> List[str]:
         pass
 
     @staticmethod
-    def get_walltime(config: SubmissionConfig):
+    def get_walltime(config: ScriptConfig):
         # if a time limit was requested at submission time, use that
         if config.walltime is not None:
             # otherwise use the default time limit
