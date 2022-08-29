@@ -6,9 +6,9 @@ from tempfile import TemporaryDirectory
 import pytest
 from httpx import HTTPStatusError
 
-from plantit.terrain.auth import FileLockedAccessToken
-from plantit.terrain.clients import AsyncTerrainClient
-from plantit.terrain.tests.conftest import (
+from plantit.cyverse.auth import CyverseAccessToken
+from plantit.cyverse.clients import AsyncCyverseClient
+from plantit.cyverse.tests.conftest import (
     create_collection,
     delete_collection,
     get_metadata,
@@ -19,14 +19,14 @@ from plantit.terrain.tests.conftest import (
 )
 
 message = "Message"
-token = FileLockedAccessToken.get()
-client = AsyncTerrainClient(token)
+token = CyverseAccessToken.get()
+client = AsyncCyverseClient(token)
 
 
 @pytest.mark.asyncio
 async def test_throws_error_when_token_is_invalid():
     with pytest.raises(HTTPStatusError) as e:
-        await AsyncTerrainClient("not a token").exists_async(
+        await AsyncCyverseClient("not a token").exists_async(
             "/iplant/home/shared/iplantcollaborative/testing_tools/cowsay"
         )
         assert "401" in str(e)

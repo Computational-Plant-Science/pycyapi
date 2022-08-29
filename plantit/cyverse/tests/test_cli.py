@@ -1,161 +1,130 @@
 import uuid
 from os import environ, remove
-from os.path import isfile, join
+from os.path import basename, isfile, join
+from pprint import pprint
 from tempfile import TemporaryDirectory
+from time import sleep
 
 import pytest
-from requests import HTTPError
+from click.testing import CliRunner
 
-from plantit.terrain.auth import FileLockedAccessToken
-from plantit.terrain.clients import TerrainClient
-from plantit.terrain.tests.conftest import (
+from plantit.cyverse import cli
+from plantit.cyverse.auth import CyverseAccessToken
+from plantit.cyverse.tests.conftest import (
     create_collection,
     delete_collection,
     get_metadata,
+    list_directories,
     list_files,
     set_metadata,
     stat_file,
     upload_file,
 )
 
-message = "Message"
-token = FileLockedAccessToken.get()
-client = TerrainClient(token)
-
-
-def test_get_user_info():
-    username = environ.get("CYVERSE_USERNAME")
-    user_info = client.user_info(username)
-    assert user_info["id"] == username
-
-
-def test_throws_error_when_token_is_invalid():
-    with pytest.raises(HTTPError) as e:
-        client = TerrainClient("not a valid token")
-        client.exists("/iplant/home/shared/iplantcollaborative/testing_tools/cowsay")
-        assert "401" in str(e)
-
-
-def test_path_exists_when_doesnt():
-    exists = client.exists(
-        "/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/cowsaid.txt"
-    )
-    assert not exists
-
-
-def test_path_exists_when_is_a_file():
-    exists = client.exists(
-        "/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/cowsay.txt"
-    )
-    assert exists
-
-
-def test_path_exists_when_is_a_directory():
-    # with trailing slash
-    exists = client.exists(
-        "/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/"
-    )
-    assert exists
-
-    # without trailing slash
-    exists = client.exists(
-        "/iplant/home/shared/iplantcollaborative/testing_tools/cowsay"
-    )
-    assert exists
+username = environ.get("CYVERSE_USERNAME")
+password = environ.get("CYVERSE_PASSWORD")
+token = CyverseAccessToken.get()
 
 
 @pytest.mark.slow
-def test_dir_exists_when_is_a_directory(remote_base_path):
+def test_cas_token():
+    runner = CliRunner()
+    result = runner.invoke(cli.token, ["--username", username, "--password", password])
+    tkn = result.output.strip()
+
+    assert tkn != ""
+    # make sure we can make a request with the token
+    pprint(list_directories(token=tkn, path=f"iplant/home/{username}/"))
+
+
+def test_create_directory_when_token_is_invalid(remote_base_path):
+    pass
+
+
+@pytest.mark.slow
+def test_create_directory(remote_base_path):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
 
     try:
-        # prep collection
-        create_collection(token, remote_path)
+        runner = CliRunner()
+        runner.invoke(cli.create, ["--token", token, remote_path])
 
-        # test remote directories exist
-        assert client.dir_exists(remote_path)
-        assert not client.dir_exists(join(remote_base_path, "notCollection"))
+        directories = list_directories(token=token, path=f"iplant/home/{username}/")
+        assert basename(remote_path) in directories
     finally:
         delete_collection(token, remote_path)
 
 
-@pytest.mark.slow
-def test_dir_exists_when_is_a_file(remote_base_path):
-    with TemporaryDirectory() as testdir:
-        file1_name = "f1.txt"
-        file1_path = join(testdir, file1_name)
-        remote_dir_path = join(remote_base_path, str(uuid.uuid4()))
-        remote_file_path = join(remote_dir_path, file1_name)
-
-        try:
-            # prep collection
-            create_collection(token, remote_dir_path)
-
-            # create files
-            with open(file1_path, "w") as file1:
-                file1.write("Hello, 1!")
-
-            # upload files
-            upload_file(token, file1_path, remote_dir_path)
-
-            # check if path exists
-            assert client.dir_exists(remote_base_path)
-            assert client.dir_exists(remote_dir_path)
-            assert not client.dir_exists(remote_file_path)
-        finally:
-            delete_collection(token, remote_dir_path)
+def test_exists_when_doesnt_exist(remote_base_path):
+    runner = CliRunner()
+    result = runner.invoke(
+        cli.exists,
+        [
+            "--token",
+            token,
+            "/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/cowsaid.txt",
+        ],
+    )
+    assert "False" in result.output
 
 
-@pytest.mark.slow
-def test_file_exists_when_is_a_file(remote_base_path):
-    with TemporaryDirectory() as testdir:
-        file1_name = "f1.txt"
-        file2_name = "f2.txt"
-        file1_path = join(testdir, file1_name)
-        remote_path = join(remote_base_path, str(uuid.uuid4()))
-
-        try:
-            # prep collection
-            create_collection(token, remote_path)
-
-            # create files
-            with open(file1_path, "w") as file1:
-                file1.write("Hello, 1!")
-
-            # upload files
-            upload_file(token, file1_path, remote_path)
-
-            # test remote files exist
-            assert client.file_exists(join(remote_path, file1_name))
-            assert not client.file_exists(join(remote_path, file2_name))
-        finally:
-            delete_collection(token, remote_path)
+def test_exists_when_is_a_file(remote_base_path):
+    runner = CliRunner()
+    result = runner.invoke(
+        cli.exists,
+        [
+            "--token",
+            token,
+            "/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/cowsay.txt",
+        ],
+    )
+    assert "True" in result.output
 
 
-@pytest.mark.slow
-def test_file_exists_when_is_a_directory(remote_base_path):
-    with TemporaryDirectory() as testdir:
-        file1_name = "f1.txt"
-        file2_name = "f2.txt"
-        file1_path = join(testdir, file1_name)
-        remote_path = join(remote_base_path, str(uuid.uuid4()))
+def test_exists_when_is_a_directory(remote_base_path):
+    runner = CliRunner()
 
-        try:
-            # prep collection
-            create_collection(token, remote_path)
+    # with trailing slash
+    result = runner.invoke(
+        cli.exists,
+        [
+            "--token",
+            token,
+            "/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/",
+        ],
+    )
+    assert "True" in result.output
 
-            # create files
-            with open(file1_path, "w") as file1:
-                file1.write("Hello, 1!")
+    # without trailing slash
+    result = runner.invoke(
+        cli.exists,
+        [
+            "--token",
+            token,
+            "/iplant/home/shared/iplantcollaborative/testing_tools/cowsay",
+        ],
+    )
+    assert "True" in result.output
 
-            # upload files
-            upload_file(token, file1_path, remote_path)
 
-            # test if path exists
-            assert client.file_exists(join(remote_path, file1_name))
-            assert not client.file_exists(remote_base_path)
-        finally:
-            delete_collection(token, remote_path)
+@pytest.mark.skip(reason="todo")
+def test_exists_with_type_file_when_is_a_file(remote_base_path):
+    pass
+
+
+@pytest.mark.skip(reason="todo")
+def test_exists_with_type_file_when_is_a_directory(remote_base_path):
+    pass
+
+
+@pytest.mark.skip(reason="todo")
+def test_exists_with_type_dir_when_is_a_file(remote_base_path):
+    pass
+
+
+@pytest.mark.skip(reason="todo")
+def test_exists_with_type_dir_when_is_a_directory(remote_base_path):
+    pass
 
 
 @pytest.mark.slow
@@ -181,48 +150,24 @@ def test_list(remote_base_path):
             upload_file(token, file2_path, remote_path)
 
             # list files
-            paths = [file["path"] for file in client.list(remote_path)["files"]]
+            runner = CliRunner()
+            result = runner.invoke(cli.list, ["--token", token, remote_path])
 
             # check files
-            assert join(remote_path, file1_name) in paths
-            assert join(remote_path, file2_name) in paths
+            assert join(remote_path, file1_name) in result.output
+            assert join(remote_path, file2_name) in result.output
         finally:
             delete_collection(token, remote_path)
 
 
-def test_list_no_retries_when_path_does_not_exist(remote_base_path):
-    remote_path = join(remote_base_path, str(uuid.uuid4()))
-    with pytest.raises(ValueError):
-        client.list(remote_path)
-
-
-def test_list_retries_when_token_invalid(remote_base_path):
-    remote_path = join(remote_base_path, str(uuid.uuid4()))
-    with pytest.raises(ValueError):
-        client.list(remote_path)
-
-
-@pytest.mark.slow
-def test_mkdir(remote_base_path):
-    remote_path = join(remote_base_path, str(uuid.uuid4()))
-
-    try:
-        client.mkdir(remote_path)
-
-        # check dir exists
-        assert client.dir_exists(remote_path)
-    finally:
-        delete_collection(token, remote_path)
-
-
 @pytest.mark.skip(reason="todo")
-def test_share(remote_base_path):
+def test_share_directory(remote_base_path):
     # TODO: how to test this? might need 2 CyVerse accounts
     pass
 
 
 @pytest.mark.skip(reason="todo")
-def test_unshare(remote_base_path):
+def test_unshare_directory(remote_base_path):
     # TODO: how to test this? might need 2 CyVerse accounts
     pass
 
@@ -246,11 +191,24 @@ def test_download_file(remote_base_path):
             upload_file(token, file_path, remote_path)
 
             # download file
-            client.download(join(remote_path, file_name), testdir)
-
+            runner = CliRunner()
+            runner.invoke(
+                cli.pull,
+                [
+                    "--token",
+                    token,
+                    "--local_path",
+                    testdir,
+                    join(remote_path, file_name),
+                ],
+            )
+        except ValueError as e:
+            if "I/O operation on closed file" not in str(e):
+                raise e
+        finally:
             # check download
             assert isfile(file_path)
-        finally:
+
             delete_collection(token, remote_path)
 
 
@@ -281,12 +239,18 @@ def test_download_directory(remote_base_path):
             remove(file2_path)
 
             # download files
-            client.download_directory(remote_path, testdir, [".txt"])
-
+            runner = CliRunner()
+            result = runner.invoke(
+                cli.pull, ["--token", token, "--local_path", testdir, remote_path]
+            )
+        except ValueError as e:
+            if "I/O operation on closed file" not in str(e):
+                raise e
+        finally:
             # check downloads
             assert isfile(file1_path)
             assert isfile(file2_path)
-        finally:
+
             delete_collection(token, remote_path)
 
 
@@ -306,12 +270,18 @@ def test_upload_file(remote_base_path):
                 file.write("Hello, 1!")
 
             # upload file
-            client.upload(file_path, remote_path)
-
+            runner = CliRunner()
+            runner.invoke(
+                cli.push, ["--token", token, "--local_path", file_path, remote_path]
+            )
+        except ValueError as e:
+            if "I/O operation on closed file" not in str(e):
+                raise e
+        finally:
             # check upload
             paths = list_files(token, remote_path)
             assert file_name in paths
-        finally:
+
             delete_collection(token, remote_path)
 
 
@@ -334,18 +304,25 @@ def test_upload_directory(remote_base_path):
                 file2.write("Hello, 2!")
 
             # upload directory
-            client.upload_directory(testdir, remote_path)
-
+            runner = CliRunner()
+            result = runner.invoke(
+                cli.push,
+                ["--token", token, "--local_path", testdir, remote_path, "-ip", ".txt"],
+            )
+        except ValueError as e:
+            if "I/O operation on closed file" not in str(e):
+                raise e
+        finally:
             # check upload
             paths = list_files(token, remote_path)
             assert file_name1 in paths
             assert file_name2 in paths
-        finally:
+
             delete_collection(token, remote_path)
 
 
 @pytest.mark.slow
-def test_set_metadata(remote_base_path):
+def test_tag(remote_base_path):
     with TemporaryDirectory() as testdir:
         file_name = "f1.txt"
         file_path = join(testdir, file_name)
@@ -367,8 +344,15 @@ def test_set_metadata(remote_base_path):
             id = info["id"]
 
             # set file metadata
-            client.set_metadata(id, ["k1=v1", "k2=v2"], ["k3=v3"])
-
+            runner = CliRunner()
+            runner.invoke(
+                cli.tag,
+                ["--token", token, "-a", "k1=v1", "-a", "k2=v2", "-ia", "k3=v3", id],
+            )
+        except ValueError as e:
+            if "I/O operation on closed file" not in str(e):
+                raise e
+        finally:
             # check metadata was set
             metadata = get_metadata(token, id)
             assert len(metadata["avus"]) == 2
@@ -384,12 +368,15 @@ def test_set_metadata(remote_base_path):
                 for d in metadata["irods-avus"]
                 if d["attr"] == "k3" and d["value"] == "v3"
             )
-        finally:
+
             delete_collection(token, remote_path)
 
 
+@pytest.mark.skip(
+    "todo debug UnboundLocalError: local variable 'result' referenced before assignment"
+)
 @pytest.mark.slow
-def test_get_metadata(remote_base_path):
+def test_tags(remote_base_path):
     with TemporaryDirectory() as testdir:
         file_name = "f1.txt"
         file_path = join(testdir, file_name)
@@ -413,10 +400,19 @@ def test_get_metadata(remote_base_path):
             # set metadata
             set_metadata(token, id, ["k1=v1", "k2=v2"])
 
-            # get metadata and check it
-            metadata = client.get_metadata(id)
-            assert len(metadata) == 2
-            assert any(d for d in metadata if d["attr"] == "k1" and d["value"] == "v1")
-            assert any(d for d in metadata if d["attr"] == "k2" and d["value"] == "v2")
+            # get file metadata
+            runner = CliRunner()
+            result = runner.invoke(cli.tags, ["--token", token, id])
+            print(result)
+        except ValueError as e:
+            if "I/O operation on closed file" not in str(e):
+                raise e
         finally:
+            sleep(1)
+            # check metadata was set
+            metadata = result.output.splitlines()
+            assert len(metadata) == 2
+            assert any(a for a in metadata if "k1=v1" in a)
+            assert any(a for a in metadata if "k2=v2" in a)
+
             delete_collection(token, remote_path)

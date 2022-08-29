@@ -16,11 +16,11 @@ from tenacity import (
     wait_exponential,
 )
 
-from plantit.terrain.exceptions import BadRequest, BadResponse, NotFound, Unauthorized
+from plantit.cyverse.exceptions import BadRequest, BadResponse, NotFound, Unauthorized
 from plantit.utils import list_local_files, pattern_matches
 
 
-class TerrainClient:
+class CyverseClient:
     def __init__(self, access_token: str, timeout_seconds: int = 15):
         self.__logger = logging.getLogger(__name__)
         self.__access_token = access_token
@@ -647,7 +647,7 @@ class TerrainClient:
         response.raise_for_status()
 
 
-class AsyncTerrainClient:
+class AsyncCyverseClient:
     def __init__(self, access_token: str, timeout_seconds: int = 15):
         self.__logger = logging.getLogger(__name__)
         self.__access_token = access_token

@@ -2,16 +2,21 @@ import logging
 import dataclasses
 from datetime import timedelta
 from math import ceil
-from os import environ
+from os import environ, linesep
 from os.path import join
 from typing import List, Tuple, Optional
 
 from _warnings import warn
 
 from plantit import docker
-from plantit.scripts.models import BindMount, EnvironmentVariable, ScriptConfig
+from plantit.scripts.models import BindMount, EnvironmentVariable, ScriptConfig, ParallelStrategy, Shell
 from plantit.slurm import SLURM_TEMPLATE
-from plantit.terrain.clients import TerrainClient
+from plantit.cyverse.clients import CyverseClient
+
+
+LAUNCHER_SCRIPT_NAME = "launch"  # TODO make configurable
+ICOMMANDS_IMAGE = f"docker://computationalplantscience/icommands"
+PLANTIT_IMAGE = f"docker://computationalplantscience/plantit"
 
 
 def get_log_file_name(config: ScriptConfig):
@@ -54,9 +59,16 @@ class ScriptGenerator:
         if not docker.image_exists(image_owner, image_name, image_tag):
             errors.append(f"Image {config.image} not found on Docker Hub")
 
-        if config.source or config.sink:
-            # TODO check source/sink exist in CyVerse data store
-            pass
+        client = None
+        if config.source:
+            client = CyverseClient(config.token)
+            if not client.exists(config.source):
+                errors.append(f"Source {config.source} not found in CyVerse data store")
+
+        if config.sink:
+            client = client if client else CyverseClient(config.token)
+            if not client.exists(config.sink):
+                errors.append(f"Sink {config.sink} not found in CyVerse data store")
 
         return len(errors) == 0, errors
 
@@ -65,281 +77,143 @@ class ScriptGenerator:
         pass
 
     @staticmethod
-    def get_walltime(config: ScriptConfig):
-        # if a time limit was requested at submission time, use that
-        if config.walltime is not None:
-            # otherwise use the default time limit
-            spl = config.walltime.split(":")
-            hours = int(spl[0])
-            minutes = int(spl[1])
-            seconds = int(spl[2])
-            requested = timedelta(hours=hours, minutes=minutes, seconds=seconds)
+    def get_job_walltime(config: ScriptConfig):
+        if config.jobqueue.walltime is None:
+            walltime = timedelta(hours=1)
+        else:
+            s = config.jobqueue.walltime.split(":")
+            hours, minutes, seconds = int(s[0]), int(s[1]), int(s[2])
+            walltime = timedelta(hours=hours, minutes=minutes, seconds=seconds)
 
-        # round to the nearest hour, making sure not to exceed agent's maximum, then convert to HH:mm:ss string
-        hours = ceil(requested.total_seconds() / 60 / 60)
+        # round to nearest hour and convert to HH:mm:ss
+        hours = ceil(walltime.total_seconds() / 60 / 60)
         hours = (
             "1" if hours == 0 else f"{hours}"
         )  # if we rounded down to zero, bump to 1
         if len(hours) == 1:
             hours = f"0{hours}"
-        walltime = f"{hours}:00:00"
-        return walltime
+        return f"{hours}:00:00"
 
     def gen_pull_headers(self) -> List[str]:
-        headers = []
-
-        # memory
-        if "mem" not in self.config.header_skip:
-            headers.append(f"#SBATCH --mem=1GB")
-
-        # walltime
-        headers.append(
-            f"#SBATCH --time=00:30:00"
-        )  # TODO: calculate as a function of input size?
-
-        # queue
-        queue = self.config.queue
-        headers.append(f"#SBATCH --partition={queue}")
-
-        # project/allocation
-        if self.config.project is not None and self.config.project != "":
-            headers.append(f"#SBATCH -A {self.config.project}")
-
-        # nodes
-        headers.append(f"#SBATCH -N 1")
-
-        # cores
-        headers.append(f"#SBATCH -n 1")
-
-        # email notifications
+        headers = [f"#SBATCH --job-name=plantit-pull-{self.config.guid}"]
+        if self.config.jobqueue.project:
+            headers.append(f"#SBATCH -A {self.config.jobqueue.project}")
+        headers.append(f"#SBATCH --partition={self.config.jobqueue.queue}")
         headers.append("#SBATCH --mail-type=END,FAIL")
         headers.append(f"#SBATCH --mail-user={self.config.email}")
-
-        # log files
         headers.append("#SBATCH --output=plantit.%j.pull.out")
         headers.append("#SBATCH --error=plantit.%j.pull.err")
+        headers.append(f"#SBATCH -N 1")
+        headers.append(f"#SBATCH -n 1")
+        headers.append(f"#SBATCH --time=01:00:00")  # TODO: calculate as a function of input size
+        if "mem" not in self.config.jobqueue.header_skip:
+            headers.append(f"#SBATCH --mem=1GB")
 
+        self.logger.debug(f"Using pull headers: {linesep.join(headers)}")
         return headers
 
     def gen_push_headers(self) -> List[str]:
-        headers = []
-
-        # memory
-        if "--mem" not in self.config.header_skip:
-            headers.append(f"#SBATCH --mem=1GB")
-
-        # walltime
-        # TODO: calculate as a function of number/size of output files?
-        headers.append(f"#SBATCH --time=02:00:00")
-
-        # queue
-        queue = self.config.queue
-        headers.append(f"#SBATCH --partition={queue}")
-
-        # project/allocation
-        if self.config.project is not None and self.config.project != "":
-            headers.append(f"#SBATCH -A {self.config.project}")
-
-        # nodes
-        headers.append(f"#SBATCH -N 1")
-
-        # cores
-        headers.append(f"#SBATCH -n 1")
-
-        # email notifications
+        headers = [f"#SBATCH --job-name=plantit-push-{self.config.guid}"]
+        if self.config.jobqueue.project:
+            headers.append(f"#SBATCH -A {self.config.jobqueue.project}")
+        headers.append(f"#SBATCH --partition={self.config.jobqueue.queue}")
         headers.append("#SBATCH --mail-type=END,FAIL")
         headers.append(f"#SBATCH --mail-user={self.config.email}")
-
-        # log files
         headers.append("#SBATCH --output=plantit.%j.push.out")
         headers.append("#SBATCH --error=plantit.%j.push.err")
+        headers.append(f"#SBATCH -N 1")
+        headers.append(f"#SBATCH -n 1")
+        headers.append(f"#SBATCH --time=01:00:00")  # TODO: make configurable?
+        if "--mem" not in self.config.jobqueue.header_skip:
+            headers.append(f"#SBATCH --mem=1GB")
 
+        self.logger.debug(f"Using push headers: {linesep.join(headers)}")
         return headers
 
     def gen_job_headers(self) -> List[str]:
-        headers = []
-
-        # memory
-        if "mem" in self.config:
-            headers.append(f"#SBATCH --mem={str(self.config.mem)}GB")
-
-        # walltime
-        if "walltime" in self.config:
-            walltime = ScriptGenerator.get_walltime(self.config)
-            # task.job_requested_walltime = walltime
-            # task.save()
-            headers.append(f"#SBATCH --time={walltime}")
-
-        # queue/partition
-        # if task.agent.orchestrator_queue is not None and task.agent.orchestrator_queue != '':
-        #     headers.append(f"#SBATCH --partition={task.agent.orchestrator_queue}")
-        # else:
-        #     headers.append(f"#SBATCH --partition={task.agent.queue}")
-        headers.append(f"#SBATCH --partition={self.config.queue}")
-
-        # allocation
-        if self.config.project is not None and self.config.project != "":
-            headers.append(f"#SBATCH -A {self.config.project}")
-
-        # cores per task
-        if "cores" in self.config:
-            headers.append(f"#SBATCH -c {int(self.config.cores)}")
-
-        # nodes & tasks per node
-        if len(self.config.input) > 0 and self.config.input.kind == "files":
-            nodes = self.config.nodes
-            tasks = min(len(self.inputs), self.config.tasks)
-            # if task.agent.job_array: headers.append(f"#SBATCH --array=1-{len(inputs)}")
-            headers.append(f"#SBATCH -N {nodes}")
-            headers.append(f"#SBATCH --ntasks={tasks}")
-        else:
-            headers.append("#SBATCH -N 1")
-            headers.append("#SBATCH --ntasks=1")
-
-        # gpus
-        if self.config.gpus:
-            headers.append(f"#SBATCH --gres=gpu:1")
-
-        # email notifications
+        headers = [f"#SBATCH --job-name=plantit-run-{self.config.guid}"]
         headers.append("#SBATCH --mail-type=END,FAIL")
         headers.append(f"#SBATCH --mail-user={self.config.email}")
-
-        # log files
         headers.append("#SBATCH --output=plantit.%j.out")
         headers.append("#SBATCH --error=plantit.%j.err")
+        if self.config.jobqueue.project:
+            headers.append(f"#SBATCH -A {self.config.jobqueue.project}")
+        headers.append(f"#SBATCH --partition={self.config.jobqueue.queue}")
+        headers.append(f"#SBATCH -c {int(self.config.jobqueue.cores)}")
+        headers.append(f"#SBATCH -N {self.config.jobqueue.nodes}")
+        headers.append(f"#SBATCH --ntasks={self.config.jobqueue.tasks}")
+        headers.append(f"#SBATCH --time={ScriptGenerator.get_job_walltime(self.config)}")
+        if self.config.gpus:
+            headers.append(f"#SBATCH --gres=gpu:1")
+        if "--mem" not in self.config.jobqueue.header_skip:
+            headers.append(f"#SBATCH --mem={str(self.config.jobqueue.mem)}GB")
 
-        newline = "\n"
-        self.logger.debug(f"Using headers: {newline.join(headers)}")
+        self.logger.debug(f"Using run headers: {linesep.join(headers)}")
         return headers
 
-    def gen_pull_command(self) -> List[str]:
-        commands = []
+    def gen_pull_command(self, icommands: bool = False) -> List[str]:
+        if not self.config.source:
+            return []
 
-        # make sure we have inputs
-        if not self.inputs:
-            return commands
+        commands = []
 
         # job arrays may cause an invalid singularity cache due to lots of simultaneous pulls of the same image...
         # just pull it once ahead of time so it's already cached
         # TODO: set the image path to the cached one
-        workflow_image = self.config.image
-        workflow_shell = self.config.shell
-        if workflow_shell is None:
-            workflow_shell = "sh"
-        pull_image_command = f"singularity exec {workflow_image} {workflow_shell} -c 'echo \"refreshing {workflow_image}\"'"
-        commands.append(pull_image_command)
+        image = self.config.image
+        shell = self.config.shell
+        if not shell:
+            shell = "sh"
+        commands.append(f"singularity exec {image} {shell} -c 'echo \"refreshing {image}\"'")
 
-        # singularity must be pre-authenticated on the agent, e.g. with `singularity remote login --username <your username> docker://docker.io`
-        # also, if this is a job array, all jobs will invoke iget, but files will only be downloaded once (since we don't use -f for force)
-        workdir = join(self.config.workdir, self.config.workdir, "input")
-        icommands_image = f"docker://computationalplantscience/icommands"
-        pull_data_command = (
-            f"singularity exec {icommands_image} iget -r {self.config.source} {workdir}"
-        )
-        commands.append(pull_data_command)
+        # specified or default input path
+        input_path = self.config.input if self.config.input else "input"
 
-        newline = "\n"
-        self.logger.debug(f"Using pull command: {newline.join(commands)}")
+        if icommands:
+            # singularity must be pre-authenticated on the agent, e.g. with `singularity remote login --username <your
+            # username> docker://docker.io` also, if this is a job array, all jobs will invoke iget, but files will only
+            # be downloaded once (since we don't use -f for force)
+            commands.append(f"singularity exec {ICOMMANDS_IMAGE} iget -r {self.config.source} {input_path}")
+        else:
+            commands.append(f"singularity exec {PLANTIT_IMAGE} plantit pull -t {self.config.token} {self.config.source} -p {input_path}")
+
+        self.logger.debug(f"Using pull command: {linesep.join(commands)}")
         return commands
 
-    def gen_push_command(self) -> List[str]:
-        commands = []
+    def gen_push_command(self, icommands: bool = False) -> List[str]:
+        if not self.config.sink:
+            return []
 
-        # create staging directory
-        staging_dir = f"{self.config.guid}_staging"
-        mkdir_command = f"mkdir -p {staging_dir}"
-        commands.append(mkdir_command)
+        if icommands:
+            # create zip dir
+            zip_dir = f"{self.config.guid}_zip"
+            commands = [f"mkdir -p {zip_dir}"]
 
-        # create zip directory
-        zip_dir = f"{self.config.guid}_zip"
-        mkdir_command = f"mkdir -p {zip_dir}"
-        commands.append(mkdir_command)
+            # copy results to zip dir
+            commands.append(f"for i in {self.config.output}; do [ -f \"$i\" ] && cp -a \"$i\" {zip_dir}; done")
 
-        # move results into staging and zip directories
-        mv_zip_dir_command = f"mv -t {zip_dir} "
-        output = self.config.output
-        if "include" in output:
-            if "names" in output["include"]:
-                for name in output["include"]["names"]:
-                    commands.append(f"cp {name} {join(staging_dir, name)}")
-                    mv_zip_dir_command = mv_zip_dir_command + f"{name} "
-            if "patterns" in output["include"]:
-                for pattern in list(output["include"]["patterns"]):
-                    commands.append(f"cp *.{pattern} {staging_dir}/")
-                    mv_zip_dir_command = mv_zip_dir_command + f"*.{pattern} "
-                # include all scheduler log files in zip file
-                for pattern in ["out", "err"]:
-                    mv_zip_dir_command = mv_zip_dir_command + f"*.{pattern} "
+            # zip results dir
+            zip_name = f"{self.config.guid}.zip"
+            commands.append(f"zip -r {zip_name} {zip_dir}/*")
+
+            # push results to CyVerse and unzip once uploaded
+            commands.append(f"singularity exec {ICOMMANDS_IMAGE} iput -Dzip -f {zip_name} {self.config.sink}/")
+            commands.append(f"singularity exec {ICOMMANDS_IMAGE} ibun -x {self.config.sink}/{zip_name} {self.config.sink}")
         else:
-            raise ValueError(f"No output filenames & patterns to include")
-        commands.append(mv_zip_dir_command)
+            commands = [f"singularity exec {PLANTIT_IMAGE} push -t {self.config.token} {self.config.sink} -p {self.config.output}"]
 
-        # filter unwanted results from staging directory
-        # TODO: can we do this in a single step with mv?
-        # rm_command = f"rm "
-        # if 'exclude' in output:
-        #     if 'patterns' in output['exclude']:
-        #         command = command + ' ' + ' '.join(
-        #             ['--exclude_pattern ' + pattern for pattern in output['exclude']['patterns']])
-        #     if 'names' in output['exclude']:
-        #         command = command + ' ' + ' '.join(
-        #             ['--exclude_name ' + pattern for pattern in output['exclude']['names']])
-
-        # zip results
-        zip_name = f"{self.config.guid}.zip"
-        zip_path = join(staging_dir, zip_name)
-        zip_command = f"zip -r {zip_path} {zip_dir}/*"
-        commands.append(zip_command)
-
-        # transfer contents of staging dir to CyVerse
-        to_path = output["to"]
-        image = f"docker://computationalplantscience/icommands"
-        # force = output['force']
-        force = False
-        # just_zip = output['just_zip']
-        just_zip = False
-        # push_command = f"singularity exec {image} iput -r{' -f ' if force else ' '}{staging_dir}{('/' + zip_name) if just_zip else '/*'} {to_path}/"
-        push_command = f"singularity exec {image} iput -f {staging_dir}{('/' + zip_name) if just_zip else '/*'} {to_path}/"
-        commands.append(push_command)
-
-        newline = "\n"
-        self.logger.debug(f"Using push commands: {newline.join(commands)}")
+        self.logger.debug(f"Using push commands: {linesep.join(commands)}")
         return commands
 
     def gen_job_command(self) -> List[str]:
-        commands = []
-
-        # if this agent uses TACC's launcher, use a parameter sweep script
-        if self.config.launcher:
-            commands.append(
-                f"export LAUNCHER_WORKDIR={join(self.__task.agent.workdir, self.__task.workdir)}"
-            )
-            commands.append(
-                f"export LAUNCHER_JOB_FILE={environ.get('LAUNCHER_SCRIPT_NAME')}"
-            )
-            commands.append("$LAUNCHER_DIR/paramrun")
-        # otherwise use SLURM job arrays
+        if self.config.jobqueue.parallel == ParallelStrategy.LAUNCHER:
+            commands = self.gen_launcher_entrypoint()
+        elif self.config.jobqueue.parallel == ParallelStrategy.JOB_ARRAY:
+            commands = self.gen_job_array_script()
         else:
-            if self.inputs:
-                if len(self.inputs) > 1 and self.config.parallel:
-                    input_path = join(self.config.workdir, "input", "$file")
-                    commands.append(
-                        f"file=$(head -n $SLURM_ARRAY_TASK_ID inputs.list | tail -1)"
-                    )
+            raise ValueError(f"Unsupported parallelism strategy {self.config.jobqueue.parallel}")
 
-            commands = commands + ScriptGenerator.gen_singularity_invocation(
-                work_dir=self.config.workdir,
-                image=self.config.image,
-                commands=self.config.command,
-                env=self.config.environment,
-                bind_mounts=self.config.bind_mounts,
-                no_cache=self.config.no_cache,
-                gpus=self.config.gpus,
-                shell=self.config.shell,
-            )
-
-        newline = "\n"
-        self.logger.debug(f"Using container commands: {newline.join(commands)}")
+        self.logger.debug(f"Using run commands: {linesep.join(commands)}")
         return commands
 
     def gen_pull_script(self) -> List[str]:
@@ -360,18 +234,50 @@ class ScriptGenerator:
         command = self.gen_job_command()
         return template + headers + command
 
+    def gen_job_array_script(self) -> List[str]:
+        commands = []
+        if self.inputs:
+            if len(self.inputs) > 1:
+                input_path = join(self.config.workdir, self.config.input if self.config.input else "input", "$file")
+                commands.append(
+                    f"file=$(head -n $SLURM_ARRAY_TASK_ID inputs.list | tail -1)"
+                )
+
+        commands = commands + ScriptGenerator.gen_singularity_invocation(
+            work_dir=self.config.workdir,
+            image=self.config.image,
+            commands=self.config.entrypoint,
+            env=self.config.environment,
+            bind_mounts=self.config.bind_mounts,
+            no_cache=self.config.no_cache,
+            gpus=self.config.gpus,
+            shell=self.config.shell,
+        )
+        return commands
+
+    def gen_launcher_entrypoint(self) -> List[str]:
+        commands = []
+        commands.append(
+            f"export LAUNCHER_WORKDIR={self.config.workdir}"
+        )
+        commands.append(
+            f"export LAUNCHER_JOB_FILE={environ.get(LAUNCHER_SCRIPT_NAME)}"
+        )
+        commands.append("$LAUNCHER_DIR/paramrun")
+        return commands
+
     def gen_launcher_script(self) -> List[str]:
         lines: List[str] = []
         if "input" in self.config:
-            input_kind = self.config.input.kind
+            input_kind = self.config.input
             input_path = self.config.input.path
             input_name = input_path.rpartition("/")[2]
-            client = TerrainClient(self.config.token)
+            client = CyverseClient(self.config.token)
             input_list = (
                 []
                 if ("input" not in self.config or not self.config.input)
                 else [client.stat(input_path)["path"].rpartition("/")[2]]
-                if self.config.parallel
+                if self.config.jobqueue.parallel
                 else [f["label"] for f in self.client.list_files(input_path)]
             )
 
@@ -379,15 +285,14 @@ class ScriptGenerator:
                 for i, file_name in enumerate(input_list):
                     path = join(self.config.workdir, "input", input_name, file_name)
                     lines = lines + ScriptGenerator.gen_singularity_invocation(
-                        work_dir=self.config.work_dir,
+                        work_dir=self.config.workdir,
                         image=self.config.image,
-                        commands=self.config.command,
-                        env=self.config.env,
+                        commands=self.config.entrypoint,
+                        env=self.config.environment,
                         bind_mounts=self.config.bind_mounts,
                         no_cache=self.config.no_cache,
                         gpus=self.config.gpus,
                         shell=self.config.shell,
-                        index=i,
                     )
                 return lines
             elif input_kind == "directory":
@@ -400,23 +305,22 @@ class ScriptGenerator:
             iterations = self.config.iterations
             for i in range(0, iterations):
                 lines = lines + ScriptGenerator.gen_singularity_invocation(
-                    work_dir=self.config.work_dir,
+                    work_dir=self.config.workdir,
                     image=self.config.image,
-                    commands=self.config.command,
-                    env=self.config.env,
+                    commands=self.config.entrypoint,
+                    env=self.config.environment,
                     bind_mounts=self.config.bind_mounts,
                     no_cache=self.config.no_cache,
                     gpus=self.config.gpus,
                     shell=self.config.shell,
-                    index=i,
                 )
             return lines
 
         return lines + ScriptGenerator.gen_singularity_invocation(
-            work_dir=self.config.work_dir,
+            work_dir=self.config.workdir,
             image=self.config.image,
-            commands=self.config.command,
-            env=self.config.env,
+            commands=self.config.entrypoint,
+            env=self.config.environment,
             bind_mounts=self.config.bind_mounts,
             no_cache=self.config.no_cache,
             gpus=self.config.gpus,
@@ -432,7 +336,7 @@ class ScriptGenerator:
         bind_mounts: List[BindMount] = None,
         no_cache: bool = False,
         gpus: int = 0,
-        shell: str = None,
+        shell: Shell = None,
         docker_username: str = None,
         docker_password: str = None,
     ) -> List[str]:

@@ -1,6 +1,6 @@
 import click
 
-import plantit.terrain.commands as commands
+import plantit.cyverse.commands as commands
 
 
 @click.command()

@@ -78,6 +78,7 @@ class ScriptConfig:
     shell: Shell = Shell.BASH
     source: Optional[str] = None
     sink: Optional[str] = None
+    input: Optional[str] = None
     output: Optional[str] = None
     iterations: Optional[int] = None
     environment: Optional[List[EnvironmentVariable]] = None

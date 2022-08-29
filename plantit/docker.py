@@ -1,10 +1,13 @@
 import traceback
 from warnings import warn
 
+import logging
 import requests
 
 from requests import RequestException, ReadTimeout, Timeout, HTTPError
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
+
+logger = logging.getLogger(__file__)
 
 
 def parse_image_components(value):

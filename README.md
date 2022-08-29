@@ -3,19 +3,19 @@
 
 # plantit
 
-A CLI, Python library and science gateway for high-throughput phenotyping on clusters and the CyVerse Cloud.
+CLI, Python library and science gateway for high-throughput phenotyping on clusters and the CyVerse cloud
 
-- Generate job scripts and launch containers to a SLURM cluster with a single command
-- Add the [`plantit-action`](https://github.com/Computational-Plant-Science/plantit-action) to a GitHub Actions workflow for continuous analysis
-- Automatically transfer data and results to and from the CyVerse Data Store
-- Discover or publish workflows and monitor your submissions in the [web UI](https://plantit.cyverse.org/)
+- generate job scripts and launch containers to a SLURM cluster with a single command
+- add the [`plantit-action`](https://github.com/Computational-Plant-Science/plantit-action) to a GitHub Actions workflow for continuous analysis
+- automatically transfer data and results to and from the CyVerse Data Store
+- discover or publish workflows and monitor your submissions in the [web UI](https://plantit.cyverse.org/)
 
 ![CI](https://github.com/Computational-Plant-Science/plantit-cli/workflows/CI/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/Computational-Plant-Science/plantit-cli/badge.svg?branch=master)](https://coveralls.io/github/Computational-Plant-Science/plantit-cli) 
 
-</div>
-
 **In development, not stable.**
+
+</div>
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -97,6 +97,7 @@ To show CLI docs run `plantit -h`. Besides the main `plantit <config file>.yml` 
 The following commands are available:
 
 - `token`: Retrieve a CyVerse authentication token.
+- `compat`: Check if the current system is compatible.
 - `user`: Retrieve the user's profile information.
 - `list`: List files in a collection.
 - `stat`: Get information about a file or collection.
@@ -120,6 +121,17 @@ plantit token --username <your CyVerse username> --password <your CyVerse passwo
 ```
 
 The token can be passed via `--token (-t)` argument to authenticate subsequent commands.
+
+#### Compat
+
+The `plantit compat` command determines whether jobs can be submitted to the host system, affirming to `stdout` if the following conditions are met:
+
+- `singularity` is installed and available on the path
+- the CyVerse data store is reachable via iRODS or science APIs
+  * for the former, the user must have run `iinit` to configure iCommands
+- SLURM is up and standard commands `sbatch`, `squeue`, `sacct`, etc are available
+
+Otherwise the command terminates with an error signal and information on the missing or misconfigured dependencies is printed to `stderr`.
 
 #### User
 

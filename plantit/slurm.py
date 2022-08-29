@@ -1,3 +1,12 @@
+# job script header template
+
+SLURM_TEMPLATE = """
+#!/bin/bash
+"""
+
+
+# job states
+
 SLURM_RUNNING_STATES = [
     'CF', 'CONFIGURING',
     'PD', 'PENDING',
@@ -58,9 +67,3 @@ def is_complete(status):
            or is_failure(status) \
            or is_timeout(status) \
            or is_cancelled(status)
-
-
-SLURM_TEMPLATE = """
-#!/bin/bash
-#SBATCH --job-name=plantit
-"""

@@ -5,12 +5,9 @@ import shutil
 import time
 from os import environ, listdir, remove
 from os.path import basename, isdir, isfile, islink, join
-from typing import List
 
 import pytest
 import requests
-
-from plantit.terrain.auth import AccessToken
 
 
 @pytest.fixture(scope="module")
@@ -49,20 +46,6 @@ def check_hello(file, name):
         assert len(lines) == 1
         line = lines[0]
         assert f"Hello, {name}!" in line
-
-
-class TerrainTicket:
-    @staticmethod
-    def get(paths: List[str], mode: str = "read", public: bool = False, uses: int = 10):
-        response = requests.post(
-            f"https://de.cyverse.org/terrain/secured/filesystem/tickets?mode={mode}&public={str(public).lower()}&uses-limit={uses}",
-            data=json.dumps({"paths": paths}),
-            headers={
-                "Authorization": f"Bearer {AccessToken.get()}",
-                "Content-Type": "application/json",
-            },
-        ).json()
-        return response["tickets"][0]["ticket-id"]
 
 
 DEFAULT_SLEEP = int(environ.get("DATA_STORE_WRITE_OP_SLEEP", 10))

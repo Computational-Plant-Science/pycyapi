@@ -5,9 +5,9 @@ from tempfile import TemporaryDirectory
 
 import pytest
 
-from plantit.terrain import commands as commands
-from plantit.terrain.auth import FileLockedAccessToken
-from plantit.terrain.tests.conftest import (
+from plantit.cyverse import commands as commands
+from plantit.cyverse.auth import CyverseAccessToken
+from plantit.cyverse.tests.conftest import (
     check_hello,
     create_collection,
     delete_collection,
@@ -16,7 +16,7 @@ from plantit.terrain.tests.conftest import (
 )
 
 message = "Message"
-token = FileLockedAccessToken.get()
+token = CyverseAccessToken.get()
 
 
 @pytest.mark.slow

@@ -4,10 +4,10 @@ from os import getcwd, listdir
 from pathlib import Path
 from typing import List
 
-from plantit.terrain.auth import AccessToken
-from plantit.terrain.clients import TerrainClient
+from plantit.cyverse.auth import CyverseAccessToken
+from plantit.cyverse.clients import CyverseClient
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__file__)
 
 
 def cas_token(username: str, password: str) -> str:
@@ -15,7 +15,7 @@ def cas_token(username: str, password: str) -> str:
         raise ValueError(f"Username and password must be provided!")
 
     try:
-        return AccessToken.get(username, password)
+        return CyverseAccessToken.get(username, password)
     except:
         logger.error(f"Token request failed: {traceback.format_exc()}")
         raise
@@ -23,7 +23,7 @@ def cas_token(username: str, password: str) -> str:
 
 def user_info(username: str, token: str = None, timeout: int = 15):
     if token is not None:
-        client = TerrainClient(token, timeout_seconds=timeout)
+        client = CyverseClient(token, timeout_seconds=timeout)
     else:
         raise ValueError(f"An authentication token must be explicitly provided for now")
         # TODO: try to load token from cache
@@ -38,7 +38,7 @@ def user_info(username: str, token: str = None, timeout: int = 15):
 
 def paged_directory(path: str, token: str = None, timeout: int = 15):
     if token is not None:
-        client = TerrainClient(token, timeout_seconds=timeout)
+        client = CyverseClient(token, timeout_seconds=timeout)
     else:
         raise ValueError(f"An authentication token must be explicitly provided for now")
         # TODO: try to load token from cache
@@ -53,7 +53,7 @@ def paged_directory(path: str, token: str = None, timeout: int = 15):
 
 def stat(path: str, token: str = None, timeout: int = 15):
     if token is not None:
-        client = TerrainClient(token, timeout_seconds=timeout)
+        client = CyverseClient(token, timeout_seconds=timeout)
     else:
         raise ValueError(f"An authentication token must be explicitly provided for now")
         # TODO: try to load token from cache
@@ -68,7 +68,7 @@ def stat(path: str, token: str = None, timeout: int = 15):
 
 def exists(path: str, type: str = None, token: str = None, timeout: int = 15):
     if token is not None:
-        client = TerrainClient(token, timeout_seconds=timeout)
+        client = CyverseClient(token, timeout_seconds=timeout)
     else:
         raise ValueError(f"An authentication token must be explicitly provided for now")
         # TODO: try to load token from cache
@@ -90,7 +90,7 @@ def exists(path: str, type: str = None, token: str = None, timeout: int = 15):
 
 def create(path: str, token: str = None, timeout: int = 15):
     if token is not None:
-        client = TerrainClient(token, timeout_seconds=timeout)
+        client = CyverseClient(token, timeout_seconds=timeout)
     else:
         raise ValueError(f"An authentication token must be explicitly provided for now")
         # TODO: try to load token from cache
@@ -107,7 +107,7 @@ def share(
     username: str, path: str, permission: str, token: str = None, timeout: int = 15
 ):
     if token is not None:
-        client = TerrainClient(token, timeout_seconds=timeout)
+        client = CyverseClient(token, timeout_seconds=timeout)
     else:
         raise ValueError(f"An authentication token must be explicitly provided for now")
         # TODO: try to load token from cache
@@ -124,7 +124,7 @@ def share(
 
 def unshare(username: str, path: str, token: str = None, timeout: int = 15):
     if token is not None:
-        client = TerrainClient(token, timeout_seconds=timeout)
+        client = CyverseClient(token, timeout_seconds=timeout)
     else:
         raise ValueError(f"An authentication token must be explicitly provided for now")
         # TODO: try to load token from cache
@@ -149,7 +149,7 @@ def download(
     timeout: int = 15,
 ):
     if token is not None:
-        client = TerrainClient(token, timeout_seconds=timeout)
+        client = CyverseClient(token, timeout_seconds=timeout)
     else:
         raise ValueError(f"An authentication token must be explicitly provided for now")
         # TODO: try to load token from cache
@@ -202,7 +202,7 @@ def upload(
     timeout: int = 15,
 ):
     if token is not None:
-        client = TerrainClient(token, timeout_seconds=timeout)
+        client = CyverseClient(token, timeout_seconds=timeout)
     else:
         raise ValueError(f"An authentication token must be explicitly provided for now")
         # TODO: try to load token from cache
@@ -231,7 +231,7 @@ def tag(
     timeout: int = 15,
 ):
     if token is not None:
-        client = TerrainClient(token, timeout_seconds=timeout)
+        client = CyverseClient(token, timeout_seconds=timeout)
     else:
         raise ValueError(f"An authentication token must be explicitly provided for now")
         # TODO: try to load token from cache
@@ -249,7 +249,7 @@ def tag(
 
 def tags(id: str, irods: bool, token: str = None, timeout: int = 15):
     if token is not None:
-        client = TerrainClient(token, timeout_seconds=timeout)
+        client = CyverseClient(token, timeout_seconds=timeout)
     else:
         raise ValueError(f"An authentication token must be explicitly provided for now")
         # TODO: try to load token from cache

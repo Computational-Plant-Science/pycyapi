@@ -6,7 +6,7 @@ import click
 import yaml
 
 import plantit.scripts.commands as commands
-from plantit.scripts.models import SubmissionConfig
+from plantit.scripts.models import ScriptConfig, JobqueueConfig
 
 
 @click.command()
@@ -20,6 +20,7 @@ from plantit.scripts.models import SubmissionConfig
 @click.option("--shell", required=False)
 @click.option("--source", required=False)
 @click.option("--sink", required=False)
+@click.option("--input", required=False)
 @click.option("--output", required=False)
 @click.option("--parallel", required=False)
 @click.option("--iterations", required=False)
@@ -27,14 +28,15 @@ from plantit.scripts.models import SubmissionConfig
 @click.option("--bind_mounts", required=False)
 @click.option("--log_file", required=False)
 @click.option("--no_cache", required=False)
+@click.option("--gpus", required=False)
 @click.option("--walltime", required=False)
 @click.option("--queue", required=False)
 @click.option("--project", required=False)
 @click.option("--mem", required=False)
+@click.option("--nodes", required=False)
 @click.option("--cores", required=False)
 @click.option("--tasks", required=False)
 @click.option("--processes", required=False)
-@click.option("--gpus", required=False)
 def scripts(
         file,
         image,
@@ -46,28 +48,31 @@ def scripts(
         shell,
         source,
         sink,
+        input,
         output,
-        parallel,
         iterations,
         environment,
         bind_mounts,
-        log_file,
         no_cache,
+        gpus,
         # jobqueue parameters
         walltime,
         queue,
         project,
         mem,
+        nodes,
         cores,
         tasks,
         processes,
-        gpus
+        header_skip,
+        parallel_strategy,
 ):
     if file:
         if not Path(file).is_file():
             raise ValueError(f"Invalid path to configuration file: {file}")
+        # parse config from file
         with open(file, 'r') as f:
-            config = SubmissionConfig(**yaml.safe_load(f))
+            config = ScriptConfig(**yaml.safe_load(f))
     else:
         # make sure we have required options
         if not (image and
@@ -83,9 +88,40 @@ def scripts(
         elif not re.match(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', guid):
             raise ValueError(f"'{guid}' is not a valid GUID")
 
-        # TODO: parse and validate other options
-        #  and create config object
+        # create config
+        jobqueue = JobqueueConfig(
+            walltime=walltime,
+            queue=queue,
+            project=project,
+            mem=mem,
+            nodes=nodes,
+            cores=cores,
+            tasks=tasks,
+            processes=processes,
+            header_skip=header_skip,
+            parallel=parallel_strategy
+        )
+        config = ScriptConfig(
+            image=image,
+            entrypoint=entrypoint,
+            workdir=workdir,
+            email=email,
+            guid=guid,
+            token=token,
+            shell=shell,
+            source=source,
+            sink=sink,
+            input=input,
+            output=output,
+            iterations=iterations,
+            environment=environment,
+            bind_mounts=bind_mounts,
+            no_cache=no_cache,
+            gpus=gpus,
+            jobqueue=jobqueue
+        )
 
-    paths = commands.scripts(config)
-    names = [p.name for p in paths]
-    click.echo(f"Generated job script(s): {', '.join(names)}")
+    # generate scripts
+    script_paths = commands.scripts(config)
+    script_names = [p.name for p in script_paths]
+    click.echo(f"Generated job script(s): {', '.join(script_names)}")
