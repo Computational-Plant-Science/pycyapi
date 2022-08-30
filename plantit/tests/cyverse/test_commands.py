@@ -7,7 +7,7 @@ import pytest
 
 from plantit.cyverse import commands as commands
 from plantit.cyverse.auth import CyverseAccessToken
-from plantit.cyverse.tests.conftest import (
+from plantit.tests.conftest import (
     check_hello,
     create_collection,
     delete_collection,

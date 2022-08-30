@@ -1,6 +1,6 @@
 import uuid
 from os import environ, remove
-from os.path import basename, isfile, join
+from os.path import join, basename, isfile
 from pprint import pprint
 from tempfile import TemporaryDirectory
 from time import sleep
@@ -8,18 +8,39 @@ from time import sleep
 import pytest
 from click.testing import CliRunner
 
-from plantit.cyverse import cli
+import plantit.cli
 from plantit.cyverse.auth import CyverseAccessToken
-from plantit.cyverse.tests.conftest import (
-    create_collection,
-    delete_collection,
-    get_metadata,
-    list_directories,
-    list_files,
-    set_metadata,
-    stat_file,
-    upload_file,
-)
+from plantit.tests.conftest import list_directories, delete_collection, create_collection, upload_file, \
+    list_files, stat_file, get_metadata, set_metadata
+
+
+@pytest.mark.skip(reason="todo")
+def test_scripts_slurm_no_source_no_sink():
+    pass
+
+
+@pytest.mark.skip(reason="todo")
+def test_scripts_slurm_with_source():
+    pass
+
+
+@pytest.mark.skip(reason="todo")
+def test_scripts_slurm_with_sink():
+    pass
+
+
+@pytest.mark.skip(reason="todo")
+def test_scripts_slurm_with_source_and_sink():
+    pass
+
+
+@pytest.mark.skip(reason="todo")
+@pytest.mark.slow
+def test_submit_slurm():
+    runner = CliRunner()
+    # result = runner.invoke(cli.submit, [""])
+    # todo
+
 
 username = environ.get("CYVERSE_USERNAME")
 password = environ.get("CYVERSE_PASSWORD")
@@ -29,7 +50,7 @@ token = CyverseAccessToken.get()
 @pytest.mark.slow
 def test_cas_token():
     runner = CliRunner()
-    result = runner.invoke(cli.token, ["--username", username, "--password", password])
+    result = runner.invoke(plantit.cli.token, ["--username", username, "--password", password])
     tkn = result.output.strip()
 
     assert tkn != ""
@@ -47,7 +68,7 @@ def test_create_directory(remote_base_path):
 
     try:
         runner = CliRunner()
-        runner.invoke(cli.create, ["--token", token, remote_path])
+        runner.invoke(plantit.cli.create, ["--token", token, remote_path])
 
         directories = list_directories(token=token, path=f"iplant/home/{username}/")
         assert basename(remote_path) in directories
@@ -58,7 +79,7 @@ def test_create_directory(remote_base_path):
 def test_exists_when_doesnt_exist(remote_base_path):
     runner = CliRunner()
     result = runner.invoke(
-        cli.exists,
+        plantit.cli.exists,
         [
             "--token",
             token,
@@ -71,7 +92,7 @@ def test_exists_when_doesnt_exist(remote_base_path):
 def test_exists_when_is_a_file(remote_base_path):
     runner = CliRunner()
     result = runner.invoke(
-        cli.exists,
+        plantit.cli.exists,
         [
             "--token",
             token,
@@ -86,7 +107,7 @@ def test_exists_when_is_a_directory(remote_base_path):
 
     # with trailing slash
     result = runner.invoke(
-        cli.exists,
+        plantit.cli.exists,
         [
             "--token",
             token,
@@ -97,7 +118,7 @@ def test_exists_when_is_a_directory(remote_base_path):
 
     # without trailing slash
     result = runner.invoke(
-        cli.exists,
+        plantit.cli.exists,
         [
             "--token",
             token,
@@ -151,7 +172,7 @@ def test_list(remote_base_path):
 
             # list files
             runner = CliRunner()
-            result = runner.invoke(cli.list, ["--token", token, remote_path])
+            result = runner.invoke(plantit.cli.list, ["--token", token, remote_path])
 
             # check files
             assert join(remote_path, file1_name) in result.output
@@ -193,7 +214,7 @@ def test_download_file(remote_base_path):
             # download file
             runner = CliRunner()
             runner.invoke(
-                cli.pull,
+                plantit.cli.pull,
                 [
                     "--token",
                     token,
@@ -241,7 +262,7 @@ def test_download_directory(remote_base_path):
             # download files
             runner = CliRunner()
             result = runner.invoke(
-                cli.pull, ["--token", token, "--local_path", testdir, remote_path]
+                plantit.cli.pull, ["--token", token, "--local_path", testdir, remote_path]
             )
         except ValueError as e:
             if "I/O operation on closed file" not in str(e):
@@ -272,7 +293,7 @@ def test_upload_file(remote_base_path):
             # upload file
             runner = CliRunner()
             runner.invoke(
-                cli.push, ["--token", token, "--local_path", file_path, remote_path]
+                plantit.cli.push, ["--token", token, "--local_path", file_path, remote_path]
             )
         except ValueError as e:
             if "I/O operation on closed file" not in str(e):
@@ -306,7 +327,7 @@ def test_upload_directory(remote_base_path):
             # upload directory
             runner = CliRunner()
             result = runner.invoke(
-                cli.push,
+                plantit.cli.push,
                 ["--token", token, "--local_path", testdir, remote_path, "-ip", ".txt"],
             )
         except ValueError as e:
@@ -346,7 +367,7 @@ def test_tag(remote_base_path):
             # set file metadata
             runner = CliRunner()
             runner.invoke(
-                cli.tag,
+                plantit.cli.tag,
                 ["--token", token, "-a", "k1=v1", "-a", "k2=v2", "-ia", "k3=v3", id],
             )
         except ValueError as e:
@@ -402,7 +423,7 @@ def test_tags(remote_base_path):
 
             # get file metadata
             runner = CliRunner()
-            result = runner.invoke(cli.tags, ["--token", token, id])
+            result = runner.invoke(plantit.cli.tags, ["--token", token, id])
             print(result)
         except ValueError as e:
             if "I/O operation on closed file" not in str(e):
