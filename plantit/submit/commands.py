@@ -15,10 +15,10 @@ def submit(config: SubmitConfig) -> str:
         password=config.password,
         pkey=config.key,
         timeout=config.timeout,
-    ) as ssh:
+    ) as client:
         command = f"sbatch {config.script}"
         logger.info(f"Submitting {config.script.name} on '{config.host}'")
-        stdin, stdout, stderr = ssh.client.exec_command(
+        stdin, stdout, stderr = client.exec_command(
             f"bash --login -c '{command}'", get_pty=True
         )
         stdin.close()
@@ -26,13 +26,13 @@ def submit(config: SubmitConfig) -> str:
         def read_stdout():
             for line in iter(lambda: stdout.readline(2048), ""):
                 clean = clean_html(line).strip()
-                logger.debug(f"Received stdout from '{ssh.host}': '{clean}'")
+                logger.debug(f"Received stdout from '{config.host}': '{clean}'")
                 yield clean
 
         def read_stderr():
             for line in iter(lambda: stderr.readline(2048), ""):
                 clean = clean_html(line).strip()
-                logger.warning(f"Received stderr from '{ssh.host}': '{clean}'")
+                logger.warning(f"Received stderr from '{config.host}': '{clean}'")
                 yield clean
 
         output = [line for line in read_stdout()]
