@@ -60,7 +60,7 @@ jobs:
         uses: ./.github/actions/cache_ssh
         with:
           private_key: ${{ secrets.CLUSTER_PRIVATE_KEY }}
-          known_host: ${{ secrets.CLUSTER_HOST }}
+          host: ${{ secrets.CLUSTER_HOST }}
       - name: Run smoke tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
