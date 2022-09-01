@@ -1,6 +1,6 @@
 import uuid
 from os import environ, remove
-from os.path import join, basename, isfile
+from os.path import basename, isfile, join
 from pprint import pprint
 from tempfile import TemporaryDirectory
 from time import sleep
@@ -10,8 +10,16 @@ from click.testing import CliRunner
 
 import plantit.cli
 from plantit.cyverse.auth import CyverseAccessToken
-from plantit.tests.conftest import list_directories, delete_collection, create_collection, upload_file, \
-    list_files, stat_file, get_metadata, set_metadata
+from plantit.tests.conftest import (
+    create_collection,
+    delete_collection,
+    get_metadata,
+    list_directories,
+    list_files,
+    set_metadata,
+    stat_file,
+    upload_file,
+)
 
 
 @pytest.mark.skip(reason="todo")
@@ -50,7 +58,9 @@ token = CyverseAccessToken.get()
 @pytest.mark.slow
 def test_cas_token():
     runner = CliRunner()
-    result = runner.invoke(plantit.cli.token, ["--username", username, "--password", password])
+    result = runner.invoke(
+        plantit.cli.token, ["--username", username, "--password", password]
+    )
     tkn = result.output.strip()
 
     assert tkn != ""
@@ -262,7 +272,8 @@ def test_download_directory(remote_base_path):
             # download files
             runner = CliRunner()
             result = runner.invoke(
-                plantit.cli.pull, ["--token", token, "--local_path", testdir, remote_path]
+                plantit.cli.pull,
+                ["--token", token, "--local_path", testdir, remote_path],
             )
         except ValueError as e:
             if "I/O operation on closed file" not in str(e):
@@ -293,7 +304,8 @@ def test_upload_file(remote_base_path):
             # upload file
             runner = CliRunner()
             runner.invoke(
-                plantit.cli.push, ["--token", token, "--local_path", file_path, remote_path]
+                plantit.cli.push,
+                ["--token", token, "--local_path", file_path, remote_path],
             )
         except ValueError as e:
             if "I/O operation on closed file" not in str(e):

@@ -17,9 +17,8 @@ def scripts(config: ScriptConfig):
         files[f"push.{config.guid}.sh"] = generator.gen_push_script()
 
     for name, script in files.items():
-        with open(name, 'wt', encoding='utf-8') as f:
+        with open(name, "wt", encoding="utf-8") as f:
             for line in script:
                 f.write(line)
 
     return [Path(name) for name in files.keys()]
-

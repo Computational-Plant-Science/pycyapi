@@ -36,7 +36,9 @@ def submit(config: SubmitConfig) -> str:
         errors = [line for line in read_stderr()]
 
         if stdout.channel.recv_exit_status() != 0:
-            raise ExitStatusException(f"Received non-zero exit status from '{config.host}'")
+            raise ExitStatusException(
+                f"Received non-zero exit status from '{config.host}'"
+            )
         elif not config.allow_stderr and len(errors) > 0:
             raise ExitStatusException(f"Received stderr: {errors}")
 

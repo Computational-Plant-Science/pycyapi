@@ -7,8 +7,8 @@ import yaml
 
 from plantit.cyverse import commands as cyverse_commands
 from plantit.scripts import commands as script_commands
+from plantit.scripts.models import JobqueueConfig, ScriptConfig
 from plantit.submit import commands as submit_commands
-from plantit.scripts.models import ScriptConfig, JobqueueConfig
 from plantit.submit.models import SubmitConfig
 
 
@@ -23,7 +23,7 @@ def cli(ctx, file):
         raise ValueError(f"Invalid path to configuration file: {file}")
 
     # parse config
-    with open(file, 'r') as f:
+    with open(file, "r") as f:
         yml = yaml.safe_load(f)
         script_config = ScriptConfig(**yml)
         submit_config = SubmitConfig(**yml)
@@ -67,55 +67,56 @@ def cli(ctx, file):
 @click.option("--tasks", required=False)
 @click.option("--processes", required=False)
 def scripts(
-        file,
-        image,
-        entrypoint,
-        workdir,
-        email,
-        guid,
-        token,
-        shell,
-        source,
-        sink,
-        input,
-        output,
-        iterations,
-        environment,
-        bind_mounts,
-        no_cache,
-        gpus,
-        # jobqueue parameters
-        walltime,
-        queue,
-        project,
-        mem,
-        nodes,
-        cores,
-        tasks,
-        processes,
-        header_skip,
-        parallel_strategy,
+    file,
+    image,
+    entrypoint,
+    workdir,
+    email,
+    guid,
+    token,
+    shell,
+    source,
+    sink,
+    input,
+    output,
+    iterations,
+    environment,
+    bind_mounts,
+    no_cache,
+    gpus,
+    # jobqueue parameters
+    walltime,
+    queue,
+    project,
+    mem,
+    nodes,
+    cores,
+    tasks,
+    processes,
+    header_skip,
+    parallel_strategy,
 ):
     if file:
         if not Path(file).is_file():
             raise ValueError(f"Invalid path to configuration file: {file}")
 
         # parse config from file
-        with open(file, 'r') as f:
+        with open(file, "r") as f:
             config = ScriptConfig(**yaml.safe_load(f))
     else:
         # make sure we have required options
-        if not (image and
-                entrypoint and
-                workdir and
-                email):
-            raise ValueError("Missing required options "
-                             "(need at least image, entrypoint, workdir, email)")
+        if not (image and entrypoint and workdir and email):
+            raise ValueError(
+                "Missing required options "
+                "(need at least image, entrypoint, workdir, email)"
+            )
 
         # create GUID if none provided
         if not guid:
             guid = str(uuid.uuid4())
-        elif not re.match(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', guid):
+        elif not re.match(
+            r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", guid
+        ):
             raise ValueError(f"'{guid}' is not a valid GUID")
 
         # create config
@@ -129,7 +130,7 @@ def scripts(
             tasks=tasks,
             processes=processes,
             header_skip=header_skip,
-            parallel=parallel_strategy
+            parallel=parallel_strategy,
         )
         config = ScriptConfig(
             image=image,
@@ -148,7 +149,7 @@ def scripts(
             bind_mounts=bind_mounts,
             no_cache=no_cache,
             gpus=gpus,
-            jobqueue=jobqueue
+            jobqueue=jobqueue,
         )
 
     # generate scripts
@@ -174,7 +175,9 @@ def token(username, password):
 @click.option("--token", "-t", required=False, type=str)
 @click.option("--timeout", "-to", required=False, type=int, default=15)
 def user(username, token, timeout):
-    click.echo(cyverse_commands.user_info(username=username, token=token, timeout=timeout))
+    click.echo(
+        cyverse_commands.user_info(username=username, token=token, timeout=timeout)
+    )
 
 
 @click.command()
@@ -182,7 +185,9 @@ def user(username, token, timeout):
 @click.option("--token", "-t", required=False, type=str)
 @click.option("--timeout", "-to", required=False, type=int, default=15)
 def list(remote_path, token, timeout):
-    click.echo(cyverse_commands.paged_directory(path=remote_path, token=token, timeout=timeout))
+    click.echo(
+        cyverse_commands.paged_directory(path=remote_path, token=token, timeout=timeout)
+    )
 
 
 @click.command()
@@ -200,7 +205,9 @@ def stat(remote_path, token, timeout):
 @click.option("--timeout", "-to", required=False, type=int, default=15)
 def exists(remote_path, type, token, timeout):
     click.echo(
-        cyverse_commands.exists(path=remote_path, type=type, token=token, timeout=timeout)
+        cyverse_commands.exists(
+            path=remote_path, type=type, token=token, timeout=timeout
+        )
     )
 
 
@@ -286,7 +293,9 @@ def share(remote_path, username, permission, token, timeout):
 @click.option("--token", "-t", required=False, type=str)
 @click.option("--timeout", "-to", required=False, type=int, default=15)
 def unshare(remote_path, username, token, timeout):
-    cyverse_commands.unshare(username=username, path=remote_path, token=token, timeout=timeout)
+    cyverse_commands.unshare(
+        username=username, path=remote_path, token=token, timeout=timeout
+    )
     click.echo(f"Unshared {remote_path} with {username}")
 
 

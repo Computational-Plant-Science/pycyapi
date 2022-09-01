@@ -1,18 +1,23 @@
-import logging
 import dataclasses
+import logging
 from datetime import timedelta
 from math import ceil
 from os import environ, linesep
 from os.path import join
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
 
 from _warnings import warn
 
 from plantit import docker
-from plantit.scripts.models import BindMount, EnvironmentVariable, ScriptConfig, ParallelStrategy, Shell
-from plantit.slurm import SLURM_TEMPLATE
 from plantit.cyverse.clients import CyverseClient
-
+from plantit.scripts.models import (
+    BindMount,
+    EnvironmentVariable,
+    ParallelStrategy,
+    ScriptConfig,
+    Shell,
+)
+from plantit.slurm import SLURM_TEMPLATE
 
 LAUNCHER_SCRIPT_NAME = "launch"  # TODO make configurable
 ICOMMANDS_IMAGE = f"docker://computationalplantscience/icommands"
@@ -44,7 +49,9 @@ class ScriptGenerator:
         # check required attributes
         fields = dataclasses.fields(ScriptConfig)
         ftypes = {f.name: f.type for f in fields}
-        missing = [f for f, t in ftypes if not getattr(config, f) and not t == Optional[t]]
+        missing = [
+            f for f, t in ftypes if not getattr(config, f) and not t == Optional[t]
+        ]
         errors.append(f"Missing required fields: {', '.join(missing)}")
 
         # check attribute types
@@ -105,7 +112,9 @@ class ScriptGenerator:
         headers.append("#SBATCH --error=plantit.%j.pull.err")
         headers.append(f"#SBATCH -N 1")
         headers.append(f"#SBATCH -n 1")
-        headers.append(f"#SBATCH --time=01:00:00")  # TODO: calculate as a function of input size
+        headers.append(
+            f"#SBATCH --time=01:00:00"
+        )  # TODO: calculate as a function of input size
         if "mem" not in self.config.jobqueue.header_skip:
             headers.append(f"#SBATCH --mem=1GB")
 
@@ -142,7 +151,9 @@ class ScriptGenerator:
         headers.append(f"#SBATCH -c {int(self.config.jobqueue.cores)}")
         headers.append(f"#SBATCH -N {self.config.jobqueue.nodes}")
         headers.append(f"#SBATCH --ntasks={self.config.jobqueue.tasks}")
-        headers.append(f"#SBATCH --time={ScriptGenerator.get_job_walltime(self.config)}")
+        headers.append(
+            f"#SBATCH --time={ScriptGenerator.get_job_walltime(self.config)}"
+        )
         if self.config.gpus:
             headers.append(f"#SBATCH --gres=gpu:1")
         if "--mem" not in self.config.jobqueue.header_skip:
@@ -164,7 +175,9 @@ class ScriptGenerator:
         shell = self.config.shell
         if not shell:
             shell = "sh"
-        commands.append(f"singularity exec {image} {shell} -c 'echo \"refreshing {image}\"'")
+        commands.append(
+            f"singularity exec {image} {shell} -c 'echo \"refreshing {image}\"'"
+        )
 
         # specified or default input path
         input_path = self.config.input if self.config.input else "input"
@@ -173,9 +186,13 @@ class ScriptGenerator:
             # singularity must be pre-authenticated on the agent, e.g. with `singularity remote login --username <your
             # username> docker://docker.io` also, if this is a job array, all jobs will invoke iget, but files will only
             # be downloaded once (since we don't use -f for force)
-            commands.append(f"singularity exec {ICOMMANDS_IMAGE} iget -r {self.config.source} {input_path}")
+            commands.append(
+                f"singularity exec {ICOMMANDS_IMAGE} iget -r {self.config.source} {input_path}"
+            )
         else:
-            commands.append(f"singularity exec {PLANTIT_IMAGE} plantit pull -t {self.config.token} {self.config.source} -p {input_path}")
+            commands.append(
+                f"singularity exec {PLANTIT_IMAGE} plantit pull -t {self.config.token} {self.config.source} -p {input_path}"
+            )
 
         self.logger.debug(f"Using pull command: {linesep.join(commands)}")
         return commands
@@ -190,17 +207,25 @@ class ScriptGenerator:
             commands = [f"mkdir -p {zip_dir}"]
 
             # copy results to zip dir
-            commands.append(f"for i in {self.config.output}; do [ -f \"$i\" ] && cp -a \"$i\" {zip_dir}; done")
+            commands.append(
+                f'for i in {self.config.output}; do [ -f "$i" ] && cp -a "$i" {zip_dir}; done'
+            )
 
             # zip results dir
             zip_name = f"{self.config.guid}.zip"
             commands.append(f"zip -r {zip_name} {zip_dir}/*")
 
             # push results to CyVerse and unzip once uploaded
-            commands.append(f"singularity exec {ICOMMANDS_IMAGE} iput -Dzip -f {zip_name} {self.config.sink}/")
-            commands.append(f"singularity exec {ICOMMANDS_IMAGE} ibun -x {self.config.sink}/{zip_name} {self.config.sink}")
+            commands.append(
+                f"singularity exec {ICOMMANDS_IMAGE} iput -Dzip -f {zip_name} {self.config.sink}/"
+            )
+            commands.append(
+                f"singularity exec {ICOMMANDS_IMAGE} ibun -x {self.config.sink}/{zip_name} {self.config.sink}"
+            )
         else:
-            commands = [f"singularity exec {PLANTIT_IMAGE} push -t {self.config.token} {self.config.sink} -p {self.config.output}"]
+            commands = [
+                f"singularity exec {PLANTIT_IMAGE} push -t {self.config.token} {self.config.sink} -p {self.config.output}"
+            ]
 
         self.logger.debug(f"Using push commands: {linesep.join(commands)}")
         return commands
@@ -211,7 +236,9 @@ class ScriptGenerator:
         elif self.config.jobqueue.parallel == ParallelStrategy.JOB_ARRAY:
             commands = self.gen_job_array_script()
         else:
-            raise ValueError(f"Unsupported parallelism strategy {self.config.jobqueue.parallel}")
+            raise ValueError(
+                f"Unsupported parallelism strategy {self.config.jobqueue.parallel}"
+            )
 
         self.logger.debug(f"Using run commands: {linesep.join(commands)}")
         return commands
@@ -238,7 +265,11 @@ class ScriptGenerator:
         commands = []
         if self.inputs:
             if len(self.inputs) > 1:
-                input_path = join(self.config.workdir, self.config.input if self.config.input else "input", "$file")
+                input_path = join(
+                    self.config.workdir,
+                    self.config.input if self.config.input else "input",
+                    "$file",
+                )
                 commands.append(
                     f"file=$(head -n $SLURM_ARRAY_TASK_ID inputs.list | tail -1)"
                 )
@@ -257,12 +288,8 @@ class ScriptGenerator:
 
     def gen_launcher_entrypoint(self) -> List[str]:
         commands = []
-        commands.append(
-            f"export LAUNCHER_WORKDIR={self.config.workdir}"
-        )
-        commands.append(
-            f"export LAUNCHER_JOB_FILE={environ.get(LAUNCHER_SCRIPT_NAME)}"
-        )
+        commands.append(f"export LAUNCHER_WORKDIR={self.config.workdir}")
+        commands.append(f"export LAUNCHER_JOB_FILE={environ.get(LAUNCHER_SCRIPT_NAME)}")
         commands.append("$LAUNCHER_DIR/paramrun")
         return commands
 

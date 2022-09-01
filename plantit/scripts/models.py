@@ -42,14 +42,14 @@ class EnvironmentVariable:
 
 
 class Shell(Enum):
-    BASH = 'bash'
-    ZSH = 'zsh'
-    SH = 'sh'
+    BASH = "bash"
+    ZSH = "zsh"
+    SH = "sh"
 
 
 class ParallelStrategy(Enum):
-    JOB_ARRAY = 'job_array'
-    LAUNCHER = 'launcher'
+    JOB_ARRAY = "job_array"
+    LAUNCHER = "launcher"
 
 
 @dataclass
