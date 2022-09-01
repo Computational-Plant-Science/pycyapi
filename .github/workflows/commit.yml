@@ -59,14 +59,13 @@ jobs:
       - name: Create SSH key
         run: |
           mkdir -p ~/.ssh/
-          echo "$CLUSTER_PRIVATE_KEY" > ../private.key
-          sudo chmod 600 ../private.key
+          echo "$CLUSTER_PRIVATE_KEY" > ~/.ssh/id_rsa
+          sudo chmod 600 ~/.ssh/id_rsa:w
           echo "$CLUSTER_HOST" > ~/.ssh/known_hosts
         shell: bash
         env:
-          CLUSTERS_PRIVATE_KEY: ${{secrets.CLUSTER_PRIVATE_KEY}}
           CLUSTER_HOST: ${{secrets.CLUSTER_HOST}}
-          CLUSTER_KEY_PATH: ${{ github.workspace }}/../private.key
+          CLUSTER_PRIVATE_KEY: ${{secrets.CLUSTER_PRIVATE_KEY}}
       - name: Run smoke tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -76,7 +75,7 @@ jobs:
           CLUSTER_USER: ${{secrets.CLUSTER_USER}}
           CLUSTER_HOME_DIR: ${{secrets.CLUSTER_HOME_DIR}}
           CLUSTER_PASSWORD: ${{secrets.CLUSTER_PASSWORD}}
-          CLUSTER_KEY_PATH: ${{ github.workspace }}/../private.key
+          CLUSTER_KEY_PATH: ~/.ssh/id_rsa
         run: |
           pytest -v -n auto -S
   test:
@@ -107,14 +106,13 @@ jobs:
       - name: Create SSH key
         run: |
           mkdir -p ~/.ssh/
-          echo "$CLUSTER_PRIVATE_KEY" > ../private.key
-          sudo chmod 600 ../private.key
+          echo "$CLUSTER_PRIVATE_KEY" > ~/.ssh/id_rsa
+          sudo chmod 600 ~/.ssh/id_rsa:w
           echo "$CLUSTER_HOST" > ~/.ssh/known_hosts
         shell: bash
         env:
-          CLUSTERS_PRIVATE_KEY: ${{secrets.CLUSTER_PRIVATE_KEY}}
           CLUSTER_HOST: ${{secrets.CLUSTER_HOST}}
-          CLUSTER_KEY_PATH: ${{ github.workspace }}/../private.key
+          CLUSTER_PRIVATE_KEY: ${{secrets.CLUSTER_PRIVATE_KEY}}
       - name: Test
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -127,7 +125,7 @@ jobs:
           CLUSTER_USER: ${{secrets.CLUSTER_USER}}
           CLUSTER_HOME_DIR: ${{secrets.CLUSTER_HOME_DIR}}
           CLUSTER_PASSWORD: ${{secrets.CLUSTER_PASSWORD}}
-          CLUSTER_KEY_PATH: ${{ github.workspace }}/../private.key
+          CLUSTER_KEY_PATH: ~/.ssh/id_rsa
         run: |
           coverage run --source=plantit -m pytest -s -v -n auto --keep-failed=.failed
           coveralls
