@@ -9,13 +9,13 @@ CLUSTER_KEY_PATH = environ.get('CLUSTER_KEY_PATH')
 CLUSTER_HOME_DIR = environ.get('CLUSTER_HOME_DIR')
 
 
-def test_password_connection():
+def test_password_auth():
     with SSH(CLUSTER_HOST, 22, CLUSTER_USER, password=CLUSTER_PASSWORD) as client:
         assert client.get_transport()
         assert client.get_transport().is_active()
 
 
-def test_key_connection():
+def test_key_auth():
     with SSH(CLUSTER_HOST, 22, CLUSTER_USER, pkey=CLUSTER_KEY_PATH) as client:
         assert client.get_transport()
         assert client.get_transport().is_active()

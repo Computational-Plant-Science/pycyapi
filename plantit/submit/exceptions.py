@@ -1,0 +1,2 @@
+class ExitStatusException(Exception):
+    pass
