@@ -24,4 +24,4 @@ def test_key_connection():
 def test_command():
     with SSH(CLUSTER_HOST, 22, CLUSTER_USER, pkey=CLUSTER_KEY_PATH) as client:
         stdin, stdout, stderr = client.exec_command('pwd')
-        assert f"/{CLUSTER_HOME_DIR}\n" == stdout.readlines()[0]
+        assert f"{CLUSTER_HOME_DIR}\n" == stdout.readlines()[0]
