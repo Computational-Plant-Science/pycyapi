@@ -56,11 +56,27 @@ jobs:
           pip install --upgrade pip
           pip install .
           pip install ".[test]"
+      - name: Create SSH key
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$CLUSTER_PRIVATE_KEY" > ../private.key
+          sudo chmod 600 ../private.key
+          echo "$CLUSTER_HOST" > ~/.ssh/known_hosts
+        shell: bash
+        env:
+          CLUSTERS_PRIVATE_KEY: ${{secrets.CLUSTER_PRIVATE_KEY}}
+          CLUSTER_HOST: ${{secrets.CLUSTER_HOST}}
+          CLUSTER_KEY_PATH: ${{ github.workspace }}/../private.key
       - name: Run smoke tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CYVERSE_USERNAME: ${{ secrets.CYVERSE_USERNAME }}
           CYVERSE_PASSWORD: ${{ secrets.CYVERSE_PASSWORD }}
+          CLUSTER_HOST: ${{secrets.CLUSTER_HOST}}
+          CLUSTER_USER: ${{secrets.CLUSTER_USER}}
+          CLUSTER_HOME_DIR: ${{secrets.CLUSTER_HOME_DIR}}
+          CLUSTER_PASSWORD: ${{secrets.CLUSTER_PASSWORD}}
+          CLUSTER_KEY_PATH: ${{ github.workspace }}/../private.key
         run: |
           pytest -v -n auto -S
   test:
@@ -88,6 +104,17 @@ jobs:
           pip install --upgrade pip
           pip install .
           pip install ".[test]"
+      - name: Create SSH key
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$CLUSTER_PRIVATE_KEY" > ../private.key
+          sudo chmod 600 ../private.key
+          echo "$CLUSTER_HOST" > ~/.ssh/known_hosts
+        shell: bash
+        env:
+          CLUSTERS_PRIVATE_KEY: ${{secrets.CLUSTER_PRIVATE_KEY}}
+          CLUSTER_HOST: ${{secrets.CLUSTER_HOST}}
+          CLUSTER_KEY_PATH: ${{ github.workspace }}/../private.key
       - name: Test
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -96,6 +123,11 @@ jobs:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
           COVERALLS_PARALLEL: true
+          CLUSTER_HOST: ${{secrets.CLUSTER_HOST}}
+          CLUSTER_USER: ${{secrets.CLUSTER_USER}}
+          CLUSTER_HOME_DIR: ${{secrets.CLUSTER_HOME_DIR}}
+          CLUSTER_PASSWORD: ${{secrets.CLUSTER_PASSWORD}}
+          CLUSTER_KEY_PATH: ${{ github.workspace }}/../private.key
         run: |
           coverage run --source=plantit -m pytest -s -v -n auto --keep-failed=.failed
           coveralls
