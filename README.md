@@ -12,6 +12,7 @@ CLI, Python library and science gateway for high-throughput phenotyping on clust
 
 ![CI](https://github.com/Computational-Plant-Science/plantit-cli/workflows/CI/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/Computational-Plant-Science/plantit-cli/badge.svg?branch=master)](https://coveralls.io/github/Computational-Plant-Science/plantit-cli) 
+![Status](https://img.shields.io/badge/-under%20development-yellow?style=flat-square)
 
 **In development, not stable.**
 
