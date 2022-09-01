@@ -68,7 +68,6 @@ jobs:
           CLUSTER_USER: ${{secrets.CLUSTER_USER}}
           CLUSTER_HOME_DIR: ${{secrets.CLUSTER_HOME_DIR}}
           CLUSTER_PASSWORD: ${{secrets.CLUSTER_PASSWORD}}
-          CLUSTER_KEY_PATH: ~/.ssh/id_rsa
           CYVERSE_USERNAME: ${{ secrets.CYVERSE_USERNAME }}
           CYVERSE_PASSWORD: ${{ secrets.CYVERSE_PASSWORD }}
         run: |
@@ -102,14 +101,13 @@ jobs:
         uses: ./.github/actions/cache_ssh
         with:
           private_key: ${{ secrets.CLUSTER_PRIVATE_KEY }}
-          known_host: ${{ secrets.CLUSTER_HOST }}
+          host: ${{ secrets.CLUSTER_HOST }}
       - name: Test
         env:
           CLUSTER_HOST: ${{secrets.CLUSTER_HOST}}
           CLUSTER_USER: ${{secrets.CLUSTER_USER}}
           CLUSTER_HOME_DIR: ${{secrets.CLUSTER_HOME_DIR}}
           CLUSTER_PASSWORD: ${{secrets.CLUSTER_PASSWORD}}
-          CLUSTER_KEY_PATH: ~/.ssh/id_rsa
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
           COVERALLS_PARALLEL: true

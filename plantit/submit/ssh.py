@@ -45,7 +45,14 @@ class SSH:
                 timeout=self.timeout,
             )
         else:
-            raise ValueError(f"No authentication strategy provided")
+            # assume private key is in default location and
+            # public key is in the host's authorized_hosts
+            client.connect(
+                hostname=self.host,
+                port=self.port,
+                username=self.username,
+                timeout=self.timeout,
+            )
 
         self.client = client
         return self.client

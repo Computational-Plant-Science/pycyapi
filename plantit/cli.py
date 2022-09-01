@@ -159,8 +159,36 @@ def scripts(
 
 
 @click.command()
-def submit():
-    click.echo("not implemented yet")
+@click.option("--workdir", required=True, type=str)
+@click.option("--script", required=True, type=str)
+@click.option("--host", required=True, type=str)
+@click.option("--port", required=False, type=int, default=22)
+@click.option("--username", required=True, type=str)
+@click.option("--password", required=False, type=str)
+@click.option("--key_path", required=False, type=str)
+@click.option("--timeout", required=False, type=int, default=10)
+@click.option("--allow_stderr", required=False, type=bool, default=False)
+def submit(
+        workdir,
+        script,
+        host,
+        port,
+        username,
+        password,
+        key_path,
+        timeout,
+        allow_stderr
+):
+    config = SubmitConfig(workdir=workdir,
+                          script=script,
+                          host=host,
+                          port=port,
+                          username=username,
+                          password=password,
+                          key_path=key_path,
+                          timeout=timeout,
+                          allow_stderr=allow_stderr)
+    click.echo(submit_commands.submit(config))
 
 
 @click.command()

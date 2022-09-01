@@ -8,7 +8,6 @@ from plantit.submit.ssh import SSH
 CLUSTER_HOST = environ.get("CLUSTER_HOST")
 CLUSTER_USER = environ.get("CLUSTER_USER")
 CLUSTER_PASSWORD = environ.get("CLUSTER_PASSWORD")
-CLUSTER_KEY_PATH = environ.get("CLUSTER_KEY_PATH")
 CLUSTER_HOME_DIR = environ.get("CLUSTER_HOME_DIR")
 SLURM_JOB_SCRIPT = environ.get("SLURM_JOB_SCRIPT")
 LOCAL_SCRIPT_PATH = Path(__file__).parent / "slurm_template.sh"
@@ -45,7 +44,6 @@ def test_submit_with_key_auth():
         host=CLUSTER_HOST,
         port=22,
         username=CLUSTER_USER,
-        key=CLUSTER_KEY_PATH,
         workdir=CLUSTER_HOME_DIR,
         script=str(REMOTE_SCRIPT_PATH),
     )
