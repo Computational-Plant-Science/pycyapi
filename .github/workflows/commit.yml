@@ -115,7 +115,7 @@ jobs:
           CYVERSE_PASSWORD: ${{ secrets.CYVERSE_PASSWORD }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          coverage run --source=plantit -m pytest -s -v -n auto --keep-failed=.failed
+          coverage run --source='.' -m pytest -s -v -n auto --keep-failed=.failed
           coveralls
       - name: Upload failed test outputs
         uses: actions/upload-artifact@v2
