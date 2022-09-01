@@ -1,0 +1,26 @@
+name: Cache SSH
+description: Create & cache an `~/.ssh` configuration to connect to a remote host.
+inputs:
+  private_key:
+    description: The private key
+    required: true
+  known_host:
+    description: A hostname to add to known_hosts
+    required: false
+runs:
+  using: composite
+  steps:
+    - name: Cache SSH dir
+      id: cache_ssh
+      uses: actions/cache@v3
+      with:
+        path: ~/.ssh/
+        key: ssh-${{ runner.os }}
+    - name: Create SSH key
+      if: steps.cache_ssh.outputs.cache_hit != 'true'
+      run: |
+        mkdir -p ~/.ssh/
+        echo "${{ inputs.private_key }}" > ~/.ssh/id_rsa
+        sudo chmod 600 ~/.ssh/id_rsa
+        echo "${{ inputs.known_host }}" > ~/.ssh/known_hosts
+      shell: bash
