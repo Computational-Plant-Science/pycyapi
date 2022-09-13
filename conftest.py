@@ -77,6 +77,20 @@ def session_tmpdir(tmpdir_factory, request) -> Path:
         copytree(temp, Path(keep) / temp.name)
 
 
+@pytest.hookimpl(hookwrapper=True, tryfirst=True)
+def pytest_runtest_makereport(item, call):
+    # this is necessary so temp dir fixtures can
+    # inspect test results and check for failure
+    # (see https://doc.pytest.org/en/latest/example/simple.html#making-test-result-information-available-in-fixtures)
+
+    outcome = yield
+    rep = outcome.get_result()
+
+    # report attribute for each phase (setup, call, teardown)
+    # we're only interested in result of the function call
+    setattr(item, "rep_" + rep.when, rep)
+
+
 def pytest_addoption(parser):
     parser.addoption(
         "-K",
