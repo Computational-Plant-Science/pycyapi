@@ -15,19 +15,26 @@ logger = logging.getLogger(__file__)
 
 
 def parse_image_components(value):
-    container_split = (
-        value.split("#", 1)[0].strip().split("/")
+    v = (
+        value.split("#", 1)[0].strip()
     )  # get rid of comments first
-    container_name = container_split[-1]
-    container_owner = None if container_split[-2] == "" else container_split[-2]
-    if ":" in container_name:
-        container_name_split = container_name.split(":")
-        container_name = container_name_split[0]
-        container_tag = container_name_split[1]
-    else:
-        container_tag = None
 
-    return container_owner, container_name, container_tag
+    if "/" in v:
+        splt = v.split("/")
+        name = splt[-1]
+        owner = splt[-2]
+    else:
+        name = v
+        owner = None
+
+    if ":" in name:
+        name_splt = name.split(":")
+        name = name_splt[0]
+        tag = name_splt[1]
+    else:
+        tag = None
+
+    return owner, name, tag
 
 
 @retry(

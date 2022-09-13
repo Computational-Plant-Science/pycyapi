@@ -1,3 +1,4 @@
+from os import linesep
 from pathlib import Path
 
 from plantit.scripts.generator import ScriptGenerator
@@ -10,15 +11,13 @@ def scripts(config: ScriptConfig):
 
     if config.source:
         files[f"pull.{config.guid}.sh"] = generator.gen_pull_script()
-
     files[f"run.{config.guid}.sh"] = generator.gen_job_script()
-
     if config.sink:
         files[f"push.{config.guid}.sh"] = generator.gen_push_script()
 
     for name, script in files.items():
-        with open(name, "wt", encoding="utf-8") as f:
+        with open(name, "wt", encoding="utf-8") as file:
             for line in script:
-                f.write(line)
+                file.write(line + linesep)
 
     return [Path(name) for name in files.keys()]

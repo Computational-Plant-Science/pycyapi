@@ -4,6 +4,7 @@ from datetime import timedelta
 from math import ceil
 from os import environ, linesep
 from os.path import join
+from pathlib import Path
 from typing import List, Optional, Tuple
 
 from _warnings import warn
@@ -15,10 +16,10 @@ from plantit.scripts.models import (
     EnvironmentVariable,
     ParallelStrategy,
     ScriptConfig,
-    Shell,
+    Shell, JobqueueConfig,
 )
-from plantit.slurm import SLURM_TEMPLATE
 
+SHEBANG = "#!/bin/bash"
 LAUNCHER_SCRIPT_NAME = "launch"  # TODO make configurable
 ICOMMANDS_IMAGE = f"docker://computationalplantscience/icommands"
 PLANTIT_IMAGE = f"docker://computationalplantscience/plantit"
@@ -50,20 +51,18 @@ class ScriptGenerator:
         fields = dataclasses.fields(ScriptConfig)
         ftypes = {f.name: f.type for f in fields}
         missing = [
-            f for f, t in ftypes if not getattr(config, f) and not t == Optional[t]
+            f for f, t in ftypes.items() if getattr(config, f) is None and t != Optional[t] and t != JobqueueConfig
         ]
-        errors.append(f"Missing required fields: {', '.join(missing)}")
+        if len(missing) > 0:
+            errors.append(f"Missing required fields: {', '.join(missing)}")
 
-        # check attribute types
-        for f, t in ftypes:
-            v = getattr(config, f)
-            tv = type(v)
-            if not isinstance(tv, t):
-                errors.append(f"Field {f} expected {t}, got {tv}")
+        # validate jobqueue config
+        if not config.jobqueue.queue:
+            errors.append(f"Cluster queue must be provided")
 
         # check image is on DockerHub
         image_owner, image_name, image_tag = docker.parse_image_components(config.image)
-        if not docker.image_exists(image_owner, image_name, image_tag):
+        if not docker.image_exists(image_name, owner=image_owner, tag=image_tag):
             errors.append(f"Image {config.image} not found on Docker Hub")
 
         client = None
@@ -80,8 +79,11 @@ class ScriptGenerator:
         return len(errors) == 0, errors
 
     @staticmethod
-    def list_input_files(config: ScriptConfig) -> List[str]:
-        pass
+    def list_input_files(config: ScriptConfig) -> List[Path]:
+        if config.input:
+            return [p for p in Path(config.input).glob("*")]
+        else:
+            return []
 
     @staticmethod
     def get_job_walltime(config: ScriptConfig):
@@ -156,7 +158,7 @@ class ScriptGenerator:
         )
         if self.config.gpus:
             headers.append(f"#SBATCH --gres=gpu:1")
-        if "--mem" not in self.config.jobqueue.header_skip:
+        if not self.config.jobqueue.header_skip or "--mem" not in self.config.jobqueue.header_skip:
             headers.append(f"#SBATCH --mem={str(self.config.jobqueue.mem)}GB")
 
         self.logger.debug(f"Using run headers: {linesep.join(headers)}")
@@ -244,22 +246,19 @@ class ScriptGenerator:
         return commands
 
     def gen_pull_script(self) -> List[str]:
-        template = [line for line in SLURM_TEMPLATE.splitlines()]
         headers = self.gen_pull_headers()
         command = self.gen_pull_command()
-        return template + headers + command
+        return [SHEBANG] + headers + command
 
     def gen_push_script(self) -> List[str]:
-        template = [line for line in SLURM_TEMPLATE.splitlines()]
         headers = self.gen_push_headers()
         command = self.gen_push_command()
-        return template + headers + command
+        return [SHEBANG] + headers + command
 
     def gen_job_script(self) -> List[str]:
-        template = [line for line in SLURM_TEMPLATE.splitlines()]
         headers = self.gen_job_headers()
         command = self.gen_job_command()
-        return template + headers + command
+        return [SHEBANG] + headers + command
 
     def gen_job_array_script(self) -> List[str]:
         commands = []
@@ -381,7 +380,7 @@ class ScriptGenerator:
             command += " "
 
         # singularity invocation and working directory
-        command += f" singularity exec --home {work_dir}"
+        command += f"singularity exec --home {work_dir}"
 
         # add bind mount arguments
         if bind_mounts is not None and len(bind_mounts) > 0:
@@ -400,7 +399,7 @@ class ScriptGenerator:
         # append the command
         if shell is None:
             shell = "sh"
-        command += f" {image} {shell} -c '{commands}'"
+        command += f" {image} {shell.value} -c \"{commands}\""
 
         # docker auth info (optional)
         if docker_username is not None and docker_password is not None:

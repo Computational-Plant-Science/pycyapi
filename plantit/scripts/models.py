@@ -54,16 +54,16 @@ class ParallelStrategy(Enum):
 
 @dataclass
 class JobqueueConfig:
-    walltime: str
     queue: str
-    project: str
-    mem: str
-    nodes: int
-    cores: int
-    tasks: int
-    processes: int
-    header_skip: Optional[str] = None
+    nodes: int = 1
+    cores: int = 1
+    tasks: int = 1
+    processes: int = 1
+    mem: str = "1GB"
+    walltime: str = "00:10:00"
     parallel: ParallelStrategy = ParallelStrategy.JOB_ARRAY
+    project: Optional[str] = None
+    header_skip: Optional[str] = None
 
 
 @dataclass

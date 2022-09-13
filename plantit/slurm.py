@@ -1,7 +1,7 @@
 # job script header template
 
 SLURM_TEMPLATE = """
-#!/bin/bash
+
 """
 
 
