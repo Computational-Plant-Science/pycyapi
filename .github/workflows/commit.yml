@@ -68,8 +68,10 @@ jobs:
           CLUSTER_USER: ${{secrets.CLUSTER_USER}}
           CLUSTER_HOME_DIR: ${{secrets.CLUSTER_HOME_DIR}}
           CLUSTER_PASSWORD: ${{secrets.CLUSTER_PASSWORD}}
+          CLUSTER_QUEUE: ${{ secrets.CLUSTER_QUEUE }}
           CYVERSE_USERNAME: ${{ secrets.CYVERSE_USERNAME }}
           CYVERSE_PASSWORD: ${{ secrets.CYVERSE_PASSWORD }}
+          TESTING_EMAIL: ${{ secrets.TESTING_EMAIL }}
         run: |
           pytest -v -n auto -S
   test:
