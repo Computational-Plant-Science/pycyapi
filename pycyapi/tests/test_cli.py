@@ -8,9 +8,9 @@ from time import sleep
 import pytest
 from click.testing import CliRunner
 
-import plantit.cli
-from plantit.cyverse.auth import CyverseAccessToken
-from plantit.tests.conftest import (
+import pycyapi.cli
+from pycyapi.cyverse.auth import CyverseAccessToken
+from pycyapi.tests.conftest import (
     create_collection,
     delete_collection,
     get_metadata,
@@ -59,7 +59,7 @@ token = CyverseAccessToken.get()
 def test_cas_token():
     runner = CliRunner()
     result = runner.invoke(
-        plantit.cli.token, ["--username", username, "--password", password]
+        pycyapi.cli.token, ["--username", username, "--password", password]
     )
     tkn = result.output.strip()
 
@@ -78,7 +78,7 @@ def test_create_directory(remote_base_path):
 
     try:
         runner = CliRunner()
-        runner.invoke(plantit.cli.create, ["--token", token, remote_path])
+        runner.invoke(pycyapi.cli.create, ["--token", token, remote_path])
 
         directories = list_directories(token=token, path=f"iplant/home/{username}/")
         assert basename(remote_path) in directories
@@ -89,7 +89,7 @@ def test_create_directory(remote_base_path):
 def test_exists_when_doesnt_exist(remote_base_path):
     runner = CliRunner()
     result = runner.invoke(
-        plantit.cli.exists,
+        pycyapi.cli.exists,
         [
             "--token",
             token,
@@ -102,7 +102,7 @@ def test_exists_when_doesnt_exist(remote_base_path):
 def test_exists_when_is_a_file(remote_base_path):
     runner = CliRunner()
     result = runner.invoke(
-        plantit.cli.exists,
+        pycyapi.cli.exists,
         [
             "--token",
             token,
@@ -117,7 +117,7 @@ def test_exists_when_is_a_directory(remote_base_path):
 
     # with trailing slash
     result = runner.invoke(
-        plantit.cli.exists,
+        pycyapi.cli.exists,
         [
             "--token",
             token,
@@ -128,7 +128,7 @@ def test_exists_when_is_a_directory(remote_base_path):
 
     # without trailing slash
     result = runner.invoke(
-        plantit.cli.exists,
+        pycyapi.cli.exists,
         [
             "--token",
             token,
@@ -182,7 +182,7 @@ def test_list(remote_base_path):
 
             # list files
             runner = CliRunner()
-            result = runner.invoke(plantit.cli.list, ["--token", token, remote_path])
+            result = runner.invoke(pycyapi.cli.list, ["--token", token, remote_path])
 
             # check files
             assert join(remote_path, file1_name) in result.output
@@ -224,7 +224,7 @@ def test_download_file(remote_base_path):
             # download file
             runner = CliRunner()
             runner.invoke(
-                plantit.cli.pull,
+                pycyapi.cli.pull,
                 [
                     "--token",
                     token,
@@ -272,7 +272,7 @@ def test_download_directory(remote_base_path):
             # download files
             runner = CliRunner()
             result = runner.invoke(
-                plantit.cli.pull,
+                pycyapi.cli.pull,
                 ["--token", token, "--local_path", testdir, remote_path],
             )
         except ValueError as e:
@@ -304,7 +304,7 @@ def test_upload_file(remote_base_path):
             # upload file
             runner = CliRunner()
             runner.invoke(
-                plantit.cli.push,
+                pycyapi.cli.push,
                 ["--token", token, "--local_path", file_path, remote_path],
             )
         except ValueError as e:
@@ -339,7 +339,7 @@ def test_upload_directory(remote_base_path):
             # upload directory
             runner = CliRunner()
             result = runner.invoke(
-                plantit.cli.push,
+                pycyapi.cli.push,
                 ["--token", token, "--local_path", testdir, remote_path, "-ip", ".txt"],
             )
         except ValueError as e:
@@ -379,7 +379,7 @@ def test_tag(remote_base_path):
             # set file metadata
             runner = CliRunner()
             runner.invoke(
-                plantit.cli.tag,
+                pycyapi.cli.tag,
                 ["--token", token, "-a", "k1=v1", "-a", "k2=v2", "-ia", "k3=v3", id],
             )
         except ValueError as e:
@@ -435,7 +435,7 @@ def test_tags(remote_base_path):
 
             # get file metadata
             runner = CliRunner()
-            result = runner.invoke(plantit.cli.tags, ["--token", token, id])
+            result = runner.invoke(pycyapi.cli.tags, ["--token", token, id])
             print(result)
         except ValueError as e:
             if "I/O operation on closed file" not in str(e):

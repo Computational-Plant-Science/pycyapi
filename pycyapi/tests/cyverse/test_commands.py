@@ -5,9 +5,9 @@ from tempfile import TemporaryDirectory
 
 import pytest
 
-from plantit.cyverse import commands as commands
-from plantit.cyverse.auth import CyverseAccessToken
-from plantit.tests.conftest import (
+from pycyapi.cyverse import commands as commands
+from pycyapi.cyverse.auth import CyverseAccessToken
+from pycyapi.tests.conftest import (
     check_hello,
     create_collection,
     delete_collection,

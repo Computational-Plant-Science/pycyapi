@@ -1,14 +1,14 @@
 import uuid
-from os import environ, remove
+from os import remove
 from os.path import isfile, join
 from tempfile import TemporaryDirectory
 
 import pytest
-from requests import HTTPError
+from httpx import HTTPStatusError
 
-from plantit.cyverse.auth import CyverseAccessToken
-from plantit.cyverse.clients import CyverseClient
-from plantit.tests.conftest import (
+from pycyapi.cyverse.auth import CyverseAccessToken
+from pycyapi.cyverse.clients import AsyncCyverseClient
+from pycyapi.tests.conftest import (
     create_collection,
     delete_collection,
     get_metadata,
@@ -20,52 +20,52 @@ from plantit.tests.conftest import (
 
 message = "Message"
 token = CyverseAccessToken.get()
-client = CyverseClient(token)
+client = AsyncCyverseClient(token)
 
 
-def test_get_user_info():
-    username = environ.get("CYVERSE_USERNAME")
-    user_info = client.user_info(username)
-    assert user_info["id"] == username
-
-
-def test_throws_error_when_token_is_invalid():
-    with pytest.raises(HTTPError) as e:
-        client = CyverseClient("not a valid token")
-        client.exists("/iplant/home/shared/iplantcollaborative/testing_tools/cowsay")
+@pytest.mark.asyncio
+async def test_throws_error_when_token_is_invalid():
+    with pytest.raises(HTTPStatusError) as e:
+        await AsyncCyverseClient("not a token").exists_async(
+            "/iplant/home/shared/iplantcollaborative/testing_tools/cowsay"
+        )
         assert "401" in str(e)
 
 
-def test_path_exists_when_doesnt():
-    exists = client.exists(
+@pytest.mark.asyncio
+async def test_path_exists_when_doesnt():
+    exists = await client.exists_async(
         "/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/cowsaid.txt"
     )
     assert not exists
 
 
-def test_path_exists_when_is_a_file():
-    exists = client.exists(
+@pytest.mark.asyncio
+async def test_path_exists_when_is_a_file():
+    exists = await client.exists_async(
         "/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/cowsay.txt"
     )
     assert exists
 
 
-def test_path_exists_when_is_a_directory():
+@pytest.mark.asyncio
+async def test_path_exists_when_is_a_directory():
     # with trailing slash
-    exists = client.exists(
+    exists = await client.exists_async(
         "/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/"
     )
     assert exists
 
     # without trailing slash
-    exists = client.exists(
+    exists = await client.exists_async(
         "/iplant/home/shared/iplantcollaborative/testing_tools/cowsay"
     )
     assert exists
 
 
+@pytest.mark.asyncio
 @pytest.mark.slow
-def test_dir_exists_when_is_a_directory(remote_base_path):
+async def test_dir_exists_when_is_a_directory(remote_base_path):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
 
     try:
@@ -73,14 +73,17 @@ def test_dir_exists_when_is_a_directory(remote_base_path):
         create_collection(token, remote_path)
 
         # test remote directories exist
-        assert client.dir_exists(remote_path)
-        assert not client.dir_exists(join(remote_base_path, "notCollection"))
+        assert await client.dir_exists_async(remote_path)
+        assert not await client.dir_exists_async(
+            join(remote_base_path, "notCollection")
+        )
     finally:
         delete_collection(token, remote_path)
 
 
+@pytest.mark.asyncio
 @pytest.mark.slow
-def test_dir_exists_when_is_a_file(remote_base_path):
+async def test_dir_exists_when_is_a_file(remote_base_path):
     with TemporaryDirectory() as testdir:
         file1_name = "f1.txt"
         file1_path = join(testdir, file1_name)
@@ -99,15 +102,16 @@ def test_dir_exists_when_is_a_file(remote_base_path):
             upload_file(token, file1_path, remote_dir_path)
 
             # check if path exists
-            assert client.dir_exists(remote_base_path)
-            assert client.dir_exists(remote_dir_path)
-            assert not client.dir_exists(remote_file_path)
+            assert await client.dir_exists_async(remote_base_path)
+            assert await client.dir_exists_async(remote_dir_path)
+            assert not await client.dir_exists_async(remote_file_path)
         finally:
             delete_collection(token, remote_dir_path)
 
 
+@pytest.mark.asyncio
 @pytest.mark.slow
-def test_file_exists_when_is_a_file(remote_base_path):
+async def test_file_exists_when_is_a_file(remote_base_path):
     with TemporaryDirectory() as testdir:
         file1_name = "f1.txt"
         file2_name = "f2.txt"
@@ -126,14 +130,15 @@ def test_file_exists_when_is_a_file(remote_base_path):
             upload_file(token, file1_path, remote_path)
 
             # test remote files exist
-            assert client.file_exists(join(remote_path, file1_name))
-            assert not client.file_exists(join(remote_path, file2_name))
+            assert await client.file_exists_async(join(remote_path, file1_name))
+            assert not await client.file_exists_async(join(remote_path, file2_name))
         finally:
             delete_collection(token, remote_path)
 
 
+@pytest.mark.asyncio
 @pytest.mark.slow
-def test_file_exists_when_is_a_directory(remote_base_path):
+async def test_file_exists_when_is_a_directory(remote_base_path):
     with TemporaryDirectory() as testdir:
         file1_name = "f1.txt"
         file2_name = "f2.txt"
@@ -152,14 +157,15 @@ def test_file_exists_when_is_a_directory(remote_base_path):
             upload_file(token, file1_path, remote_path)
 
             # test if path exists
-            assert client.file_exists(join(remote_path, file1_name))
-            assert not client.file_exists(remote_base_path)
+            assert await client.file_exists_async(join(remote_path, file1_name))
+            assert not await client.file_exists_async(remote_base_path)
         finally:
             delete_collection(token, remote_path)
 
 
+@pytest.mark.asyncio
 @pytest.mark.slow
-def test_list(remote_base_path):
+async def test_list(remote_base_path):
     with TemporaryDirectory() as testdir:
         file1_name = "f1.txt"
         file2_name = "f2.txt"
@@ -181,7 +187,8 @@ def test_list(remote_base_path):
             upload_file(token, file2_path, remote_path)
 
             # list files
-            paths = [file["path"] for file in client.list(remote_path)["files"]]
+            files = (await client.list_async(remote_path))["files"]
+            paths = [file["path"] for file in files]
 
             # check files
             assert join(remote_path, file1_name) in paths
@@ -190,45 +197,54 @@ def test_list(remote_base_path):
             delete_collection(token, remote_path)
 
 
-def test_list_no_retries_when_path_does_not_exist(remote_base_path):
+@pytest.mark.asyncio
+async def test_list_no_retries_when_path_does_not_exist(remote_base_path):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
-    with pytest.raises(ValueError):
-        client.list(remote_path)
+    with pytest.raises(HTTPStatusError) as e:
+        await client.list_async(remote_path)
+        assert "500" in str(e)
 
 
-def test_list_retries_when_token_invalid(remote_base_path):
+@pytest.mark.asyncio
+async def test_list_retries_when_token_invalid(remote_base_path):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
-    with pytest.raises(ValueError):
-        client.list(remote_path)
+    with pytest.raises(HTTPStatusError) as e:
+        await client.list_async(remote_path)
+        assert "500" in str(e)
 
 
+@pytest.mark.asyncio
 @pytest.mark.slow
-def test_mkdir(remote_base_path):
+async def test_mkdir(remote_base_path):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
 
     try:
-        client.mkdir(remote_path)
+        await client.mkdir_async(remote_path)
 
         # check dir exists
-        assert client.dir_exists(remote_path)
+        exists = await client.dir_exists_async(remote_path)
+        assert exists
     finally:
         delete_collection(token, remote_path)
 
 
+@pytest.mark.asyncio
 @pytest.mark.skip(reason="todo")
-def test_share(remote_base_path):
+async def test_share(remote_base_path):
     # TODO: how to test this? might need 2 CyVerse accounts
     pass
 
 
+@pytest.mark.asyncio
 @pytest.mark.skip(reason="todo")
-def test_unshare(remote_base_path):
+async def test_unshare(remote_base_path):
     # TODO: how to test this? might need 2 CyVerse accounts
     pass
 
 
+@pytest.mark.asyncio
 @pytest.mark.slow
-def test_download_file(remote_base_path):
+async def test_download_file(remote_base_path):
     with TemporaryDirectory() as testdir:
         file_name = "f1.txt"
         file_path = join(testdir, file_name)
@@ -246,7 +262,7 @@ def test_download_file(remote_base_path):
             upload_file(token, file_path, remote_path)
 
             # download file
-            client.download(join(remote_path, file_name), testdir)
+            await client.download_async(join(remote_path, file_name), testdir)
 
             # check download
             assert isfile(file_path)
@@ -254,8 +270,9 @@ def test_download_file(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@pytest.mark.asyncio
 @pytest.mark.slow
-def test_download_directory(remote_base_path):
+async def test_download_directory(remote_base_path):
     with TemporaryDirectory() as testdir:
         file1_name = "f1.txt"
         file2_name = "f2.txt"
@@ -281,7 +298,7 @@ def test_download_directory(remote_base_path):
             remove(file2_path)
 
             # download files
-            client.download_directory(remote_path, testdir, [".txt"])
+            await client.download_directory_async(remote_path, testdir, [".txt"])
 
             # check downloads
             assert isfile(file1_path)
@@ -290,8 +307,9 @@ def test_download_directory(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@pytest.mark.asyncio
 @pytest.mark.slow
-def test_upload_file(remote_base_path):
+async def test_upload_file(remote_base_path):
     with TemporaryDirectory() as testdir:
         file_name = "f1.txt"
         file_path = join(testdir, file_name)
@@ -306,7 +324,7 @@ def test_upload_file(remote_base_path):
                 file.write("Hello, 1!")
 
             # upload file
-            client.upload(file_path, remote_path)
+            await client.upload_async(file_path, remote_path)
 
             # check upload
             paths = list_files(token, remote_path)
@@ -315,8 +333,9 @@ def test_upload_file(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@pytest.mark.asyncio
 @pytest.mark.slow
-def test_upload_directory(remote_base_path):
+async def test_upload_directory(remote_base_path):
     with TemporaryDirectory() as testdir:
         file_name1 = "f1.txt"
         file_name2 = "f2.txt"
@@ -334,7 +353,7 @@ def test_upload_directory(remote_base_path):
                 file2.write("Hello, 2!")
 
             # upload directory
-            client.upload_directory(testdir, remote_path)
+            await client.upload_directory_async(testdir, remote_path)
 
             # check upload
             paths = list_files(token, remote_path)
@@ -344,8 +363,9 @@ def test_upload_directory(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@pytest.mark.asyncio
 @pytest.mark.slow
-def test_set_metadata(remote_base_path):
+async def test_set_metadata(remote_base_path):
     with TemporaryDirectory() as testdir:
         file_name = "f1.txt"
         file_path = join(testdir, file_name)
@@ -367,7 +387,7 @@ def test_set_metadata(remote_base_path):
             id = info["id"]
 
             # set file metadata
-            client.set_metadata(id, ["k1=v1", "k2=v2"], ["k3=v3"])
+            await client.set_metadata_async(id, ["k1=v1", "k2=v2"], ["k3=v3"])
 
             # check metadata was set
             metadata = get_metadata(token, id)
@@ -388,8 +408,9 @@ def test_set_metadata(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@pytest.mark.asyncio
 @pytest.mark.slow
-def test_get_metadata(remote_base_path):
+async def test_get_metadata(remote_base_path):
     with TemporaryDirectory() as testdir:
         file_name = "f1.txt"
         file_path = join(testdir, file_name)
@@ -414,7 +435,7 @@ def test_get_metadata(remote_base_path):
             set_metadata(token, id, ["k1=v1", "k2=v2"])
 
             # get metadata and check it
-            metadata = client.get_metadata(id)
+            metadata = await client.get_metadata_async(id)
             assert len(metadata) == 2
             assert any(d for d in metadata if d["attr"] == "k1" and d["value"] == "v1")
             assert any(d for d in metadata if d["attr"] == "k2" and d["value"] == "v2")

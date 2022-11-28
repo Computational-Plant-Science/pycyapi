@@ -4,8 +4,8 @@ from os import getcwd, listdir
 from pathlib import Path
 from typing import List
 
-from plantit.cyverse.auth import CyverseAccessToken
-from plantit.cyverse.clients import CyverseClient
+from pycyapi.cyverse.auth import CyverseAccessToken
+from pycyapi.cyverse.clients import CyverseClient
 
 logger = logging.getLogger(__file__)
 

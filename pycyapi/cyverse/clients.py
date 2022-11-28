@@ -16,8 +16,8 @@ from tenacity import (
     wait_exponential,
 )
 
-from plantit.cyverse.exceptions import BadRequest, BadResponse, NotFound, Unauthorized
-from plantit.utils import list_local_files, pattern_matches
+from pycyapi.cyverse.exceptions import BadRequest, BadResponse, NotFound, Unauthorized
+from pycyapi.utils import list_local_files, pattern_matches
 
 
 class CyverseClient:

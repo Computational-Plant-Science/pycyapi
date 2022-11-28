@@ -15,7 +15,7 @@ class CyverseAccessToken:
     """
 
     __token = None
-    __lock = FileLock(Path(gettempdir()) / f"plantit_token.lock")
+    __lock = FileLock(Path(gettempdir()) / f"pycyapi_token.lock")
 
     @staticmethod
     def get(username: str = None, password: str = None):
