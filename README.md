@@ -78,7 +78,6 @@ A `token` command (see below) is provided as convenient alternative to manually 
 The following commands are available:
 
 - `token`: Retrieve a CyVerse authentication token.
-- `compat`: Check if the current system is compatible.
 - `user`: Retrieve the user's profile information.
 - `list`: List files in a collection.
 - `stat`: Get information about a file or collection.
@@ -90,8 +89,6 @@ The following commands are available:
 - `unshare`: Revoke another user's access to your file or collection.
 - `tag`: Set metadata for a given file or collection.
 - `tags`: Get metadata for a given file or collection.
-- `scripts`: Generate job scripts for a container workflow.
-- `submit`: Submit jobs for a container workflow to a cluster.
 
 #### Token
 
@@ -102,17 +99,6 @@ pycyapi token --username <your CyVerse username> --password <your CyVerse passwo
 ```
 
 The token can be passed via `--token (-t)` argument to authenticate subsequent commands.
-
-#### Compat
-
-The `pycyapi compat` command determines whether jobs can be submitted to the host system, affirming to `stdout` if the following conditions are met:
-
-- `singularity` is installed and available on the path
-- the CyVerse data store is reachable via iRODS or science APIs
-  * for the former, the user must have run `iinit` to configure iCommands
-- SLURM is up and standard commands `sbatch`, `squeue`, `sacct`, etc are available
-
-Otherwise the command terminates with an error signal and information on the missing or misconfigured dependencies is printed to `stderr`.
 
 #### User
 
@@ -176,7 +162,7 @@ Optional arguments include:
 
 To upload a single file to the data store, provide the `--local_path (-p)` argument. For instance:
 
-```shell script
+```shell
 pycyapi push -t <token> /iplant/home/<username>/<collection/ -p /my/local/file.txt
 ```
 
