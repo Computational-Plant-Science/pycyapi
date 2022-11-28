@@ -3,13 +3,13 @@
 
 # PyCyAPI
 
-A Python client for the [CyVerse](https://www.cyverse.org/) [Discovery Environment](https://www.cyverse.org/discovery-environment) (a.k.a. [Terrain](https://de.cyverse.org/terrain/docs/index.html)) APIs.
+unofficial Python client for the [CyVerse](https://www.cyverse.org/) [Discovery Environment](https://www.cyverse.org/discovery-environment) (a.k.a. [Terrain](https://de.cyverse.org/terrain/docs/index.html)) APIs
 
 ![CI](https://github.com/Computational-Plant-Science/pycyapi/workflows/CI/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/Computational-Plant-Science/pycyapi/badge.svg?branch=master)](https://coveralls.io/github/Computational-Plant-Science/pycyapi) 
 ![Status](https://img.shields.io/badge/-under%20development-yellow?style=flat-square)
 
-**In development, not stable.**
+**in development, not stable**
 
 </div>
 
@@ -17,12 +17,14 @@ A Python client for the [CyVerse](https://www.cyverse.org/) [Discovery Environme
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Contents**
 
+- [Status](#status)
 - [Requirements](#requirements)
 - [Installation](#installation)
-- [Quickstart](#quickstart)
 - [Usage](#usage)
+  - [Authenticating](#authenticating)
   - [Commands](#commands)
     - [Token](#token)
+    - [Compat](#compat)
     - [User](#user)
     - [List](#list)
     - [Stat](#stat)
@@ -34,11 +36,6 @@ A Python client for the [CyVerse](https://www.cyverse.org/) [Discovery Environme
     - [Unshare](#unshare)
     - [Tag](#tag)
     - [Tags](#tags)
-    - [Scripts](#scripts)
-    - [Submit](#submit)
-- [Development](#development)
-  - [Tests](#tests)
-    - [Markers](#markers)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
