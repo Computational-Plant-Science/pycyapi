@@ -42,4 +42,4 @@ A fast subset of the tests can be run with `pytest -S` (short for `--smoke`). Th
 
 ## Releases
 
-TODO
+To create a `pycyapi` release candidate, create a branch from the tip of `develop` named `vX.Y.Zrc`, where `X.Y.Z` is the [semantic version](https://semver.org/) number. The `release.yml` CI workflow to build and test the release candidate, then draft a PR into `master`. To promote the candidate to an official release, merge the PR into `master`. This will trigger a final CI job to tag the release revision to `master`, rebase `master` on `develop`, publish the release to PyPI, and post the release notes to GitHub.

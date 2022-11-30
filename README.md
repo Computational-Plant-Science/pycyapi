@@ -24,7 +24,6 @@ unofficial Python client for the [CyVerse](https://www.cyverse.org/) [Discovery 
   - [Authenticating](#authenticating)
   - [Commands](#commands)
     - [Token](#token)
-    - [Compat](#compat)
     - [User](#user)
     - [List](#list)
     - [Stat](#stat)

@@ -3,33 +3,147 @@ on:
   release:
     branches:
       - master
+      - v*
 jobs:
-  release:
-    name: Build package & publish to PyPI
+  build:
+    name: Build package
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+
       - name: Cache Python
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-3.8-pip-${{ hashFiles('setup.cfg') }}
+
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.8
+
       - name: Install Python dependencies
         run: |
           pip install --upgrade pip
           pip install .
-          pip install flake8 pytest coveralls setuptools wheel twine
+          pip install setuptools wheel
+
       - name: Build package
         run: |
           python setup.py sdist bdist_wheel
-      - name: Publish package
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: dist
+  pr:
+    name: Create pull request
+    if: ${{ github.event_name == 'push' && !(contains(github.ref_name, 'rc')) }}
+    needs: dist
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Update version
+        working-directory: scripts
+        run: |
+          # update version file
+          ref="${{ github.ref_name }}"
+          ver="${ref#"v"}"
+          python update_version.py -v "$ver"
+          
+          # set VERSION environment variable
+          echo "VERSION=$ver" >> $GITHUB_ENV
+
+          # commit and push change
+          git config core.sharedRepository true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "ci(release): update version to $ver"
+          git push origin "$ref"
+
+      - name: Get latest tag
+        uses: actions-ecosystem/action-get-latest-tag@v1
+        id: latest_tag
+
+      - name: Create pull request
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          body='
+          # PyCyAPI version '$VERSION' release
+
+          To approve this release, merge (or squash/rebase) this pull request. This will trigger a final CI job to:
+          - tag the tip of the `master` branch with `'$VERSION'`
+          - rebase the `master` branch onto `develop`
+          - publish the package to PyPI
+          - create a GitHub release
+          '
+
+          gh pr create -B "master" -H "${{ github.ref_name }}" --title "Release $VERSION" --draft --body "$body"
+
+  release:
+    name: Release package
+    if: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Cache Python
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-3.8-pip-${{ hashFiles('setup.cfg') }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+
+      - name: Install Python dependencies
+        run: |
+          pip install --upgrade pip
+          pip install twine
+
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: dist
+
+      - name: Publish package to PyPI
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
           python -m twine upload dist/*
+
+      - name: Download artifacts
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          name: dist
+          skip_unpack: true
+
+      - name: Draft release
+        run: |
+          ver=$(python distribution/update_version.py --get)
+          title="PyCyAPI Version $ver"
+          notes='
+          # PyCyAPI '$ver' release
+          
+          PyCyAPI is an unofficial Python client for the [CyVerse](https://www.cyverse.org/) [Discovery Environment](https://www.cyverse.org/discovery-environment) (a.k.a. [Terrain](https://de.cyverse.org/terrain/docs/index.html)) APIs.
+          
+          ## Changes
+          
+          *TODO*
+          '
+          
+          gh pr create "$ver" *.zip --title "$title" --notes "$notes" --draft --latest 
