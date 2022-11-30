@@ -108,13 +108,13 @@ jobs:
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
-          # COVERALLS_PARALLEL: true
+          COVERALLS_PARALLEL: true
           CYVERSE_USERNAME: ${{ secrets.CYVERSE_USERNAME }}
           CYVERSE_PASSWORD: ${{ secrets.CYVERSE_PASSWORD }}
           TESTING_EMAIL: ${{ secrets.TESTING_EMAIL }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          coverage run --source='pycyapi' -m pytest -s -v -n auto --keep-failed=.failed
+          coverage run --source='.' -m pytest -s -v -n auto --keep-failed=.failed
           coveralls
       - name: Upload failed test outputs
         uses: actions/upload-artifact@v2
