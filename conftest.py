@@ -27,7 +27,7 @@ def excludes_platform(platform, ci_only=False):
 
 
 @pytest.fixture(scope="function")
-def tmpdir(tmpdir_factory, request) -> Path:
+def function_tmpdir(tmpdir_factory, request) -> Path:
     node = request.node.name \
         .replace("/", "_") \
         .replace("\\", "_") \
