@@ -23,6 +23,7 @@ unofficial Python client for the [CyVerse](https://www.cyverse.org/) [Discovery 
 - [Usage](#usage)
   - [Authenticating](#authenticating)
   - [Commands](#commands)
+    - [Version](#version)
     - [Token](#token)
     - [User](#user)
     - [List](#list)
@@ -76,6 +77,7 @@ A `token` command (see below) is provided as convenient alternative to manually 
 
 The following commands are available:
 
+- `version`: Show the current `pycyapi` version.
 - `token`: Retrieve a CyVerse authentication token.
 - `user`: Retrieve the user's profile information.
 - `list`: List files in a collection.
@@ -88,6 +90,14 @@ The following commands are available:
 - `unshare`: Revoke another user's access to your file or collection.
 - `tag`: Set metadata for a given file or collection.
 - `tags`: Get metadata for a given file or collection.
+
+#### Version
+
+To show the current version of `pycyapi`, use the `version` command:
+
+```shell
+pycyapi version
+```
 
 #### Token
 

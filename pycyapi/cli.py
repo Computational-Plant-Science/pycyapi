@@ -13,7 +13,7 @@ def cli():
 
 @cli.command()
 def version():
-    return pycyapi.__version__
+    click.echo(pycyapi.__version__)
 
 
 @cli.command()
