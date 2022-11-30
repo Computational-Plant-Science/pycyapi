@@ -6,7 +6,7 @@
 unofficial Python client for the [CyVerse](https://www.cyverse.org/) [Discovery Environment](https://www.cyverse.org/discovery-environment) (a.k.a. [Terrain](https://de.cyverse.org/terrain/docs/index.html)) APIs
 
 ![CI](https://github.com/Computational-Plant-Science/pycyapi/workflows/CI/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/github/Computational-Plant-Science/pycyapi/badge.svg?branch=master)](https://coveralls.io/github/Computational-Plant-Science/pycyapi) 
+[![Coverage Status](https://coveralls.io/repos/github/Computational-Plant-Science/pycyapi/badge.svg?branch=master)](https://coveralls.io/github/Computational-Plant-Science/pycyapi?branch=master)
 ![Status](https://img.shields.io/badge/-under%20development-yellow?style=flat-square)
 
 **in development, not stable**
