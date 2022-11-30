@@ -32,7 +32,9 @@ def test_get_user_info():
 def test_throws_error_when_token_is_invalid():
     with pytest.raises(HTTPError) as e:
         client = CyverseClient("not a valid token")
-        client.exists("/iplant/home/shared/iplantcollaborative/testing_tools/cowsay")
+        client.exists(
+            "/iplant/home/shared/iplantcollaborative/testing_tools/cowsay"
+        )
         assert "401" in str(e)
 
 
@@ -172,7 +174,9 @@ def test_list(remote_base_path):
             create_collection(token, remote_path)
 
             # create files
-            with open(file1_path, "w") as file1, open(file2_path, "w") as file2:
+            with open(file1_path, "w") as file1, open(
+                file2_path, "w"
+            ) as file2:
                 file1.write("Hello, 1!")
                 file2.write("Hello, 2!")
 
@@ -181,7 +185,9 @@ def test_list(remote_base_path):
             upload_file(token, file2_path, remote_path)
 
             # list files
-            paths = [file["path"] for file in client.list(remote_path)["files"]]
+            paths = [
+                file["path"] for file in client.list(remote_path)["files"]
+            ]
 
             # check files
             assert join(remote_path, file1_name) in paths
@@ -268,7 +274,9 @@ def test_download_directory(remote_base_path):
             create_collection(token, remote_path)
 
             # create files
-            with open(file1_path, "w") as file1, open(file2_path, "w") as file2:
+            with open(file1_path, "w") as file1, open(
+                file2_path, "w"
+            ) as file2:
                 file1.write("Hello, 1!")
                 file2.write("Hello, 2!")
 
@@ -329,7 +337,9 @@ def test_upload_directory(remote_base_path):
             create_collection(token, remote_path)
 
             # create files
-            with open(file_path1, "w") as file1, open(file_path2, "w") as file2:
+            with open(file_path1, "w") as file1, open(
+                file_path2, "w"
+            ) as file2:
                 file1.write("Hello, 1!")
                 file2.write("Hello, 2!")
 
@@ -374,10 +384,14 @@ def test_set_metadata(remote_base_path):
             assert len(metadata["avus"]) == 2
             assert len(metadata["irods-avus"]) == 1
             assert any(
-                d for d in metadata["avus"] if d["attr"] == "k1" and d["value"] == "v1"
+                d
+                for d in metadata["avus"]
+                if d["attr"] == "k1" and d["value"] == "v1"
             )
             assert any(
-                d for d in metadata["avus"] if d["attr"] == "k2" and d["value"] == "v2"
+                d
+                for d in metadata["avus"]
+                if d["attr"] == "k2" and d["value"] == "v2"
             )
             assert any(
                 d
@@ -416,7 +430,11 @@ def test_get_metadata(remote_base_path):
             # get metadata and check it
             metadata = client.get_metadata(id)
             assert len(metadata) == 2
-            assert any(d for d in metadata if d["attr"] == "k1" and d["value"] == "v1")
-            assert any(d for d in metadata if d["attr"] == "k2" and d["value"] == "v2")
+            assert any(
+                d for d in metadata if d["attr"] == "k1" and d["value"] == "v1"
+            )
+            assert any(
+                d for d in metadata if d["attr"] == "k2" and d["value"] == "v2"
+            )
         finally:
             delete_collection(token, remote_path)

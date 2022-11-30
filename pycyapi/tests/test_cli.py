@@ -80,7 +80,9 @@ def test_create_directory(remote_base_path):
         runner = CliRunner()
         runner.invoke(pycyapi.cli.create, ["--token", token, remote_path])
 
-        directories = list_directories(token=token, path=f"iplant/home/{username}/")
+        directories = list_directories(
+            token=token, path=f"iplant/home/{username}/"
+        )
         assert basename(remote_path) in directories
     finally:
         delete_collection(token, remote_path)
@@ -172,7 +174,9 @@ def test_list(remote_base_path):
             create_collection(token, remote_path)
 
             # create files
-            with open(file1_path, "w") as file1, open(file2_path, "w") as file2:
+            with open(file1_path, "w") as file1, open(
+                file2_path, "w"
+            ) as file2:
                 file1.write("Hello, 1!")
                 file2.write("Hello, 2!")
 
@@ -182,7 +186,9 @@ def test_list(remote_base_path):
 
             # list files
             runner = CliRunner()
-            result = runner.invoke(pycyapi.cli.list, ["--token", token, remote_path])
+            result = runner.invoke(
+                pycyapi.cli.list, ["--token", token, remote_path]
+            )
 
             # check files
             assert join(remote_path, file1_name) in result.output
@@ -257,7 +263,9 @@ def test_download_directory(remote_base_path):
             create_collection(token, remote_path)
 
             # create files
-            with open(file1_path, "w") as file1, open(file2_path, "w") as file2:
+            with open(file1_path, "w") as file1, open(
+                file2_path, "w"
+            ) as file2:
                 file1.write("Hello, 1!")
                 file2.write("Hello, 2!")
 
@@ -332,7 +340,9 @@ def test_upload_directory(remote_base_path):
             create_collection(token, remote_path)
 
             # create files
-            with open(file_path1, "w") as file1, open(file_path2, "w") as file2:
+            with open(file_path1, "w") as file1, open(
+                file_path2, "w"
+            ) as file2:
                 file1.write("Hello, 1!")
                 file2.write("Hello, 2!")
 
@@ -340,7 +350,15 @@ def test_upload_directory(remote_base_path):
             runner = CliRunner()
             result = runner.invoke(
                 pycyapi.cli.push,
-                ["--token", token, "--local_path", testdir, remote_path, "-ip", ".txt"],
+                [
+                    "--token",
+                    token,
+                    "--local_path",
+                    testdir,
+                    remote_path,
+                    "-ip",
+                    ".txt",
+                ],
             )
         except ValueError as e:
             if "I/O operation on closed file" not in str(e):
@@ -380,7 +398,17 @@ def test_tag(remote_base_path):
             runner = CliRunner()
             runner.invoke(
                 pycyapi.cli.tag,
-                ["--token", token, "-a", "k1=v1", "-a", "k2=v2", "-ia", "k3=v3", id],
+                [
+                    "--token",
+                    token,
+                    "-a",
+                    "k1=v1",
+                    "-a",
+                    "k2=v2",
+                    "-ia",
+                    "k3=v3",
+                    id,
+                ],
             )
         except ValueError as e:
             if "I/O operation on closed file" not in str(e):
@@ -391,10 +419,14 @@ def test_tag(remote_base_path):
             assert len(metadata["avus"]) == 2
             assert len(metadata["irods-avus"]) == 1
             assert any(
-                d for d in metadata["avus"] if d["attr"] == "k1" and d["value"] == "v1"
+                d
+                for d in metadata["avus"]
+                if d["attr"] == "k1" and d["value"] == "v1"
             )
             assert any(
-                d for d in metadata["avus"] if d["attr"] == "k2" and d["value"] == "v2"
+                d
+                for d in metadata["avus"]
+                if d["attr"] == "k2" and d["value"] == "v2"
             )
             assert any(
                 d

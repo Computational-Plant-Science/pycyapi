@@ -54,7 +54,9 @@ def test_pull(remote_base_path, file_name_1, file_name_2):
             create_collection(token, remote_path)
 
             # prep files
-            with open(local_path_1, "w") as file1, open(local_path_2, "w") as file2:
+            with open(local_path_1, "w") as file1, open(
+                local_path_2, "w"
+            ) as file2:
                 file1.write("Hello, 1!")
                 file2.write("Hello, 2!")
 
@@ -92,7 +94,9 @@ def test_push(remote_base_path, file_name_1, file_name_2):
             create_collection(token, remote_path)
 
             # prep files
-            with open(local_path_1, "w") as file1, open(local_path_2, "w") as file2:
+            with open(local_path_1, "w") as file1, open(
+                local_path_2, "w"
+            ) as file2:
                 file1.write("Hello, 1!")
                 file2.write("Hello, 2!")
 

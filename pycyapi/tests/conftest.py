@@ -167,7 +167,13 @@ def upload_file(
         with requests.post(
             f"https://de.cyverse.org/terrain/secured/fileio/upload?dest={remote_path}",
             headers={"Authorization": f"Bearer {token}"},
-            files={"file": (basename(local_path), file, "application/octet-stream")},
+            files={
+                "file": (
+                    basename(local_path),
+                    file,
+                    "application/octet-stream",
+                )
+            },
         ) as response:
             if print_response:
                 pprint.pprint(response.json())

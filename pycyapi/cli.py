@@ -20,7 +20,9 @@ def version():
 @click.option("--username", required=True, type=str)
 @click.option("--password", required=True, type=str)
 def token(username, password):
-    click.echo(cyverse_commands.cas_token(username=username, password=password))
+    click.echo(
+        cyverse_commands.cas_token(username=username, password=password)
+    )
 
 
 @cli.command()
@@ -29,7 +31,9 @@ def token(username, password):
 @click.option("--timeout", "-to", required=False, type=int, default=15)
 def user(username, token, timeout):
     click.echo(
-        cyverse_commands.user_info(username=username, token=token, timeout=timeout)
+        cyverse_commands.user_info(
+            username=username, token=token, timeout=timeout
+        )
     )
 
 
@@ -39,7 +43,9 @@ def user(username, token, timeout):
 @click.option("--timeout", "-to", required=False, type=int, default=15)
 def list(remote_path, token, timeout):
     click.echo(
-        cyverse_commands.paged_directory(path=remote_path, token=token, timeout=timeout)
+        cyverse_commands.paged_directory(
+            path=remote_path, token=token, timeout=timeout
+        )
     )
 
 
@@ -48,7 +54,9 @@ def list(remote_path, token, timeout):
 @click.option("--token", "-t", required=False, type=str)
 @click.option("--timeout", "-to", required=False, type=int, default=15)
 def stat(remote_path, token, timeout):
-    click.echo(cyverse_commands.stat(path=remote_path, token=token, timeout=timeout))
+    click.echo(
+        cyverse_commands.stat(path=remote_path, token=token, timeout=timeout)
+    )
 
 
 @cli.command()
@@ -69,13 +77,17 @@ def exists(remote_path, type, token, timeout):
 @click.option("--token", "-t", required=False, type=str)
 @click.option("--timeout", "-to", required=False, type=int, default=15)
 def create(remote_path, token, timeout):
-    click.echo(cyverse_commands.create(path=remote_path, token=token, timeout=timeout))
+    click.echo(
+        cyverse_commands.create(path=remote_path, token=token, timeout=timeout)
+    )
 
 
 @cli.command()
 @click.argument("remote_path")
 @click.option("--local_path", "-p", required=False, type=str)
-@click.option("--include_pattern", "-ip", required=False, type=str, multiple=True)
+@click.option(
+    "--include_pattern", "-ip", required=False, type=str, multiple=True
+)
 @click.option("--force", "-f", required=False, type=str, multiple=True)
 @click.option("--token", "-t", required=False, type=str)
 @click.option("--timeout", "-to", required=False, type=int, default=15)
@@ -94,9 +106,13 @@ def pull(remote_path, local_path, include_pattern, force, token, timeout):
 @cli.command()
 @click.argument("remote_path")
 @click.option("--local_path", "-p", required=False, type=str)
-@click.option("--include_pattern", "-ip", required=False, type=str, multiple=True)
+@click.option(
+    "--include_pattern", "-ip", required=False, type=str, multiple=True
+)
 @click.option("--include_name", "-in", required=False, type=str, multiple=True)
-@click.option("--exclude_pattern", "-ep", required=False, type=str, multiple=True)
+@click.option(
+    "--exclude_pattern", "-ep", required=False, type=str, multiple=True
+)
 @click.option("--exclude_name", "-en", required=False, type=str, multiple=True)
 @click.option("--token", "-t", required=False, type=str)
 @click.option("--timeout", "-to", required=False, type=int, default=15)
@@ -155,7 +171,9 @@ def unshare(remote_path, username, token, timeout):
 @cli.command()
 @click.argument("id")
 @click.option("--attribute", "-a", required=False, type=str, multiple=True)
-@click.option("--irods_attribute", "-ia", required=False, type=str, multiple=True)
+@click.option(
+    "--irods_attribute", "-ia", required=False, type=str, multiple=True
+)
 @click.option("--token", "-t", required=False, type=str)
 @click.option("--timeout", "-to", required=False, type=int, default=15)
 def tag(id, attribute, irods_attribute, token, timeout):
@@ -178,6 +196,8 @@ def tag(id, attribute, irods_attribute, token, timeout):
 @click.option("--irods", "-i", required=False, default=False, type=bool)
 @click.option("--timeout", "-to", required=False, type=int, default=15)
 def tags(id, irods, token, timeout):
-    attributes = cyverse_commands.tags(id=id, irods=irods, token=token, timeout=timeout)
+    attributes = cyverse_commands.tags(
+        id=id, irods=irods, token=token, timeout=timeout
+    )
     newline = "\n"
     click.echo(newline.join(attributes))

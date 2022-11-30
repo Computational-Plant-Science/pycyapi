@@ -130,8 +130,12 @@ async def test_file_exists_when_is_a_file(remote_base_path):
             upload_file(token, file1_path, remote_path)
 
             # test remote files exist
-            assert await client.file_exists_async(join(remote_path, file1_name))
-            assert not await client.file_exists_async(join(remote_path, file2_name))
+            assert await client.file_exists_async(
+                join(remote_path, file1_name)
+            )
+            assert not await client.file_exists_async(
+                join(remote_path, file2_name)
+            )
         finally:
             delete_collection(token, remote_path)
 
@@ -157,7 +161,9 @@ async def test_file_exists_when_is_a_directory(remote_base_path):
             upload_file(token, file1_path, remote_path)
 
             # test if path exists
-            assert await client.file_exists_async(join(remote_path, file1_name))
+            assert await client.file_exists_async(
+                join(remote_path, file1_name)
+            )
             assert not await client.file_exists_async(remote_base_path)
         finally:
             delete_collection(token, remote_path)
@@ -178,7 +184,9 @@ async def test_list(remote_base_path):
             create_collection(token, remote_path)
 
             # create files
-            with open(file1_path, "w") as file1, open(file2_path, "w") as file2:
+            with open(file1_path, "w") as file1, open(
+                file2_path, "w"
+            ) as file2:
                 file1.write("Hello, 1!")
                 file2.write("Hello, 2!")
 
@@ -285,7 +293,9 @@ async def test_download_directory(remote_base_path):
             create_collection(token, remote_path)
 
             # create files
-            with open(file1_path, "w") as file1, open(file2_path, "w") as file2:
+            with open(file1_path, "w") as file1, open(
+                file2_path, "w"
+            ) as file2:
                 file1.write("Hello, 1!")
                 file2.write("Hello, 2!")
 
@@ -298,7 +308,9 @@ async def test_download_directory(remote_base_path):
             remove(file2_path)
 
             # download files
-            await client.download_directory_async(remote_path, testdir, [".txt"])
+            await client.download_directory_async(
+                remote_path, testdir, [".txt"]
+            )
 
             # check downloads
             assert isfile(file1_path)
@@ -348,7 +360,9 @@ async def test_upload_directory(remote_base_path):
             create_collection(token, remote_path)
 
             # create files
-            with open(file_path1, "w") as file1, open(file_path2, "w") as file2:
+            with open(file_path1, "w") as file1, open(
+                file_path2, "w"
+            ) as file2:
                 file1.write("Hello, 1!")
                 file2.write("Hello, 2!")
 
@@ -394,10 +408,14 @@ async def test_set_metadata(remote_base_path):
             assert len(metadata["avus"]) == 2
             assert len(metadata["irods-avus"]) == 1
             assert any(
-                d for d in metadata["avus"] if d["attr"] == "k1" and d["value"] == "v1"
+                d
+                for d in metadata["avus"]
+                if d["attr"] == "k1" and d["value"] == "v1"
             )
             assert any(
-                d for d in metadata["avus"] if d["attr"] == "k2" and d["value"] == "v2"
+                d
+                for d in metadata["avus"]
+                if d["attr"] == "k2" and d["value"] == "v2"
             )
             assert any(
                 d
@@ -437,7 +455,11 @@ async def test_get_metadata(remote_base_path):
             # get metadata and check it
             metadata = await client.get_metadata_async(id)
             assert len(metadata) == 2
-            assert any(d for d in metadata if d["attr"] == "k1" and d["value"] == "v1")
-            assert any(d for d in metadata if d["attr"] == "k2" and d["value"] == "v2")
+            assert any(
+                d for d in metadata if d["attr"] == "k1" and d["value"] == "v1"
+            )
+            assert any(
+                d for d in metadata if d["attr"] == "k2" and d["value"] == "v2"
+            )
         finally:
             delete_collection(token, remote_path)

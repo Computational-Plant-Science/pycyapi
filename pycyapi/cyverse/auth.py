@@ -44,9 +44,13 @@ class CyverseAccessToken:
                 return CyverseAccessToken.__token
 
             if cyverse_username is None:
-                raise ValueError("Missing environment variable 'CYVERSE_USERNAME'")
+                raise ValueError(
+                    "Missing environment variable 'CYVERSE_USERNAME'"
+                )
             if cyverse_password is None:
-                raise ValueError("Missing environment variable 'CYVERSE_PASSWORD'")
+                raise ValueError(
+                    "Missing environment variable 'CYVERSE_PASSWORD'"
+                )
 
             response = requests.get(
                 "https://de.cyverse.org/terrain/token/cas",
@@ -62,7 +66,12 @@ class CyverseAccessToken:
 
 class CyverseFilesystemTicket:
     @staticmethod
-    def get(paths: List[str], mode: str = "read", public: bool = False, uses: int = 10):
+    def get(
+        paths: List[str],
+        mode: str = "read",
+        public: bool = False,
+        uses: int = 10,
+    ):
         response = requests.post(
             f"https://de.cyverse.org/terrain/secured/filesystem/tickets"
             f"?mode={mode}"

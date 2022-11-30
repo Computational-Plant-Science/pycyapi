@@ -16,7 +16,12 @@ from tenacity import (
     wait_exponential,
 )
 
-from pycyapi.cyverse.exceptions import BadRequest, BadResponse, NotFound, Unauthorized
+from pycyapi.cyverse.exceptions import (
+    BadRequest,
+    BadResponse,
+    NotFound,
+    Unauthorized,
+)
 from pycyapi.utils import list_local_files, pattern_matches
 
 
@@ -299,7 +304,10 @@ class CyverseClient:
         # compose request body and headers
         data = {
             "sharing": [
-                {"user": username, "paths": [{"path": path, "permission": permission}]}
+                {
+                    "user": username,
+                    "paths": [{"path": path, "permission": permission}],
+                }
             ]
         }
         headers = {
@@ -337,7 +345,9 @@ class CyverseClient:
         }
 
         # send the request
-        self.__logger.debug(f"Unsharing data store path(s): {json.dumps(data)}")
+        self.__logger.debug(
+            f"Unsharing data store path(s): {json.dumps(data)}"
+        )
         response = requests.post(
             "https://de.cyverse.org/terrain/secured/unshare",
             data=json.dumps(data),
@@ -365,7 +375,9 @@ class CyverseClient:
             if not path.startswith(f"/iplant/home/"):
                 raise ValueError(f"A path is empty or invalid")
             if permission != "read" and permission != "write":
-                raise ValueError(f"Invalid permissions (must be 'read' or 'write')")
+                raise ValueError(
+                    f"Invalid permissions (must be 'read' or 'write')"
+                )
 
         # compose request body and headers
         data = {"sharing": [{"user": username, "paths": paths}]}
@@ -409,7 +421,9 @@ class CyverseClient:
         }
 
         # send the request
-        self.__logger.debug(f"Unsharing data store path(s): {json.dumps(data)}")
+        self.__logger.debug(
+            f"Unsharing data store path(s): {json.dumps(data)}"
+        )
         response = requests.post(
             "https://de.cyverse.org/terrain/secured/unshare",
             data=json.dumps(data),
@@ -421,7 +435,10 @@ class CyverseClient:
     def verify_checksums(self, from_path: str, expected_pairs: List[dict]):
         info = self.stat(from_path)
         pairs = [
-            (path[join(from_path, path)]["label"], path[join(from_path, path)]["md5"])
+            (
+                path[join(from_path, path)]["label"],
+                path[join(from_path, path)]["md5"],
+            )
             for path in info["paths"]
         ]
 
@@ -431,7 +448,9 @@ class CyverseClient:
             )
 
         for actual in pairs:
-            expected = [pair for pair in expected_pairs if pair["name"] == actual[0]][0]
+            expected = [
+                pair for pair in expected_pairs if pair["name"] == actual[0]
+            ][0]
             assert expected["file"] == actual[0]
             assert expected["checksum"] == actual[1]
 
@@ -447,12 +466,18 @@ class CyverseClient:
         ),
     )
     def download(
-        self, from_path: str, to_path: str, index: int = None, overwrite: bool = False
+        self,
+        from_path: str,
+        to_path: str,
+        index: int = None,
+        overwrite: bool = False,
     ):
         # abort the download if the file already exists and the overwrite flag is false
         to_path_full = f"{to_path}/{from_path.split('/')[-1]}"
         if isfile(to_path_full) and not overwrite:
-            self.__logger.info(f"File {to_path_full} already exists, skipping download")
+            self.__logger.info(
+                f"File {to_path_full} already exists, skipping download"
+            )
             return
 
         # send the request
@@ -489,10 +514,14 @@ class CyverseClient:
         ),
     )
     def upload(self, from_path: str, to_prefix: str):
-        self.__logger.debug(f"Uploading {from_path} to data store path {to_prefix}")
+        self.__logger.debug(
+            f"Uploading {from_path} to data store path {to_prefix}"
+        )
         with open(from_path, "rb") as file:
             # compose request files and headers
-            files = {"file": (basename(from_path), file, "application/octet-stream")}
+            files = {
+                "file": (basename(from_path), file, "application/octet-stream")
+            }
             headers = {"Authorization": f"Bearer {self.__access_token}"}
 
             # send the request
@@ -619,7 +648,9 @@ class CyverseClient:
             | retry_if_exception_type(Timeout)
         ),
     )
-    def set_metadata(self, id: str, attributes: List[str], irods_attributes: List[str]):
+    def set_metadata(
+        self, id: str, attributes: List[str], irods_attributes: List[str]
+    ):
         def to_avu(attr: str):
             split = attr.strip().split("=")
             return {"attr": split[0], "value": split[1], "unit": ""}
@@ -759,7 +790,9 @@ class AsyncCyverseClient:
 
         # send the request
         self.__logger.debug(f"Getting data store file {path}")
-        async with httpx.AsyncClient(headers=headers, timeout=self.__timeout) as client:
+        async with httpx.AsyncClient(
+            headers=headers, timeout=self.__timeout
+        ) as client:
             response = await client.post(
                 "https://de.cyverse.org/terrain/secured/filesystem/stat",
                 data=json.dumps(data),
@@ -813,7 +846,9 @@ class AsyncCyverseClient:
 
         # send the request
         self.__logger.debug(f"Checking if data store path exists: {path}")
-        async with httpx.AsyncClient(headers=headers, timeout=self.__timeout) as client:
+        async with httpx.AsyncClient(
+            headers=headers, timeout=self.__timeout
+        ) as client:
             response = await client.post(
                 "https://de.cyverse.org/terrain/secured/filesystem/exists",
                 data=json.dumps(data),
@@ -912,7 +947,9 @@ class AsyncCyverseClient:
         headers = {
             "Authorization": f"Bearer {self.__access_token}",
         }
-        async with httpx.AsyncClient(headers=headers, timeout=self.__timeout) as client:
+        async with httpx.AsyncClient(
+            headers=headers, timeout=self.__timeout
+        ) as client:
             response = await client.post(
                 "https://de.cyverse.org/terrain/secured/filesystem/directory/create",
                 data=json.dumps({"path": path}),
@@ -940,7 +977,10 @@ class AsyncCyverseClient:
         # compose request body and headers
         data = {
             "sharing": [
-                {"user": username, "paths": [{"path": path, "permission": permission}]}
+                {
+                    "user": username,
+                    "paths": [{"path": path, "permission": permission}],
+                }
             ]
         }
         headers = {
@@ -950,9 +990,12 @@ class AsyncCyverseClient:
 
         # send the request
         self.__logger.debug(f"Sharing data store path(s): {json.dumps(data)}")
-        async with httpx.AsyncClient(headers=headers, timeout=self.__timeout) as client:
+        async with httpx.AsyncClient(
+            headers=headers, timeout=self.__timeout
+        ) as client:
             response = await client.post(
-                "https://de.cyverse.org/terrain/secured/share", data=json.dumps(data)
+                "https://de.cyverse.org/terrain/secured/share",
+                data=json.dumps(data),
             )
             response.raise_for_status()
 
@@ -980,10 +1023,15 @@ class AsyncCyverseClient:
         }
 
         # send the request
-        self.__logger.debug(f"Unsharing data store path(s): {json.dumps(data)}")
-        async with httpx.AsyncClient(headers=headers, timeout=self.__timeout) as client:
+        self.__logger.debug(
+            f"Unsharing data store path(s): {json.dumps(data)}"
+        )
+        async with httpx.AsyncClient(
+            headers=headers, timeout=self.__timeout
+        ) as client:
             response = await client.post(
-                "https://de.cyverse.org/terrain/secured/unshare", data=json.dumps(data)
+                "https://de.cyverse.org/terrain/secured/unshare",
+                data=json.dumps(data),
             )
             response.raise_for_status()
 
@@ -998,7 +1046,9 @@ class AsyncCyverseClient:
             | retry_if_exception_type(TimeoutException)
         ),
     )
-    async def share_many_async(self, username: str, paths: List[Dict[str, str]]):
+    async def share_many_async(
+        self, username: str, paths: List[Dict[str, str]]
+    ):
         # validate path/permission pairs
         for p in paths:
             path = p.get("path", None)
@@ -1006,7 +1056,9 @@ class AsyncCyverseClient:
             if not path.startswith(f"/iplant/home/"):
                 raise ValueError(f"A path is empty or invalid")
             if permission != "read" and permission != "write":
-                raise ValueError(f"Invalid permissions (must be 'read' or 'write')")
+                raise ValueError(
+                    f"Invalid permissions (must be 'read' or 'write')"
+                )
 
         # compose request body and headers
         data = {"sharing": [{"user": username, "paths": paths}]}
@@ -1017,9 +1069,12 @@ class AsyncCyverseClient:
 
         # send the request
         self.__logger.debug(f"Sharing data store path(s): {json.dumps(data)}")
-        async with httpx.AsyncClient(headers=headers, timeout=self.__timeout) as client:
+        async with httpx.AsyncClient(
+            headers=headers, timeout=self.__timeout
+        ) as client:
             response = await client.post(
-                "https://de.cyverse.org/terrain/secured/share", data=json.dumps(data)
+                "https://de.cyverse.org/terrain/secured/share",
+                data=json.dumps(data),
             )
             response.raise_for_status()
 
@@ -1048,17 +1103,25 @@ class AsyncCyverseClient:
         }
 
         # send the request
-        self.__logger.debug(f"Unsharing data store path(s): {json.dumps(data)}")
-        async with httpx.AsyncClient(headers=headers, timeout=self.__timeout) as client:
+        self.__logger.debug(
+            f"Unsharing data store path(s): {json.dumps(data)}"
+        )
+        async with httpx.AsyncClient(
+            headers=headers, timeout=self.__timeout
+        ) as client:
             response = await client.post(
-                "https://de.cyverse.org/terrain/secured/unshare", data=json.dumps(data)
+                "https://de.cyverse.org/terrain/secured/unshare",
+                data=json.dumps(data),
             )
             response.raise_for_status()
 
     def verify_checksums(self, from_path: str, expected_pairs: List[dict]):
         info = self.stat_async(from_path)
         pairs = [
-            (path[join(from_path, path)]["label"], path[join(from_path, path)]["md5"])
+            (
+                path[join(from_path, path)]["label"],
+                path[join(from_path, path)]["md5"],
+            )
             for path in info["paths"]
         ]
 
@@ -1068,7 +1131,9 @@ class AsyncCyverseClient:
             )
 
         for actual in pairs:
-            expected = [pair for pair in expected_pairs if pair["name"] == actual[0]][0]
+            expected = [
+                pair for pair in expected_pairs if pair["name"] == actual[0]
+            ][0]
             assert expected["file"] == actual[0]
             assert expected["checksum"] == actual[1]
 
@@ -1084,12 +1149,18 @@ class AsyncCyverseClient:
         ),
     )
     async def download_async(
-        self, from_path: str, to_path: str, index: int = None, overwrite: bool = False
+        self,
+        from_path: str,
+        to_path: str,
+        index: int = None,
+        overwrite: bool = False,
     ):
         # abort the download if the file already exists and the overwrite flag is false
         to_path_full = f"{to_path}/{from_path.split('/')[-1]}"
         if isfile(to_path_full) and not overwrite:
-            self.__logger.info(f"File {to_path_full} already exists, skipping download")
+            self.__logger.info(
+                f"File {to_path_full} already exists, skipping download"
+            )
             return
 
         # send the request
@@ -1130,11 +1201,15 @@ class AsyncCyverseClient:
     async def upload_async(self, from_path: str, to_prefix: str):
         with open(from_path, "rb") as file:
             # compose request files and headers
-            files = {"file": (basename(from_path), file, "application/octet-stream")}
+            files = {
+                "file": (basename(from_path), file, "application/octet-stream")
+            }
             headers = {"Authorization": f"Bearer {self.__access_token}"}
 
             # send the request
-            self.__logger.debug(f"Uploading {from_path} to data store path {to_prefix}")
+            self.__logger.debug(
+                f"Uploading {from_path} to data store path {to_prefix}"
+            )
             async with httpx.AsyncClient(
                 headers=headers, timeout=self.__timeout
             ) as client:
@@ -1240,7 +1315,9 @@ class AsyncCyverseClient:
 
         # send the request
         self.__logger.debug(f"Getting metadata for data object with ID {id}")
-        async with httpx.AsyncClient(headers=headers, timeout=self.__timeout) as client:
+        async with httpx.AsyncClient(
+            headers=headers, timeout=self.__timeout
+        ) as client:
             response = await client.get(
                 f"https://de.cyverse.org/terrain/secured/filesystem/{id}/metadata"
             )
@@ -1280,7 +1357,9 @@ class AsyncCyverseClient:
         self.__logger.debug(
             f"Setting metadata for data object with ID {id}: {json.dumps(data)}"
         )
-        async with httpx.AsyncClient(headers=headers, timeout=self.__timeout) as client:
+        async with httpx.AsyncClient(
+            headers=headers, timeout=self.__timeout
+        ) as client:
             response = await client.post(
                 f"https://de.cyverse.org/terrain/secured/filesystem/{id}/metadata",
                 data=json.dumps(data),
@@ -1298,14 +1377,20 @@ class AsyncCyverseClient:
             | retry_if_exception_type(Timeout)
         ),
     )
-    async def get_dirs_async(self, paths: List[str], token: str, timeout: int = 15):
-        self.__logger.debug(f"Listing data store directories: {', '.join(paths)}")
+    async def get_dirs_async(
+        self, paths: List[str], token: str, timeout: int = 15
+    ):
+        self.__logger.debug(
+            f"Listing data store directories: {', '.join(paths)}"
+        )
         urls = [
             f"https://de.cyverse.org/terrain/secured/filesystem/paged-directory?limit=1000&path={path}"
             for path in paths
         ]
         headers = {"Authorization": f"Bearer {token}"}
-        async with httpx.AsyncClient(headers=headers, timeout=timeout) as client:
+        async with httpx.AsyncClient(
+            headers=headers, timeout=timeout
+        ) as client:
             tasks = [client.get(url).json() for url in urls]
             results = await asyncio.gather(*tasks)
             return results

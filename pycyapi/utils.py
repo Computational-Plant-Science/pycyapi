@@ -15,14 +15,18 @@ def list_local_files(
     exclude_names=None,
 ):
     # gather all files
-    all_paths = [join(path, file) for file in listdir(path) if isfile(join(path, file))]
+    all_paths = [
+        join(path, file) for file in listdir(path) if isfile(join(path, file))
+    ]
 
     # add files matching included patterns
     included_by_pattern = (
         [
             pth
             for pth in all_paths
-            if any(pattern.lower() in pth.lower() for pattern in include_patterns)
+            if any(
+                pattern.lower() in pth.lower() for pattern in include_patterns
+            )
         ]
         if include_patterns is not None
         else all_paths
@@ -52,7 +56,10 @@ def list_local_files(
         [
             name
             for name in included
-            if all(pattern.lower() not in name.lower() for pattern in exclude_patterns)
+            if all(
+                pattern.lower() not in name.lower()
+                for pattern in exclude_patterns
+            )
         ]
         if exclude_patterns is not None
         else included
@@ -104,7 +111,17 @@ BYTE_SYMBOLS = {
         "iotta",
     ),
     "iec": ("Bi", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi", "Yi"),
-    "iec_ext": ("byte", "kibi", "mebi", "gibi", "tebi", "pebi", "exbi", "zebi", "yobi"),
+    "iec_ext": (
+        "byte",
+        "kibi",
+        "mebi",
+        "gibi",
+        "tebi",
+        "pebi",
+        "exbi",
+        "zebi",
+        "yobi",
+    ),
 }
 
 
@@ -190,7 +207,9 @@ def istarmap(self, func, iterable, chunksize=1):
     result = mpp.IMapIterator(self._cache)
     self._taskqueue.put(
         (
-            self._guarded_task_generation(result._job, mpp.starmapstar, task_batches),
+            self._guarded_task_generation(
+                result._job, mpp.starmapstar, task_batches
+            ),
             result._set_length,
         )
     )

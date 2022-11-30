@@ -5,7 +5,9 @@
 - [Developing `pycyapi`](#developing-pycyapi)
   - [Requirements](#requirements)
   - [Installation](#installation)
-  - [Running tests](#running-tests)
+  - [Linting](#linting)
+  - [Testing](#testing)
+    - [Environment variables](#environment-variables)
     - [Test markers](#test-markers)
     - [Smoke tests](#smoke-tests)
   - [Releases](#releases)
@@ -24,9 +26,15 @@ First, clone the repo with `git clone https://github.com/Computational-Plant-Sci
 
 Create a Python3 virtual environment, e.g. `python -m venv venv`, then install `pycyapi` and core dependencies with `pip install .`. Install testing and linting dependencies as well with `pip install ".[test]".
 
-## Running tests
+## Linting
 
-The tests can be run from the project root with `pytest` (or `python -m pytest`). Use `-v` for verbose mode and `-n auto` to run them in parallel on as many cores as your machine will spare.
+To lint Python source files, run `python scripts/lint.py`. This will run `black` and `isort` on all files in the `pycyapi` directory.
+
+## Testing
+
+This project's tests are contained within the top-level source directory `pycyapi`. The tests can be run from the project root with `pytest` (or `python -m pytest`). Use `-v` for verbose mode and `-n auto` to run tests in parallel on as many cores as your machine will spare.
+
+### Environment variables
 
 **Note:** some tests required the `CYVERSE_USERNAME` and `CYVERSE_PASSWORD` environment variables. You can set these manually or put them in a `.env` file in the project root &mdash; `pytest-dotenv` will detect them in the latter case. Test cases will use this CyVerse account and its associated data store as a test environment. Each test case isolates its workspace to a folder named by GUID.
 

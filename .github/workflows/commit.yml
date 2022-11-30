@@ -119,7 +119,7 @@ jobs:
           TESTING_EMAIL: ${{ secrets.TESTING_EMAIL }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          coverage run --source='.' -m pytest -s -v -n auto --keep-failed=.failed
+          pytest -s -v -n auto --keep-failed=.failed --cov=pycyapi --cov-report=xml
           coveralls
       - name: Upload failed test outputs
         uses: actions/upload-artifact@v2
@@ -128,3 +128,10 @@ jobs:
           name: failed-${{ matrix.os }}-${{ matrix.python-version }}
           path: |
             ./.failed/**
+      - name: Upload coverage
+        if:
+          github.repository_owner == 'Computational-Plant-Science' && (github.event_name == 'push' || github.event_name == 'pull_request')
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
