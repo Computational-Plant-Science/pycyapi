@@ -3,6 +3,7 @@ from os import remove
 from os.path import isfile, join
 from tempfile import TemporaryDirectory
 
+from flaky import flaky
 import pytest
 from httpx import HTTPStatusError
 
@@ -23,7 +24,7 @@ token = CyverseAccessToken.get()
 client = AsyncCyverseClient(token)
 
 
-@pytest.mark.asyncio
+@flaky(max_runs=3)
 async def test_throws_error_when_token_is_invalid():
     with pytest.raises(HTTPStatusError) as e:
         await AsyncCyverseClient("not a token").exists_async(
@@ -32,6 +33,7 @@ async def test_throws_error_when_token_is_invalid():
         assert "401" in str(e)
 
 
+@flaky(max_runs=3)
 @pytest.mark.asyncio
 async def test_path_exists_when_doesnt():
     exists = await client.exists_async(
@@ -40,6 +42,7 @@ async def test_path_exists_when_doesnt():
     assert not exists
 
 
+@flaky(max_runs=3)
 @pytest.mark.asyncio
 async def test_path_exists_when_is_a_file():
     exists = await client.exists_async(
@@ -48,6 +51,7 @@ async def test_path_exists_when_is_a_file():
     assert exists
 
 
+@flaky(max_runs=3)
 @pytest.mark.asyncio
 async def test_path_exists_when_is_a_directory():
     # with trailing slash
@@ -63,6 +67,7 @@ async def test_path_exists_when_is_a_directory():
     assert exists
 
 
+@flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.slow
 async def test_dir_exists_when_is_a_directory(remote_base_path):
@@ -81,6 +86,7 @@ async def test_dir_exists_when_is_a_directory(remote_base_path):
         delete_collection(token, remote_path)
 
 
+@flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.slow
 async def test_dir_exists_when_is_a_file(remote_base_path):
@@ -109,6 +115,7 @@ async def test_dir_exists_when_is_a_file(remote_base_path):
             delete_collection(token, remote_dir_path)
 
 
+@flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.slow
 async def test_file_exists_when_is_a_file(remote_base_path):
@@ -140,6 +147,7 @@ async def test_file_exists_when_is_a_file(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.slow
 async def test_file_exists_when_is_a_directory(remote_base_path):
@@ -169,6 +177,7 @@ async def test_file_exists_when_is_a_directory(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.slow
 async def test_list(remote_base_path):
@@ -205,6 +214,7 @@ async def test_list(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@flaky(max_runs=3)
 @pytest.mark.asyncio
 async def test_list_no_retries_when_path_does_not_exist(remote_base_path):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
@@ -213,6 +223,7 @@ async def test_list_no_retries_when_path_does_not_exist(remote_base_path):
         assert "500" in str(e)
 
 
+@flaky(max_runs=3)
 @pytest.mark.asyncio
 async def test_list_retries_when_token_invalid(remote_base_path):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
@@ -221,6 +232,7 @@ async def test_list_retries_when_token_invalid(remote_base_path):
         assert "500" in str(e)
 
 
+@flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.slow
 async def test_mkdir(remote_base_path):
@@ -236,6 +248,7 @@ async def test_mkdir(remote_base_path):
         delete_collection(token, remote_path)
 
 
+@flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="todo")
 async def test_share(remote_base_path):
@@ -243,6 +256,7 @@ async def test_share(remote_base_path):
     pass
 
 
+@flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="todo")
 async def test_unshare(remote_base_path):
@@ -250,6 +264,7 @@ async def test_unshare(remote_base_path):
     pass
 
 
+@flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.slow
 async def test_download_file(remote_base_path):
@@ -278,6 +293,7 @@ async def test_download_file(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.slow
 async def test_download_directory(remote_base_path):
@@ -319,6 +335,7 @@ async def test_download_directory(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.slow
 async def test_upload_file(remote_base_path):
@@ -345,6 +362,7 @@ async def test_upload_file(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.slow
 async def test_upload_directory(remote_base_path):
@@ -377,6 +395,7 @@ async def test_upload_directory(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.slow
 async def test_set_metadata(remote_base_path):
@@ -426,6 +445,7 @@ async def test_set_metadata(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.slow
 async def test_get_metadata(remote_base_path):

@@ -3,6 +3,7 @@ from os import environ, remove
 from os.path import isfile, join
 from tempfile import TemporaryDirectory
 
+from flaky import flaky
 import pytest
 from requests import HTTPError
 
@@ -23,12 +24,14 @@ token = CyverseAccessToken.get()
 client = CyverseClient(token)
 
 
+@flaky(max_runs=3)
 def test_get_user_info():
     username = environ.get("CYVERSE_USERNAME")
     user_info = client.user_info(username)
     assert user_info["id"] == username
 
 
+@flaky(max_runs=3)
 def test_throws_error_when_token_is_invalid():
     with pytest.raises(HTTPError) as e:
         client = CyverseClient("not a valid token")
@@ -38,6 +41,7 @@ def test_throws_error_when_token_is_invalid():
         assert "401" in str(e)
 
 
+@flaky(max_runs=3)
 def test_path_exists_when_doesnt():
     exists = client.exists(
         "/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/cowsaid.txt"
@@ -45,6 +49,7 @@ def test_path_exists_when_doesnt():
     assert not exists
 
 
+@flaky(max_runs=3)
 def test_path_exists_when_is_a_file():
     exists = client.exists(
         "/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/cowsay.txt"
@@ -52,6 +57,7 @@ def test_path_exists_when_is_a_file():
     assert exists
 
 
+@flaky(max_runs=3)
 def test_path_exists_when_is_a_directory():
     # with trailing slash
     exists = client.exists(
@@ -66,6 +72,7 @@ def test_path_exists_when_is_a_directory():
     assert exists
 
 
+@flaky(max_runs=3)
 @pytest.mark.slow
 def test_dir_exists_when_is_a_directory(remote_base_path):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
@@ -81,6 +88,7 @@ def test_dir_exists_when_is_a_directory(remote_base_path):
         delete_collection(token, remote_path)
 
 
+@flaky(max_runs=3)
 @pytest.mark.slow
 def test_dir_exists_when_is_a_file(remote_base_path):
     with TemporaryDirectory() as testdir:
@@ -108,6 +116,7 @@ def test_dir_exists_when_is_a_file(remote_base_path):
             delete_collection(token, remote_dir_path)
 
 
+@flaky(max_runs=3)
 @pytest.mark.slow
 def test_file_exists_when_is_a_file(remote_base_path):
     with TemporaryDirectory() as testdir:
@@ -134,6 +143,7 @@ def test_file_exists_when_is_a_file(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@flaky(max_runs=3)
 @pytest.mark.slow
 def test_file_exists_when_is_a_directory(remote_base_path):
     with TemporaryDirectory() as testdir:
@@ -160,6 +170,7 @@ def test_file_exists_when_is_a_directory(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@flaky(max_runs=3)
 @pytest.mark.slow
 def test_list(remote_base_path):
     with TemporaryDirectory() as testdir:
@@ -196,18 +207,21 @@ def test_list(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@flaky(max_runs=3)
 def test_list_no_retries_when_path_does_not_exist(remote_base_path):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
     with pytest.raises(ValueError):
         client.list(remote_path)
 
 
+@flaky(max_runs=3)
 def test_list_retries_when_token_invalid(remote_base_path):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
     with pytest.raises(ValueError):
         client.list(remote_path)
 
 
+@flaky(max_runs=3)
 @pytest.mark.slow
 def test_mkdir(remote_base_path):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
@@ -221,18 +235,21 @@ def test_mkdir(remote_base_path):
         delete_collection(token, remote_path)
 
 
+@flaky(max_runs=3)
 @pytest.mark.skip(reason="todo")
 def test_share(remote_base_path):
     # TODO: how to test this? might need 2 CyVerse accounts
     pass
 
 
+@flaky(max_runs=3)
 @pytest.mark.skip(reason="todo")
 def test_unshare(remote_base_path):
     # TODO: how to test this? might need 2 CyVerse accounts
     pass
 
 
+@flaky(max_runs=3)
 @pytest.mark.slow
 def test_download_file(remote_base_path):
     with TemporaryDirectory() as testdir:
@@ -260,6 +277,7 @@ def test_download_file(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@flaky(max_runs=3)
 @pytest.mark.slow
 def test_download_directory(remote_base_path):
     with TemporaryDirectory() as testdir:
@@ -298,6 +316,7 @@ def test_download_directory(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@flaky(max_runs=3)
 @pytest.mark.slow
 def test_upload_file(remote_base_path):
     with TemporaryDirectory() as testdir:
@@ -323,6 +342,7 @@ def test_upload_file(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@flaky(max_runs=3)
 @pytest.mark.slow
 def test_upload_directory(remote_base_path):
     with TemporaryDirectory() as testdir:
@@ -354,6 +374,7 @@ def test_upload_directory(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@flaky(max_runs=3)
 @pytest.mark.slow
 def test_set_metadata(remote_base_path):
     with TemporaryDirectory() as testdir:
@@ -402,6 +423,7 @@ def test_set_metadata(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@flaky(max_runs=3)
 @pytest.mark.slow
 def test_get_metadata(remote_base_path):
     with TemporaryDirectory() as testdir:

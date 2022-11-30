@@ -34,7 +34,16 @@ This project's tests are contained within the top-level source directory `pycyap
 
 ### Environment variables
 
-**Note:** some tests required the `CYVERSE_USERNAME` and `CYVERSE_PASSWORD` environment variables. You can set these manually or put them in a `.env` file in the project root &mdash; `pytest-dotenv` will detect them in the latter case. Test cases will use this CyVerse account and its associated data store as a test environment. Each test case isolates its workspace to a folder named by GUID.
+The test suite requires some environment variables:
+
+- `CYVERSE_USERNAME`
+- `CYVERSE_PASSWORD`
+- `DATA_STORE_WRITE_OP_SLEEP`
+- `TESTING_EMAIL`
+
+You can set these manually (e.g. `export CYVERSE_USERNAME=<your username>` or `CYVERSE_USERNAME=<your username> ... pytest`), but a more convenient solution is to put them in a `.env` file in the project root, in which case `pytest-dotenv` will detect them and load them into the testing environment.
+
+**Note:** test cases will subsequently use the provided CyVerse account and its Data Store allocation as a test environment. Each test case isolates its workspace to a folder named by GUID, and attempts to remove it afterwards. However, if a test case fails, the folder may not be removed &mdash; as such you may need to manually check for and remove test folders from the Data Store.
 
 ### Test markers
 

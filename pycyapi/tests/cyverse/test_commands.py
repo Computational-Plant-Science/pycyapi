@@ -3,6 +3,7 @@ from os import environ, remove
 from os.path import join
 from tempfile import TemporaryDirectory
 
+from flaky import flaky
 import pytest
 
 from pycyapi.cyverse import commands as commands
@@ -19,6 +20,7 @@ message = "Message"
 token = CyverseAccessToken.get()
 
 
+@flaky(max_runs=3)
 @pytest.mark.slow
 def test_cas_token(remote_base_path):
     username = environ.get("CYVERSE_USERNAME", None)
@@ -34,6 +36,7 @@ def test_cas_token(remote_base_path):
         delete_collection(tkn, remote_path)
 
 
+@flaky(max_runs=3)
 @pytest.mark.slow
 def test_refresh_tokens(remote_base_path):
     username = environ.get("CYVERSE_USERNAME", None)
@@ -42,6 +45,7 @@ def test_refresh_tokens(remote_base_path):
     tkn = commands.cas_token(username, password)
 
 
+@flaky(max_runs=3)
 @pytest.mark.slow
 def test_pull(remote_base_path, file_name_1, file_name_2):
     with TemporaryDirectory() as test_dir:
@@ -82,6 +86,7 @@ def test_pull(remote_base_path, file_name_1, file_name_2):
             delete_collection(token, remote_path)
 
 
+@flaky(max_runs=3)
 @pytest.mark.slow
 def test_push(remote_base_path, file_name_1, file_name_2):
     with TemporaryDirectory() as test_dir:
