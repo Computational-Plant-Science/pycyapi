@@ -15,7 +15,6 @@ unofficial Python client for the [CyVerse](https://www.cyverse.org/) [Discovery 
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Contents**
 
 - [Status](#status)
 - [Requirements](#requirements)
@@ -57,15 +56,11 @@ pip install pycyapi
 
 ## Usage
 
-To show CLI help run `pycyapi -h`. Generally, the CLI is invoked with the following pattern:
-
-```shell
-pycyapi <command>
-```
+ Generally, the CLI is invoked with `pycyapi <command>`. All commands return JSON except `pycyapi token ...` (see below), which returns the token in plain text.
 
 ### Authenticating
 
-A Terrain access token must be provided via the `--token` parameter. An access token can be obtained from the Terrain API, providing a valid username and password:
+The `pycyapi` CLI must obtain an access token to authenticate with CyVerse. The token may be provided to commands via the `--token` parameter, or set as an environment variable `CYVERSE_TOKEN`. An access token can be obtained from the Terrain API by sending a request with basic auth headers (valid CyVerse username and password):
 
 ```shell
 GET https://de.cyverse.org/terrain/token/cas
@@ -75,7 +70,7 @@ A `token` command (see below) is provided as convenient alternative to manually 
 
 ### Commands
 
-The following commands are available:
+To show available commands help run `pycyapi --help`. The following commands are available:
 
 - `version`: Show the current `pycyapi` version.
 - `token`: Retrieve a CyVerse authentication token.
@@ -90,6 +85,8 @@ The following commands are available:
 - `unshare`: Revoke another user's access to your file or collection.
 - `tag`: Set metadata for a given file or collection.
 - `tags`: Get metadata for a given file or collection.
+
+To show usage information for a specific command, run `pycyapi <command> --help`.
 
 #### Version
 
@@ -111,7 +108,7 @@ The token can be passed via `--token (-t)` argument to authenticate subsequent c
 
 #### User
 
-The `user` command can be used to retrieve public profile information for CyVerse users. For instance, to get my profile info:
+The `user` command can be used to retrieve public profile information for CyVerse users. For instance:
 
 ```shell
 pycyapi user -t <token> wbonelli
