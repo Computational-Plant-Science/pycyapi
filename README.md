@@ -3,13 +3,10 @@
 
 # PyCyAPI
 
-unofficial Python client for the [CyVerse](https://www.cyverse.org/) [Discovery Environment](https://www.cyverse.org/discovery-environment) (a.k.a. [Terrain](https://de.cyverse.org/terrain/docs/index.html)) APIs
+unofficial Python/CLI client for the [CyVerse](https://www.cyverse.org/) [Discovery Environment](https://www.cyverse.org/discovery-environment) (a.k.a. [Terrain](https://de.cyverse.org/terrain/docs/index.html)) APIs
 
 ![CI](https://github.com/Computational-Plant-Science/pycyapi/workflows/CI/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/github/Computational-Plant-Science/pycyapi/badge.svg?branch=master)](https://coveralls.io/github/Computational-Plant-Science/pycyapi?branch=master)
-![Status](https://img.shields.io/badge/-under%20development-yellow?style=flat-square)
-
-**in development, not stable**
+[![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
 
 </div>
 
@@ -40,7 +37,7 @@ unofficial Python client for the [CyVerse](https://www.cyverse.org/) [Discovery 
 
 ## Status
 
-This project is in development and not yet stable. API coverage is still sparse, focusing mainly on `data` and `fileio` endpoints.
+API coverage is still sparse, focusing mainly on `data` and `fileio` endpoints. It will likely stay this way as this project exists predominantly for consumption by [`plantit`](https://github.com/Computational-Plant-Science/plantit) and [`plantit-action`](https://github.com/Computational-Plant-Science/plantit-action).
 
 ## Requirements
 
