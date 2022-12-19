@@ -3,7 +3,7 @@
 
 # PyCyAPI
 
-unofficial Python/CLI client for the [CyVerse](https://www.cyverse.org/) [Discovery Environment](https://www.cyverse.org/discovery-environment) (a.k.a. [Terrain](https://de.cyverse.org/terrain/docs/index.html)) APIs
+unofficial Python/CLI client for the [CyVerse](https://www.cyverse.org/) [Science](https://cyverse.org/Science-APIs) (a.k.a. [Terrain](https://de.cyverse.org/terrain/docs/index.html)) APIs
 
 ![CI](https://github.com/Computational-Plant-Science/pycyapi/workflows/CI/badge.svg)
 [![GitHub tag](https://img.shields.io/github/tag/Computational-Plant-Science/pycyapi.svg)](https://github.com/Computational-Plant-Science/pycyapi/tags/latest)
