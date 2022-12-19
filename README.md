@@ -6,7 +6,10 @@
 unofficial Python/CLI client for the [CyVerse](https://www.cyverse.org/) [Discovery Environment](https://www.cyverse.org/discovery-environment) (a.k.a. [Terrain](https://de.cyverse.org/terrain/docs/index.html)) APIs
 
 ![CI](https://github.com/Computational-Plant-Science/pycyapi/workflows/CI/badge.svg)
-[![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+[![GitHub tag](https://img.shields.io/github/tag/Computational-Plant-Science/pycyapi.svg)](https://github.com/Computational-Plant-Science/pycyapi/tags/latest)
+[![PyPI Version](https://img.shields.io/pypi/v/pycyapi.png)](https://pypi.python.org/pypi/pycyapi)
+[![PyPI Status](https://img.shields.io/pypi/status/pycyapi.png)](https://pypi.python.org/pypi/pycyapi)
+[![PyPI Versions](https://img.shields.io/pypi/pyversions/pycyapi.png)](https://pypi.python.org/pypi/pycyapi)
 
 </div>
 
