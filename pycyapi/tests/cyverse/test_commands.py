@@ -3,8 +3,8 @@ from os import environ, remove
 from os.path import join
 from tempfile import TemporaryDirectory
 
-from flaky import flaky
 import pytest
+from flaky import flaky
 
 from pycyapi.cyverse import commands as commands
 from pycyapi.cyverse.auth import CyverseAccessToken

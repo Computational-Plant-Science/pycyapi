@@ -5,9 +5,9 @@ from pprint import pprint
 from tempfile import TemporaryDirectory
 from time import sleep
 
-from flaky import flaky
 import pytest
 from click.testing import CliRunner
+from flaky import flaky
 
 import pycyapi.cli
 from pycyapi.cyverse.auth import CyverseAccessToken

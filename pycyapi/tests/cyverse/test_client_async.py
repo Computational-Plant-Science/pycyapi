@@ -3,8 +3,8 @@ from os import remove
 from os.path import isfile, join
 from tempfile import TemporaryDirectory
 
-from flaky import flaky
 import pytest
+from flaky import flaky
 from httpx import HTTPStatusError
 
 from pycyapi.cyverse.auth import CyverseAccessToken
