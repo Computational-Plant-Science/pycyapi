@@ -3,21 +3,65 @@ import os
 import pprint
 import shutil
 import time
+from platform import system
 from os import environ, listdir, remove
 from os.path import basename, isdir, isfile, islink, join
 
 import pytest
 import requests
 
+from pycyapi.cyverse.auth import CyverseAccessToken
+
+_cyverse_username = environ.get("CYVERSE_USERNAME")
+_cyverse_password = environ.get("CYVERSE_PASSWORD")
+
+
+@pytest.fixture
+def username():
+    return _cyverse_username
+
+
+@pytest.fixture
+def password():
+    return _cyverse_password
+
+
+@pytest.fixture
+def token(username, password):
+    return CyverseAccessToken.get(username, password)
+
+
+requires_cyverse = pytest.mark.skipif(
+    not _cyverse_username or not _cyverse_password,
+    reason="requires CyVerse credentials")
+
+
+def is_in_ci():
+    # if running in GitHub Actions CI, "CI" variable always set to true
+    # https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables
+    return bool(environ.get("CI", None))
+
+
+def requires_platform(platform, ci_only=False):
+    return pytest.mark.skipif(
+        system().lower() != platform.lower() and (is_in_ci() if ci_only else True),
+        reason=f"only compatible with platform: {platform.lower()}",
+    )
+
+
+def excludes_platform(platform, ci_only=False):
+    return pytest.mark.skipif(
+        system().lower() == platform.lower() and (is_in_ci() if ci_only else True),
+        reason=f"not compatible with platform: {platform.lower()}",
+    )
+
 
 @pytest.fixture(scope="module")
 def remote_base_path():
-    cyverse_username = os.environ.get("CYVERSE_USERNAME", None)
+    if _cyverse_username is None:
+        return None
 
-    if cyverse_username is None:
-        raise ValueError("Missing environment variable 'CYVERSE_USERNAME'")
-
-    return f"/iplant/home/{cyverse_username}"
+    return f"/iplant/home/{_cyverse_username}"
 
 
 @pytest.fixture

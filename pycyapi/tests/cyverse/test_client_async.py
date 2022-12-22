@@ -7,7 +7,6 @@ import pytest
 from flaky import flaky
 from httpx import HTTPStatusError
 
-from pycyapi.cyverse.auth import CyverseAccessToken
 from pycyapi.cyverse.clients import AsyncCyverseClient
 from pycyapi.tests.conftest import (
     create_collection,
@@ -16,12 +15,15 @@ from pycyapi.tests.conftest import (
     list_files,
     set_metadata,
     stat_file,
-    upload_file,
+    upload_file, requires_cyverse,
 )
 
 message = "Message"
-token = CyverseAccessToken.get()
-client = AsyncCyverseClient(token)
+
+
+@pytest.fixture
+def client(token):
+    return AsyncCyverseClient(token)
 
 
 @flaky(max_runs=3)
@@ -33,27 +35,30 @@ async def test_throws_error_when_token_is_invalid():
         assert "401" in str(e)
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.asyncio
-async def test_path_exists_when_doesnt():
+async def test_path_exists_when_doesnt(client):
     exists = await client.exists_async(
         "/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/cowsaid.txt"
     )
     assert not exists
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.asyncio
-async def test_path_exists_when_is_a_file():
+async def test_path_exists_when_is_a_file(client):
     exists = await client.exists_async(
         "/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/cowsay.txt"
     )
     assert exists
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.asyncio
-async def test_path_exists_when_is_a_directory():
+async def test_path_exists_when_is_a_directory(client):
     # with trailing slash
     exists = await client.exists_async(
         "/iplant/home/shared/iplantcollaborative/testing_tools/cowsay/"
@@ -67,10 +72,11 @@ async def test_path_exists_when_is_a_directory():
     assert exists
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.slow
-async def test_dir_exists_when_is_a_directory(remote_base_path):
+async def test_dir_exists_when_is_a_directory(remote_base_path, client, token):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
 
     try:
@@ -86,10 +92,11 @@ async def test_dir_exists_when_is_a_directory(remote_base_path):
         delete_collection(token, remote_path)
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.slow
-async def test_dir_exists_when_is_a_file(remote_base_path):
+async def test_dir_exists_when_is_a_file(remote_base_path, client, token):
     with TemporaryDirectory() as testdir:
         file1_name = "f1.txt"
         file1_path = join(testdir, file1_name)
@@ -115,10 +122,11 @@ async def test_dir_exists_when_is_a_file(remote_base_path):
             delete_collection(token, remote_dir_path)
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.slow
-async def test_file_exists_when_is_a_file(remote_base_path):
+async def test_file_exists_when_is_a_file(remote_base_path, client, token):
     with TemporaryDirectory() as testdir:
         file1_name = "f1.txt"
         file2_name = "f2.txt"
@@ -147,10 +155,11 @@ async def test_file_exists_when_is_a_file(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.slow
-async def test_file_exists_when_is_a_directory(remote_base_path):
+async def test_file_exists_when_is_a_directory(remote_base_path, client, token):
     with TemporaryDirectory() as testdir:
         file1_name = "f1.txt"
         file2_name = "f2.txt"
@@ -177,10 +186,11 @@ async def test_file_exists_when_is_a_directory(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.slow
-async def test_list(remote_base_path):
+async def test_list(remote_base_path, client, token):
     with TemporaryDirectory() as testdir:
         file1_name = "f1.txt"
         file2_name = "f2.txt"
@@ -214,28 +224,31 @@ async def test_list(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.asyncio
-async def test_list_no_retries_when_path_does_not_exist(remote_base_path):
+async def test_list_no_retries_when_path_does_not_exist(remote_base_path, client, token):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
     with pytest.raises(HTTPStatusError) as e:
         await client.list_async(remote_path)
         assert "500" in str(e)
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.asyncio
-async def test_list_retries_when_token_invalid(remote_base_path):
+async def test_list_retries_when_token_invalid(remote_base_path, client, token):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
     with pytest.raises(HTTPStatusError) as e:
         await client.list_async(remote_path)
         assert "500" in str(e)
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.slow
-async def test_mkdir(remote_base_path):
+async def test_mkdir(remote_base_path, client, token):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
 
     try:
@@ -248,26 +261,29 @@ async def test_mkdir(remote_base_path):
         delete_collection(token, remote_path)
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="todo")
-async def test_share(remote_base_path):
+async def test_share(remote_base_path, client, token):
     # TODO: how to test this? might need 2 CyVerse accounts
     pass
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="todo")
-async def test_unshare(remote_base_path):
+async def test_unshare(remote_base_path, client, token):
     # TODO: how to test this? might need 2 CyVerse accounts
     pass
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.slow
-async def test_download_file(remote_base_path):
+async def test_download_file(remote_base_path, client, token):
     with TemporaryDirectory() as testdir:
         file_name = "f1.txt"
         file_path = join(testdir, file_name)
@@ -293,10 +309,11 @@ async def test_download_file(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.slow
-async def test_download_directory(remote_base_path):
+async def test_download_directory(remote_base_path, client, token):
     with TemporaryDirectory() as testdir:
         file1_name = "f1.txt"
         file2_name = "f2.txt"
@@ -335,10 +352,11 @@ async def test_download_directory(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.slow
-async def test_upload_file(remote_base_path):
+async def test_upload_file(remote_base_path, client, token):
     with TemporaryDirectory() as testdir:
         file_name = "f1.txt"
         file_path = join(testdir, file_name)
@@ -362,10 +380,11 @@ async def test_upload_file(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.slow
-async def test_upload_directory(remote_base_path):
+async def test_upload_directory(remote_base_path, client, token):
     with TemporaryDirectory() as testdir:
         file_name1 = "f1.txt"
         file_name2 = "f2.txt"
@@ -395,10 +414,11 @@ async def test_upload_directory(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.slow
-async def test_set_metadata(remote_base_path):
+async def test_set_metadata(remote_base_path, client, token):
     with TemporaryDirectory() as testdir:
         file_name = "f1.txt"
         file_path = join(testdir, file_name)
@@ -445,10 +465,11 @@ async def test_set_metadata(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.asyncio
 @pytest.mark.slow
-async def test_get_metadata(remote_base_path):
+async def test_get_metadata(remote_base_path, client, token):
     with TemporaryDirectory() as testdir:
         file_name = "f1.txt"
         file_path = join(testdir, file_name)
