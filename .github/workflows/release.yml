@@ -84,6 +84,7 @@ jobs:
           
           # show full changelog
           cat HISTORY.md
+
       - name: Upload changelog
         uses: actions/upload-artifact@v3
         with:
@@ -99,6 +100,7 @@ jobs:
           
           # remove this release's changelog so we don't commit it
           # the changes have already been prepended to HISTORY.md
+          rm ${{ steps.cliff.outputs.changelog }}
           rm ${{ steps.update-changelog.outputs.changelog }}
           
           # commit and push changes

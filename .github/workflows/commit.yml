@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - master
-      - develop
+      - develop*
   pull_request:
     branches:
       - master
@@ -13,97 +13,109 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
+
       - name: Checkout repo
         uses: actions/checkout@v2
+
       - name: Cache Python
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-3.8-pip-${{ hashFiles('setup.cfg') }}
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
+
       - name: Install Python dependencies
         run: |
           pip install --upgrade pip
           pip install .
           pip install ".[lint]"
+
       - name: Lint
         run: |
           # stop the build if there are Python syntax errors or undefined names
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
   smoke:
     name: Smoke test
     needs: lint
     runs-on: ubuntu-latest
     steps:
+
       - name: Checkout repo
         uses: actions/checkout@v2
+
       - name: Cache Python
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-3.8-pip-${{ hashFiles('setup.cfg') }}
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
+
       - name: Install Python dependencies
         run: |
           pip install --upgrade pip
           pip install .
           pip install ".[test]"
+
       - name: Configure SSH
         uses: ./.github/actions/cache_ssh
         with:
           private_key: ${{ secrets.CLUSTER_PRIVATE_KEY }}
           host: ${{ secrets.CLUSTER_HOST }}
+
       - name: Run smoke tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CLUSTER_HOST: ${{secrets.CLUSTER_HOST}}
-          CLUSTER_USER: ${{secrets.CLUSTER_USER}}
-          CLUSTER_HOME_DIR: ${{secrets.CLUSTER_HOME_DIR}}
-          CLUSTER_PASSWORD: ${{secrets.CLUSTER_PASSWORD}}
-          CLUSTER_QUEUE: ${{ secrets.CLUSTER_QUEUE }}
           CYVERSE_USERNAME: ${{ secrets.CYVERSE_USERNAME }}
           CYVERSE_PASSWORD: ${{ secrets.CYVERSE_PASSWORD }}
-          TESTING_EMAIL: ${{ secrets.TESTING_EMAIL }}
-        run: |
-          pytest -v -n auto -S
+        run: pytest -v -n auto -S
+
   test:
     name: Test
     needs: smoke
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest ] #, macos-latest ]
-        python-version: [3.8] #, 3.9, "3.10"]
+        os: [ ubuntu-latest, macos-latest ]
+        python-version: [3.8, 3.9, "3.10", "3.11"]
     steps:
+
       - name: Checkout repo
         uses: actions/checkout@v2
+
       - name: Cache Python
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ matrix.os }}-${{ matrix.python-version }}-pip-${{ hashFiles('setup.cfg') }}
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+
       - name: Install Python dependencies
         run: |
           pip install --upgrade pip
           pip install .
           pip install ".[test]"
+
       - name: Configure SSH
         uses: ./.github/actions/cache_ssh
         with:
           private_key: ${{ secrets.CLUSTER_PRIVATE_KEY }}
           host: ${{ secrets.CLUSTER_HOST }}
+
       - name: Test
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
@@ -111,15 +123,14 @@ jobs:
           COVERALLS_PARALLEL: true
           CYVERSE_USERNAME: ${{ secrets.CYVERSE_USERNAME }}
           CYVERSE_PASSWORD: ${{ secrets.CYVERSE_PASSWORD }}
-          TESTING_EMAIL: ${{ secrets.TESTING_EMAIL }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           coverage run --source='.' -m pytest -s -v -n auto --keep-failed=.failed
           coveralls
+
       - name: Upload failed test outputs
         uses: actions/upload-artifact@v2
         if: failure()
         with:
           name: failed-${{ matrix.os }}-${{ matrix.python-version }}
-          path: |
-            ./.failed/**
+          path: ./.failed/**
