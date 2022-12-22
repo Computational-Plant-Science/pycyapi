@@ -13,19 +13,16 @@ from pycyapi.tests.conftest import (
     create_collection,
     delete_collection,
     list_files,
-    upload_file,
+    upload_file, requires_cyverse,
 )
 
 message = "Message"
-token = CyverseAccessToken.get()
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.slow
-def test_cas_token(remote_base_path):
-    username = environ.get("CYVERSE_USERNAME", None)
-    password = environ.get("CYVERSE_PASSWORD", None)
-
+def test_cas_token(remote_base_path, username, password):
     tkn = commands.cas_token(username, password)
 
     # make sure we can use the token successfully
@@ -36,18 +33,17 @@ def test_cas_token(remote_base_path):
         delete_collection(tkn, remote_path)
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.slow
-def test_refresh_tokens(remote_base_path):
-    username = environ.get("CYVERSE_USERNAME", None)
-    password = environ.get("CYVERSE_PASSWORD", None)
-
+def test_refresh_tokens(remote_base_path, username, password):
     tkn = commands.cas_token(username, password)
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.slow
-def test_pull(remote_base_path, file_name_1, file_name_2):
+def test_pull(remote_base_path, file_name_1, file_name_2, token):
     with TemporaryDirectory() as test_dir:
         local_path_1 = join(test_dir, file_name_1)
         local_path_2 = join(test_dir, file_name_2)
@@ -86,9 +82,10 @@ def test_pull(remote_base_path, file_name_1, file_name_2):
             delete_collection(token, remote_path)
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.slow
-def test_push(remote_base_path, file_name_1, file_name_2):
+def test_push(remote_base_path, file_name_1, file_name_2, token):
     with TemporaryDirectory() as test_dir:
         local_path_1 = join(test_dir, file_name_1)
         local_path_2 = join(test_dir, file_name_2)

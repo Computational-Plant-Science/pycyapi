@@ -1,5 +1,5 @@
 import uuid
-from os import environ, remove
+from os import remove
 from os.path import basename, isfile, join
 from pprint import pprint
 from tempfile import TemporaryDirectory
@@ -10,7 +10,6 @@ from click.testing import CliRunner
 from flaky import flaky
 
 import pycyapi.cli
-from pycyapi.cyverse.auth import CyverseAccessToken
 from pycyapi.tests.conftest import (
     create_collection,
     delete_collection,
@@ -20,41 +19,14 @@ from pycyapi.tests.conftest import (
     set_metadata,
     stat_file,
     upload_file,
+    requires_cyverse,
 )
 
 
-@flaky(max_runs=3)
-@pytest.mark.skip(reason="todo")
-def test_scripts_slurm_no_source_no_sink():
-    pass
-
-
-@flaky(max_runs=3)
-@pytest.mark.skip(reason="todo")
-def test_scripts_slurm_with_source():
-    pass
-
-
-@flaky(max_runs=3)
-@pytest.mark.skip(reason="todo")
-def test_scripts_slurm_with_sink():
-    pass
-
-
-@flaky(max_runs=3)
-@pytest.mark.skip(reason="todo")
-def test_scripts_slurm_with_source_and_sink():
-    pass
-
-
-username = environ.get("CYVERSE_USERNAME")
-password = environ.get("CYVERSE_PASSWORD")
-token = CyverseAccessToken.get()
-
-
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.slow
-def test_cas_token():
+def test_cas_token(username, password):
     runner = CliRunner()
     result = runner.invoke(
         pycyapi.cli.token, ["--username", username, "--password", password]
@@ -66,14 +38,16 @@ def test_cas_token():
     pprint(list_directories(token=tkn, path=f"iplant/home/{username}/"))
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 def test_create_directory_when_token_is_invalid(remote_base_path):
     pass
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.slow
-def test_create_directory(remote_base_path):
+def test_create_directory(remote_base_path, username, token):
     remote_path = join(remote_base_path, str(uuid.uuid4()))
 
     try:
@@ -88,8 +62,9 @@ def test_create_directory(remote_base_path):
         delete_collection(token, remote_path)
 
 
+@requires_cyverse
 @flaky(max_runs=3)
-def test_exists_when_doesnt_exist(remote_base_path):
+def test_exists_when_doesnt_exist(remote_base_path, token):
     runner = CliRunner()
     result = runner.invoke(
         pycyapi.cli.exists,
@@ -102,8 +77,9 @@ def test_exists_when_doesnt_exist(remote_base_path):
     assert "False" in result.output
 
 
+@requires_cyverse
 @flaky(max_runs=3)
-def test_exists_when_is_a_file(remote_base_path):
+def test_exists_when_is_a_file(remote_base_path, token):
     runner = CliRunner()
     result = runner.invoke(
         pycyapi.cli.exists,
@@ -116,8 +92,9 @@ def test_exists_when_is_a_file(remote_base_path):
     assert "True" in result.output
 
 
+@requires_cyverse
 @flaky(max_runs=3)
-def test_exists_when_is_a_directory(remote_base_path):
+def test_exists_when_is_a_directory(remote_base_path, token):
     runner = CliRunner()
 
     # with trailing slash
@@ -143,33 +120,38 @@ def test_exists_when_is_a_directory(remote_base_path):
     assert "True" in result.output
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.skip(reason="todo")
 def test_exists_with_type_file_when_is_a_file(remote_base_path):
     pass
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.skip(reason="todo")
 def test_exists_with_type_file_when_is_a_directory(remote_base_path):
     pass
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.skip(reason="todo")
 def test_exists_with_type_dir_when_is_a_file(remote_base_path):
     pass
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.skip(reason="todo")
 def test_exists_with_type_dir_when_is_a_directory(remote_base_path):
     pass
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.slow
-def test_list(remote_base_path):
+def test_list(remote_base_path, token):
     with TemporaryDirectory() as testdir:
         file1_name = "f1.txt"
         file2_name = "f2.txt"
@@ -205,6 +187,7 @@ def test_list(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.skip(reason="todo")
 def test_share_directory(remote_base_path):
@@ -212,6 +195,7 @@ def test_share_directory(remote_base_path):
     pass
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.skip(reason="todo")
 def test_unshare_directory(remote_base_path):
@@ -219,9 +203,10 @@ def test_unshare_directory(remote_base_path):
     pass
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.slow
-def test_download_file(remote_base_path):
+def test_download_file(remote_base_path, token):
     with TemporaryDirectory() as testdir:
         file_name = "f1.txt"
         file_path = join(testdir, file_name)
@@ -260,9 +245,10 @@ def test_download_file(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.slow
-def test_download_directory(remote_base_path):
+def test_download_directory(remote_base_path, token):
     with TemporaryDirectory() as testdir:
         file1_name = "f1.txt"
         file2_name = "f2.txt"
@@ -306,9 +292,10 @@ def test_download_directory(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.slow
-def test_upload_file(remote_base_path):
+def test_upload_file(remote_base_path, token):
     with TemporaryDirectory() as testdir:
         file_name = "f1.txt"
         file_path = join(testdir, file_name)
@@ -339,9 +326,10 @@ def test_upload_file(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.slow
-def test_upload_directory(remote_base_path):
+def test_upload_directory(remote_base_path, token):
     with TemporaryDirectory() as testdir:
         file_name1 = "f1.txt"
         file_name2 = "f2.txt"
@@ -386,9 +374,10 @@ def test_upload_directory(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.slow
-def test_tag(remote_base_path):
+def test_tag(remote_base_path, token):
     with TemporaryDirectory() as testdir:
         file_name = "f1.txt"
         file_path = join(testdir, file_name)
@@ -452,12 +441,13 @@ def test_tag(remote_base_path):
             delete_collection(token, remote_path)
 
 
+@requires_cyverse
 @flaky(max_runs=3)
 @pytest.mark.skip(
     "todo debug UnboundLocalError: local variable 'result' referenced before assignment"
 )
 @pytest.mark.slow
-def test_tags(remote_base_path):
+def test_tags(remote_base_path, token):
     with TemporaryDirectory() as testdir:
         file_name = "f1.txt"
         file_path = join(testdir, file_name)

@@ -6,26 +6,6 @@ from shutil import copytree
 import pytest
 
 
-def is_in_ci():
-    # if running in GitHub Actions CI, "CI" variable always set to true
-    # https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables
-    return bool(environ.get("CI", None))
-
-
-def requires_platform(platform, ci_only=False):
-    return pytest.mark.skipif(
-        system().lower() != platform.lower() and (is_in_ci() if ci_only else True),
-        reason=f"only compatible with platform: {platform.lower()}",
-    )
-
-
-def excludes_platform(platform, ci_only=False):
-    return pytest.mark.skipif(
-        system().lower() == platform.lower() and (is_in_ci() if ci_only else True),
-        reason=f"not compatible with platform: {platform.lower()}",
-    )
-
-
 @pytest.fixture(scope="function")
 def function_tmpdir(tmpdir_factory, request) -> Path:
     node = request.node.name \
